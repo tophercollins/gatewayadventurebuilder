@@ -1,28 +1,28 @@
 # IMPLEMENTATION_PLAN.md
 
-Step-by-step build sequence. Each step is small, specific, and references the relevant doc. The more steps, the less AI guesses.
+Step-by-step build sequence used to construct the app. All 15 phases are complete (v0.0), plus real transcription (v0.1) and 10 post-MVP features (v0.2). Each step references the relevant doc.
 
 ---
 
-## Build Phases
+## Build Phases (All Complete)
 
-| Phase | Name | Goal |
-|-------|------|------|
-| 1 | Project Setup | Flutter project, dependencies, folder structure |
-| 2 | Theme & Navigation | App shell, theming, routing |
-| 3 | Database | SQLite schema, models, data access layer |
-| 4 | Campaign Management | Create, view, edit campaigns |
-| 5 | Player & Character Management | Add players/characters to campaigns |
-| 6 | Audio Recording | Record, stop, save audio files |
-| 7 | Local Transcription | Whisper integration, transcript storage |
-| 8 | AI Processing | LLM pipeline, entity extraction, summaries |
-| 9 | Session Review | Display processed session, 4-section drill-down |
-| 10 | Editing & Resync | Inline editing, cascade resync |
-| 11 | World Database | Browse all entities across campaign |
-| 12 | Processing Queue | Offline queue, auto-process when online |
-| 13 | Notifications | Email notification on processing complete |
-| 14 | Onboarding | First-time user guided walkthrough |
-| 15 | Polish & Testing | Bug fixes, performance, edge cases |
+| Phase | Name | Goal | Status |
+|-------|------|------|--------|
+| 1 | Project Setup | Flutter project, dependencies, folder structure | Done (v0.0) |
+| 2 | Theme & Navigation | App shell, theming, routing | Done (v0.0) |
+| 3 | Database | SQLite schema, models, data access layer | Done (v0.0) |
+| 4 | Campaign Management | Create, view, edit campaigns | Done (v0.0) |
+| 5 | Player & Character Management | Add players/characters to campaigns | Done (v0.0) |
+| 6 | Audio Recording | Record, stop, save audio files | Done (v0.0) |
+| 7 | Local Transcription | Whisper integration, transcript storage | Done (v0.0), upgraded in v0.1 |
+| 8 | AI Processing | LLM pipeline, entity extraction, summaries | Done (v0.0) |
+| 9 | Session Review | Display processed session, 4-section drill-down | Done (v0.0) |
+| 10 | Editing & Resync | Inline editing, cascade resync | Done (v0.0) |
+| 11 | World Database | Browse all entities across campaign | Done (v0.0) |
+| 12 | Processing Queue | Offline queue, auto-process when online | Done (v0.0) |
+| 13 | Notifications | Email notification on processing complete | Done (v0.0) |
+| 14 | Onboarding | First-time user guided walkthrough | Done (v0.0) |
+| 15 | Polish & Testing | Bug fixes, performance, edge cases | Done (v0.0) |
 
 ---
 
@@ -610,36 +610,40 @@ lib/
 
 ---
 
-## Build Order Dependencies
+## Build Order Dependencies (Completed)
 
 ```
-Phase 1 (Setup)
+Phase 1 (Setup)         ✓
   ↓
-Phase 2 (Theme & Navigation)
+Phase 2 (Theme & Nav)   ✓
   ↓
-Phase 3 (Database)
+Phase 3 (Database)      ✓
   ↓
-Phase 4 (Campaigns) ←→ Phase 5 (Players) [can parallel]
+Phase 4 (Campaigns) ←→ Phase 5 (Players)   ✓ [built in parallel]
   ↓
-Phase 6 (Recording)
+Phase 6 (Recording)     ✓
   ↓
-Phase 7 (Transcription)
+Phase 7 (Transcription) ✓  → upgraded to dual-platform in v0.1
   ↓
-Phase 8 (AI Processing)
+Phase 8 (AI Processing) ✓
   ↓
-Phase 9 (Session Review)
+Phase 9 (Session Review) ✓
   ↓
-Phase 10 (Editing & Resync)
+Phase 10 (Editing)      ✓
   ↓
-Phase 11 (World Database) [can parallel with Phase 10]
+Phase 11 (World DB)     ✓
   ↓
-Phase 12 (Processing Queue)
+Phase 12 (Queue)        ✓
   ↓
-Phase 13 (Notifications)
+Phase 13 (Notifications) ✓
   ↓
-Phase 14 (Onboarding) [can be done anytime after Phase 4]
+Phase 14 (Onboarding)   ✓
   ↓
-Phase 15 (Polish & Testing)
+Phase 15 (Polish)       ✓
+  ↓
+v0.1 — Real transcription (Whisper + Gemini)   ✓
+  ↓
+v0.2 — Post-MVP feature backlog (10 items)     ✓
 ```
 
 ---

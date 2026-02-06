@@ -37,50 +37,55 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 
 ---
 
-## Audio Recording
+## Audio
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| **record** | ^6.x | Cross-platform audio recording |
+| **record** | ^6.0.0 | Cross-platform audio recording |
+| **just_audio** | ^0.10.5 | Audio playback with speed controls (0.5x-2x) |
+| **just_audio_media_kit** | ^2.1.0 | Desktop audio backend for just_audio |
+| **media_kit_libs_linux** | any | Linux media playback support |
+| **media_kit_libs_windows_audio** | any | Windows media playback support |
 
-**Why record:**
-- Simple API
-- Desktop + mobile support
-- Handles long recordings
-- Multiple audio formats (WAV, AAC, etc.)
+**Why record:** Simple API, desktop + mobile, handles long recordings, multiple formats (WAV, AAC).
+
+**Audio crash recovery:** Streaming flush to disk during recording. If app is force-quit, audio is recoverable up to the last flush point. Sessions get `interrupted` status with resume/finalize options.
 
 ---
 
-## Transcription
+## Transcription (Dual-Platform Strategy)
 
-### MVP: Local Whisper
+Platform-selected at runtime via `transcriptionServiceProvider`:
 
-| Component | Details |
-|-----------|---------|
-| **whisper.cpp** | C++ port of OpenAI Whisper |
-| **Model** | base (~150MB) or small (~500MB) |
-| **Integration** | FFI bindings or bundled binary |
+### macOS: Local Whisper (Free, Offline)
 
-**Packages to evaluate:**
-- `whisper_flutter_new` - Flutter bindings for whisper.cpp
-- Custom FFI implementation if needed
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **whisper_flutter_new** | ^1.0.1 | Flutter bindings for whisper.cpp |
 
-**Why local for MVP:**
-- Offline capability
-- No per-transcription cost
-- User privacy
+- Model: `ggml-base.bin` (~150MB), downloaded from HuggingFace on first use
+- Chunk duration: 30 minutes (default)
+- Fully offline — no API cost
+- Managed by `ModelManager` for download/storage
 
-### V2+: Cloud Transcription
+### Windows/Linux: Gemini Flash-Lite (Cloud)
 
-| Service | Cost | Purpose |
-|---------|------|---------|
-| **OpenAI Whisper API** | $0.006/min | High-quality cloud transcription |
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **google_generative_ai** | ^0.4.0 | Cloud STT via Gemini 2.0 Flash-Lite |
 
-**Why cloud for V2:**
-- Smaller app size
-- Best accuracy
-- Simpler maintenance
-- Cost baked into subscription
+- Chunk duration: 2 minutes (keeps WAV inline data under ~10.6MB)
+- Cost: ~$0.039/hr
+- Requires Gemini API key via `EnvConfig`
+
+### Architecture
+```
+transcriptionServiceProvider (Platform.isMacOS?)
+  ├── YES → WhisperTranscriptionService (local, 30-min chunks)
+  └── NO  → GeminiTranscriptionService (cloud, 2-min chunks)
+```
+
+`TranscriptionManager` checks each service's `preferredChunkDurationMs` and creates an `AudioChunker` with the appropriate duration. `MockTranscriptionService` is retained for tests.
 
 ---
 
@@ -163,7 +168,7 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 - Good for complex apps
 - Active development
 
-**Alternative:** `bloc` if team prefers it. Decision can be made at implementation.
+**Decision made:** Riverpod exclusively. No bloc/provider/setState patterns.
 
 ---
 
@@ -201,23 +206,31 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 ## Version Locking Strategy
 
 ```yaml
-# pubspec.yaml approach
+# Actual pubspec.yaml dependencies (v0.2.0)
 dependencies:
   flutter:
     sdk: flutter
+  flutter_riverpod: ^2.5.0
   sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0
   path_provider: ^2.1.0
   record: ^6.0.0
+  just_audio: ^0.10.5
+  just_audio_media_kit: ^2.1.0
+  media_kit_libs_linux: any
+  media_kit_libs_windows_audio: any
+  supabase_flutter: ^2.0.0
   google_generative_ai: ^0.4.0
-  go_router: ^14.0.0
+  whisper_flutter_new: ^1.0.1
+  uuid: ^4.0.0
+  flutter_secure_storage: ^9.0.0
+  path: ^1.9.0
   shared_preferences: ^2.2.0
   intl: ^0.19.0
   http: ^1.2.0
   connectivity_plus: ^6.0.0
-  path: ^1.9.0
-  supabase_flutter: ^2.0.0
-  riverpod: ^2.5.0
-  # etc.
+  go_router: ^14.0.0
+  flutter_dotenv: ^6.0.0
 ```
 
 - Use caret (^) for minor version flexibility
@@ -243,10 +256,11 @@ dependencies:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Flutter App                          │
+│                    Flutter App (v0.2.0)                  │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │     UI      │  │   State     │  │   Services  │     │
-│  │  (Widgets)  │  │ (Riverpod)  │  │             │     │
+│  │  UI (29     │  │   State     │  │  Services   │     │
+│  │  screens +  │  │ (Riverpod   │  │  (40+ files)│     │
+│  │  30 widgets)│  │  19 files)  │  │             │     │
 │  └─────────────┘  └─────────────┘  └─────────────┘     │
 │         │                │                │             │
 │         └────────────────┼────────────────┘             │
@@ -255,7 +269,7 @@ dependencies:
 │  │                 Local Layer                        │ │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────────┐    │ │
 │  │  │  SQLite  │  │  Audio   │  │   Whisper    │    │ │
-│  │  │    DB    │  │  Files   │  │  (Local)     │    │ │
+│  │  │  (v3)    │  │  Files   │  │  (macOS)     │    │ │
 │  │  └──────────┘  └──────────┘  └──────────────┘    │ │
 │  └───────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
@@ -265,9 +279,10 @@ dependencies:
 ┌─────────────────────────────────────────────────────────┐
 │                    Cloud Services                        │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
-│  │ Supabase │  │  Gemini  │  │  Resend  │  │Whisper │ │
-│  │  (Auth,  │  │  Flash   │  │ (Email)  │  │  API   │ │
-│  │  Sync)   │  │  (LLM)   │  │          │  │ (V2+)  │ │
+│  │ Supabase │  │  Gemini  │  │  Resend  │  │ Gemini │ │
+│  │  (Auth,  │  │  Flash   │  │ (Email)  │  │ Flash- │ │
+│  │  Sync)   │  │  (LLM)   │  │          │  │  Lite  │ │
+│  │ (future) │  │          │  │          │  │ (STT)  │ │
 │  └──────────┘  └──────────┘  └──────────┘  └────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -281,13 +296,15 @@ dependencies:
 | Framework | Flutter | Single codebase, native performance, all platforms |
 | Language | Dart | Comes with Flutter, easy to learn |
 | Database | SQLite | Relational, offline, portable |
-| Audio | record package | Simple, cross-platform |
-| Transcription (MVP) | Local Whisper | Offline, free |
-| Transcription (V2) | Whisper API | Better UX, cost in subscription |
-| LLM | Gemini Flash | Cheapest, easy to swap later |
+| Audio Recording | record ^6.0.0 | Simple, cross-platform |
+| Audio Playback | just_audio + media_kit | Speed controls, desktop support |
+| Transcription (macOS) | whisper_flutter_new | Local, free, offline |
+| Transcription (Win/Linux) | Gemini Flash-Lite | No native whisper.cpp, reuses existing dependency |
+| LLM | Gemini Flash | Cheapest, 1M token context, easy to swap later |
 | Backend | Supabase | Postgres, low lock-in, can self-host |
 | Email | Resend | Modern, cheap, swappable |
 | State | Riverpod | Type-safe, testable |
+| Routing | go_router | Declarative, deep linking support |
 
 ---
 

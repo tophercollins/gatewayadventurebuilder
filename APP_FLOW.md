@@ -8,37 +8,60 @@ Every page and every user navigation path documented. Step-by-step sequences, de
 
 | Screen | Route | Description |
 |--------|-------|-------------|
+| Startup | `/startup` | First-launch detection, redirects to onboarding or home |
 | Onboarding | `/onboarding` | First-time user guided walkthrough |
-| Home | `/` | Main landing - continue, new, review |
+| Home | `/` | Main landing — continue campaign, new campaign |
 | Campaigns List | `/campaigns` | All campaigns |
-| Campaign Home | `/campaigns/:id` | Campaign dashboard - sessions, world, players |
+| Campaign Home | `/campaigns/:id` | Campaign dashboard — sessions, world, players |
 | New Campaign | `/campaigns/new` | Create campaign form |
 | Session Setup | `/campaigns/:id/sessions/new` | Select attendees before recording |
+| Add Session | `/campaigns/:id/sessions/add` | Manual session add (log-only or paste transcript) |
 | Recording | `/campaigns/:id/sessions/:sessionId/record` | Active recording screen |
 | Post-Session | `/campaigns/:id/sessions/:sessionId/complete` | Session complete summary |
-| Session Detail | `/campaigns/:id/sessions/:sessionId` | Processed session with 4 sections |
+| Session Detail | `/campaigns/:id/sessions/:sessionId` | Processed session with 4 sections + export + podcast |
 | Session Summary | `/campaigns/:id/sessions/:sessionId/summary` | Full summary + scenes (drill-down) |
+| Session Transcript | `/campaigns/:id/sessions/:sessionId/transcript` | Raw transcript view with edit support |
 | Extracted Items | `/campaigns/:id/sessions/:sessionId/entities` | NPCs, locations, items (drill-down) |
 | What's Next | `/campaigns/:id/sessions/:sessionId/actions` | Action items, plot threads (drill-down) |
 | Player Moments | `/campaigns/:id/sessions/:sessionId/players` | Player highlights (drill-down) |
 | World Database | `/campaigns/:id/world` | All campaign entities |
+| NPC Detail | `/campaigns/:id/world/npcs/:npcId` | Full NPC view — quotes, relationships, appearances |
+| Location Detail | `/campaigns/:id/world/locations/:locationId` | Full location detail |
+| Item Detail | `/campaigns/:id/world/items/:itemId` | Full item detail |
 | Players/Characters | `/campaigns/:id/players` | Campaign roster |
 | Add Player | `/campaigns/:id/players/new` | Add player form |
 | Add Character | `/campaigns/:id/characters/new` | Add character form |
+| All Players | `/players` | Global player roster (across all campaigns) |
+| Worlds | `/worlds` | Global worlds management |
+| Stats | `/stats` | Campaign, player, and global statistics (3 tabs) |
+| Settings | `/settings` | Redirects to notification settings |
+| Notification Settings | `/settings/notifications` | Email notification preferences and sharing mode |
 
 ---
 
 ## Navigation Structure
 
 ```
-Home
-├── Continue Campaign → Campaigns List → Campaign Home
-├── New Campaign → New Campaign Form → Campaign Home
-└── Review/Stats/Edit → Campaigns List
+Startup (first-launch check)
+├── First launch → Onboarding → Home
+└── Returning user → Home
 
-Campaign Home (layout TBD - needs visual mockups)
-├── Sessions (list of past sessions, start new)
-├── World Database (NPCs, locations, items)
+Home
+├── Continue Campaign → Campaign Home (last-used campaign)
+└── New Campaign → New Campaign Form → Campaign Home
+
+Sidebar (persistent on all screens inside AppShell)
+├── Home
+├── Campaigns → Campaigns List
+├── Worlds → Worlds List
+├── Players → All Players
+├── Stats → Stats Dashboard
+├── Settings → Notification Settings
+└── Theme Toggle (Light / Dark / System)
+
+Campaign Home
+├── Sessions (list + "New Session" + "Add Session")
+├── World Database (NPCs, locations, items → detail screens)
 └── Players/Characters (campaign roster)
 ```
 
@@ -276,12 +299,17 @@ Campaign Home (layout TBD - needs visual mockups)
 
 ---
 
+## Design Decisions (Resolved)
+
+- **Campaign Home layout:** Vertical sections with session list, world database link, and player roster. "New Session" and "Add Session" buttons prominent.
+- **Extracted Items organization:** Separate sections for NPCs, locations, and items within the session entities drill-down. Each links to entity detail screen.
+- **Settings/preferences:** Notification settings screen at `/settings/notifications`. Theme toggle in sidebar.
+- **Entity detail screens:** Full detail pages for NPCs (with quotes, relationships, appearances), locations, and items.
+
 ## Open Design Questions
 
-- **Campaign Home layout:** Needs visual mockups and UI testing to determine best pattern (tabs, cards, sidebar, etc.)
-- **Extracted Items organization:** How to display NPCs vs locations vs items (tabs, filters, mixed list?)
-- **Error states:** All error handling TBD - focus on happy path for MVP
-- **Settings/preferences:** Not MVP, but log user behavior to learn
+- **Error states:** Error handling covers common cases but could be more comprehensive
+- **Search:** Full-text search across transcripts and entities (future feature)
 
 ---
 

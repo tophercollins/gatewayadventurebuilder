@@ -182,7 +182,21 @@ The following are explicitly **not** in MVP but documented for future developmen
 - VTT integrations (Roll20, Foundry, etc.)
 - AI GM suggestions ("Based on last session, consider...")
 - Search functionality (full-text, entity, natural language)
-- Wrapped-style stats and analytics
+
+---
+
+## Implemented Post-MVP Features (v0.2.0)
+
+The following were originally out of scope but have been implemented:
+
+- **Stats dashboard:** Campaign, player, and global statistics across three tabs
+- **Export:** Session Markdown, session JSON, campaign JSON, entity CSV
+- **AI podcast summary:** LLM-generated 2-3 minute recap scripts per session
+- **Email notifications:** GM notification on processing complete + player sharing via Resend
+- **Audio playback:** In-app player with 0.5x-2x speed controls
+- **Manual session add:** Log-only sessions and paste-transcript-for-processing mode
+- **Audio crash recovery:** Streaming flush to disk, crash detection, interrupted session recovery
+- **Light/dark mode toggle:** In-app switcher (Light / Dark / System)
 
 ---
 
@@ -197,8 +211,10 @@ The following are explicitly **not** in MVP but documented for future developmen
 - **Player features:** Players can view their character, add notes
 - **VTT integration:** Pull data from Roll20, Foundry, etc.
 - **AI suggestions:** "Last session you mentioned the thieves' guild, consider following up"
-- **Wrapped stats:** Per-player and per-character statistics over time
-- **Export:** Export campaign data, summaries, or full transcripts
+- **Laughter detection:** Audio analysis for funny moment highlights
+- **TTS podcast audio:** Convert generated podcast scripts to speech
+- **Supabase cloud sync:** Multi-device sync (schema ready, sync layer pending)
+- **D&D Beyond import:** Import character data into the app's character system
 
 ---
 
@@ -206,8 +222,8 @@ The following are explicitly **not** in MVP but documented for future developmen
 
 **Approach:** SaaS subscription with API costs baked into pricing.
 
-- **Transcription:** Free (local Whisper) - no per-session cost
-- **AI Processing:** Paid API (e.g., OpenAI GPT-4o) - ~$1-2 per long session, ~$0.30-0.50 per short session
+- **Transcription:** Free on macOS (local Whisper); ~$0.039/hr on Windows/Linux (Gemini Flash-Lite)
+- **AI Processing:** Google Gemini 1.5 Flash — ~$0.30-0.50 per short session, ~$1-2 per long session
 - **Pricing tiers absorb API costs** with healthy margin
 
 | Plan | Price | Sessions/month | Est. API Cost | Margin |
@@ -251,7 +267,9 @@ The following are explicitly **not** in MVP but documented for future developmen
 ## Open Questions
 
 - Online session recording: Capture via app or use platform exports (Zoom/Discord)?
-- Audio chunking strategy for 10-hour sessions?
+
+### Resolved
+- **Audio chunking strategy:** Implemented in `AudioChunker` — 30-min chunks for Whisper, 2-min chunks for Gemini. Uses `RandomAccessFile` streaming reads for memory efficiency on long recordings.
 
 ---
 

@@ -178,9 +178,22 @@ One per recording session.
 | title | TEXT | | Optional session title |
 | date | TEXT (ISO 8601) | NOT NULL | When session occurred |
 | duration_seconds | INTEGER | | Recording duration |
-| status | TEXT | DEFAULT 'recording' | recording, transcribing, queued, processing, complete, error |
+| status | TEXT | DEFAULT 'recording' | See SessionStatus enum below |
 | created_at | TEXT (ISO 8601) | NOT NULL | Record creation |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
+
+**SessionStatus enum values:**
+
+| Value | Description |
+|-------|-------------|
+| `recording` | Active recording in progress |
+| `transcribing` | Transcription running (post-recording) |
+| `queued` | Waiting for AI processing (transcript complete, pending online) |
+| `processing` | AI pipeline actively running |
+| `complete` | All processing finished, ready for review |
+| `error` | Processing failed (check `processing_queue.error_message`) |
+| `logged` | Manually added session — no recording or transcription (v0.2.0) |
+| `interrupted` | Recovered from crash during recording (v0.2.0) |
 
 ---
 
@@ -220,19 +233,20 @@ Immutable. Raw audio file references. Never modified or deleted (unless user req
 
 ### session_transcripts
 
-Immutable. Raw transcript output from Whisper. Never modified.
+Raw transcript output. `raw_text` is immutable; `edited_text` allows GM corrections while preserving the original.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | TEXT (UUID) | PRIMARY KEY | Unique ID |
 | session_id | TEXT (UUID) | FK → sessions.id, NOT NULL | Parent session |
 | version | INTEGER | DEFAULT 1 | Transcript version (reprocessing creates new version) |
-| raw_text | TEXT | NOT NULL | Full transcript text |
-| whisper_model | TEXT | | Model used (base, small, etc.) |
+| raw_text | TEXT | NOT NULL | Full transcript text (immutable) |
+| edited_text | TEXT | | GM-edited version (v0.2.0, migration v1→v2) |
+| whisper_model | TEXT | | Model used (base, small, gemini-flash-lite) |
 | language | TEXT | DEFAULT 'en' | Detected language |
 | created_at | TEXT (ISO 8601) | NOT NULL | When transcribed |
 
-**Rule:** This record is IMMUTABLE. Reprocessing creates a new row with incremented version.
+**Rule:** `raw_text` is IMMUTABLE. GM edits go to `edited_text`. The model's `displayText` getter returns `editedText ?? rawText`. Reprocessing creates a new row with incremented version.
 
 ---
 
@@ -261,6 +275,7 @@ Editable. AI-generated, GM-editable. Stored separately from transcript.
 | session_id | TEXT (UUID) | FK → sessions.id, NOT NULL | Parent session |
 | transcript_id | TEXT (UUID) | FK → session_transcripts.id | Which transcript version generated this |
 | overall_summary | TEXT | | Full session summary |
+| podcast_script | TEXT | | AI-generated podcast-style recap (v0.2.0, migration v2→v3) |
 | is_edited | INTEGER | DEFAULT 0 | Whether GM has edited (0/1) |
 | created_at | TEXT (ISO 8601) | NOT NULL | When generated |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last edit |
@@ -467,6 +482,19 @@ Tracks imported text that was processed for entity extraction (campaign creation
 | status | TEXT | DEFAULT 'pending' | pending, processing, complete, error |
 | created_at | TEXT (ISO 8601) | NOT NULL | When imported |
 | processed_at | TEXT (ISO 8601) | | When AI finished processing |
+
+---
+
+## Database Migrations
+
+| Version | Migration | Added In |
+|---------|-----------|----------|
+| v1→v2 | `ALTER TABLE session_transcripts ADD COLUMN edited_text TEXT` | v0.1 |
+| v2→v3 | `ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT` | v0.2 |
+
+Current database version: **3** (see `database_helper.dart`).
+
+New tables added to `schema.dart` `createTableStatements` are created automatically on first install. `ALTER TABLE` migrations only needed for columns added after initial release.
 
 ---
 

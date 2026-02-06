@@ -108,6 +108,86 @@
 
 ---
 
+### Auto-Generate Session Name from AI Summary
+
+**Priority:** Enhancement
+**Status:** Not started
+
+#### Requirements
+- After AI processing completes, auto-generate a session title from the summary
+- When editing a session title, offer 5 AI-suggested title options
+- Suggestions based on key events, locations, and NPCs from the session
+
+---
+
+### Import Characters from D&D Beyond
+
+**Priority:** Enhancement
+**Status:** Not started
+
+#### Requirements
+- Import character data from D&D Beyond into the app's character system
+- Map D&D Beyond fields (name, race, class, level, backstory, etc.) to existing Character model
+- Link imported characters to a player and campaign
+
+---
+
+### CI/CD Pipeline
+
+**Priority:** Quality
+**Status:** Not started
+
+#### Requirements
+- GitHub Actions workflow for automated checks on push/PR
+- Run `flutter analyze` — fail on any lint issues
+- Run `flutter test` — fail on any test failures
+- Run `dart format --set-exit-if-changed .` — enforce consistent formatting
+- Build verification for all three platforms (macOS, Windows, Linux)
+- Optional: artifact upload for release builds
+
+#### Technical Notes
+- No CI/CD currently configured — no `.github/workflows/` directory
+- Should trigger on push to `main` and on all pull requests
+- Consider caching Flutter SDK and pub dependencies for faster runs
+- Platform-specific builds may need separate runners (macOS for macOS builds, etc.)
+
+#### Key Files
+- New `.github/workflows/ci.yml` — main CI workflow
+- Optional `.github/workflows/release.yml` — release build + artifact upload
+
+---
+
+### Unit & Widget Tests
+
+**Priority:** Quality
+**Status:** Not started (3 test files exist for 178 source files)
+
+#### Requirements
+- Expand test coverage across all layers:
+  - **Models:** `fromMap`/`toMap` round-trip, `copyWith`, enum parsing
+  - **Repositories:** CRUD operations with in-memory SQLite
+  - **Services:** Transcription manager, session processor, export service, audio chunker
+  - **Providers:** State transitions, error handling, reactive invalidation
+  - **Widgets:** Key components (status_badge, session_header, player_card, podcast_card)
+  - **Screens:** Widget tests for critical screens (home, campaign home, session detail, recording)
+- Target: at minimum one test file per repository and service
+
+#### Technical Notes
+- Existing tests: `widget_test.dart`, `connectivity_service_test.dart`, `queue_manager_test.dart`
+- Mock services already exist (`MockTranscriptionService`, `MockLlmService`) — reuse for testing
+- Use `sqflite_common_ffi` for in-memory database tests
+- Export service already separated from FileSaver for testability
+
+#### Key Files
+- `test/data/models/` — model serialization tests
+- `test/data/repositories/` — repository CRUD tests
+- `test/services/` — service logic tests
+- `test/providers/` — provider state tests
+- `test/ui/widgets/` — widget rendering tests
+- `test/ui/screens/` — screen widget tests
+
+---
+
 ### Mobile Support
 
 **Priority:** Long-term
