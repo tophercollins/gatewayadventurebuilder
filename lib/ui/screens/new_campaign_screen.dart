@@ -127,6 +127,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         ),
         const SizedBox(height: Spacing.sm),
         TextFormField(
+          key: const Key('newCampaign_name'),
           controller: _nameController,
           decoration: const InputDecoration(hintText: 'Enter campaign name'),
           validator: (value) {
@@ -153,6 +154,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         ),
         const SizedBox(height: Spacing.sm),
         DropdownButtonFormField<String>(
+          key: const Key('newCampaign_gameSystem'),
           initialValue: _selectedGameSystem,
           hint: const Text('Select game system'),
           items: gameSystems.map((system) {
@@ -184,6 +186,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         ),
         const SizedBox(height: Spacing.sm),
         TextFormField(
+          key: const Key('newCampaign_customGameSystem'),
           initialValue: _customGameSystem,
           decoration: const InputDecoration(hintText: 'Enter your game system'),
           onChanged: (value) => _customGameSystem = value,
@@ -218,6 +221,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         ),
         const SizedBox(height: Spacing.sm),
         TextFormField(
+          key: const Key('newCampaign_description'),
           controller: _descriptionController,
           decoration: const InputDecoration(
             hintText: 'A tale of heroes venturing into the unknown...',
@@ -231,6 +235,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
 
   Widget _buildImportToggle(ThemeData theme) {
     return InkWell(
+      key: const Key('newCampaign_importToggle'),
       onTap: () => setState(() => _showImportField = !_showImportField),
       borderRadius: BorderRadius.circular(Spacing.cardRadius),
       child: Container(
@@ -291,6 +296,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         ),
         const SizedBox(height: Spacing.sm),
         TextFormField(
+          key: const Key('newCampaign_importText'),
           controller: _importController,
           decoration: const InputDecoration(
             hintText: 'Paste your existing notes here...',
@@ -338,6 +344,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         ),
         const SizedBox(width: Spacing.sm),
         FilledButton(
+          key: const Key('newCampaign_create'),
           onPressed: _isLoading ? null : _createCampaign,
           child: _isLoading
               ? const SizedBox(

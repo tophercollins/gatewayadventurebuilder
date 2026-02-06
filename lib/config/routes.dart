@@ -114,161 +114,167 @@ abstract final class Routes {
       '/campaigns/$campaignId/characters/new';
 }
 
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
+/// Creates a fresh GoRouter instance.
+/// Use [initialLocation] to override the start route (e.g. for tests).
+GoRouter createAppRouter({String initialLocation = Routes.startup}) {
+  final rootKey = GlobalKey<NavigatorState>();
+  final shellKey = GlobalKey<NavigatorState>();
 
-/// GoRouter configuration for the app.
-final GoRouter appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  initialLocation: Routes.startup,
-  routes: [
-    // Startup - checks onboarding state and redirects
-    GoRoute(
-      path: Routes.startup,
-      name: 'startup',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const StartupScreen(),
-    ),
+  return GoRouter(
+    navigatorKey: rootKey,
+    initialLocation: initialLocation,
+    routes: [
+      // Startup - checks onboarding state and redirects
+      GoRoute(
+        path: Routes.startup,
+        name: 'startup',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) => const StartupScreen(),
+      ),
 
-    // Onboarding - outside shell (no sidebar)
-    GoRoute(
-      path: Routes.onboarding,
-      name: 'onboarding',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const OnboardingScreen(),
-    ),
+      // Onboarding - outside shell (no sidebar)
+      GoRoute(
+        path: Routes.onboarding,
+        name: 'onboarding',
+        parentNavigatorKey: rootKey,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
 
-    // Main shell with sidebar
-    ShellRoute(
-      navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) {
-        final path = state.uri.path;
-        final campaignId = extractCampaignId(path);
+      // Main shell with sidebar
+      ShellRoute(
+        navigatorKey: shellKey,
+        builder: (context, state, child) {
+          final path = state.uri.path;
+          final campaignId = extractCampaignId(path);
 
-        return AppShell(
-          currentPath: path,
-          campaignId: campaignId,
-          child: child,
-        );
-      },
-      routes: [
-        // Home
-        GoRoute(
-          path: Routes.home,
-          name: 'home',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'Home',
-            child: const HomeScreen(),
-          ),
-        ),
-
-        // Campaigns List
-        GoRoute(
-          path: Routes.campaigns,
-          name: 'campaigns',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'Campaigns',
-            showBack: true,
-            child: const CampaignsListScreen(),
-          ),
-        ),
-
-        // New Campaign
-        GoRoute(
-          path: Routes.newCampaign,
-          name: 'newCampaign',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'New Campaign',
-            showBack: true,
-            child: const NewCampaignScreen(),
-          ),
-        ),
-
-        // Settings
-        GoRoute(
-          path: Routes.settings,
-          name: 'settings',
-          redirect: (context, state) => Routes.notificationSettings,
-        ),
-
-        // Notification Settings
-        GoRoute(
-          path: Routes.notificationSettings,
-          name: 'notificationSettings',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'Notification Settings',
-            showBack: true,
-            child: const NotificationSettingsScreen(),
-          ),
-        ),
-
-        // Stats
-        GoRoute(
-          path: Routes.stats,
-          name: 'stats',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'Stats',
-            showBack: true,
-            child: const StatsScreen(),
-          ),
-        ),
-
-        // Global Worlds
-        GoRoute(
-          path: Routes.worlds,
-          name: 'worlds',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'Worlds',
-            showBack: true,
-            child: const WorldsScreen(),
-          ),
-        ),
-
-        // Global Players
-        GoRoute(
-          path: Routes.allPlayers,
-          name: 'allPlayers',
-          pageBuilder: (context, state) => _buildPage(
-            context: context,
-            state: state,
-            title: 'All Players',
-            showBack: true,
-            child: const AllPlayersScreen(),
-          ),
-        ),
-
-        // Campaign Home (with nested routes)
-        GoRoute(
-          path: Routes.campaignHome,
-          name: 'campaignHome',
-          pageBuilder: (context, state) {
-            final id = state.pathParameters['id']!;
-            return _buildPage(
+          return AppShell(
+            currentPath: path,
+            campaignId: campaignId,
+            child: child,
+          );
+        },
+        routes: [
+          // Home
+          GoRoute(
+            path: Routes.home,
+            name: 'home',
+            pageBuilder: (context, state) => _buildPage(
               context: context,
               state: state,
-              title: 'Campaign',
+              title: 'Home',
+              child: const HomeScreen(),
+            ),
+          ),
+
+          // Campaigns List
+          GoRoute(
+            path: Routes.campaigns,
+            name: 'campaigns',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'Campaigns',
               showBack: true,
-              child: CampaignHomeScreen(campaignId: id),
-            );
-          },
-          routes: _campaignRoutes,
-        ),
-      ],
-    ),
-  ],
-);
+              child: const CampaignsListScreen(),
+            ),
+          ),
+
+          // New Campaign
+          GoRoute(
+            path: Routes.newCampaign,
+            name: 'newCampaign',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'New Campaign',
+              showBack: true,
+              child: const NewCampaignScreen(),
+            ),
+          ),
+
+          // Settings
+          GoRoute(
+            path: Routes.settings,
+            name: 'settings',
+            redirect: (context, state) => Routes.notificationSettings,
+          ),
+
+          // Notification Settings
+          GoRoute(
+            path: Routes.notificationSettings,
+            name: 'notificationSettings',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'Notification Settings',
+              showBack: true,
+              child: const NotificationSettingsScreen(),
+            ),
+          ),
+
+          // Stats
+          GoRoute(
+            path: Routes.stats,
+            name: 'stats',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'Stats',
+              showBack: true,
+              child: const StatsScreen(),
+            ),
+          ),
+
+          // Global Worlds
+          GoRoute(
+            path: Routes.worlds,
+            name: 'worlds',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'Worlds',
+              showBack: true,
+              child: const WorldsScreen(),
+            ),
+          ),
+
+          // Global Players
+          GoRoute(
+            path: Routes.allPlayers,
+            name: 'allPlayers',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'All Players',
+              showBack: true,
+              child: const AllPlayersScreen(),
+            ),
+          ),
+
+          // Campaign Home (with nested routes)
+          GoRoute(
+            path: Routes.campaignHome,
+            name: 'campaignHome',
+            pageBuilder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return _buildPage(
+                context: context,
+                state: state,
+                title: 'Campaign',
+                showBack: true,
+                child: CampaignHomeScreen(campaignId: id),
+              );
+            },
+            routes: _campaignRoutes,
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+/// Production router singleton.
+final GoRouter appRouter = createAppRouter();
 
 /// Campaign-level nested routes.
 final List<RouteBase> _campaignRoutes = [

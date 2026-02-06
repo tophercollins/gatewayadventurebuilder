@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -113,5 +114,19 @@ class DatabaseHelper {
       await close();
       await file.delete();
     }
+  }
+
+  /// Inject a pre-configured database for testing.
+  @visibleForTesting
+  static void setTestDatabase(Database db) {
+    _instance ??= DatabaseHelper._();
+    _database = db;
+  }
+
+  /// Reset the singleton for test teardown.
+  @visibleForTesting
+  static void resetInstance() {
+    _database = null;
+    _instance = null;
   }
 }

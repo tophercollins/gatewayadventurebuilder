@@ -51,6 +51,7 @@ class HomeScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _HomeOption(
+          key: const Key('home_startFirstCampaign'),
           icon: Icons.add_rounded,
           title: 'Start Your First Campaign',
           description: 'Create a campaign to begin tracking sessions',
@@ -68,6 +69,7 @@ class HomeScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _HomeOption(
+          key: const Key('home_continueCampaign'),
           icon: Icons.play_arrow_rounded,
           title: 'Continue Campaign',
           description: lastCampaign.campaign.name,
@@ -77,6 +79,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         const SizedBox(height: Spacing.md),
         _HomeOption(
+          key: const Key('home_newCampaign'),
           icon: Icons.add_rounded,
           title: 'New Campaign',
           description: 'Start a fresh adventure',
@@ -91,6 +94,7 @@ class HomeScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _HomeOption(
+          key: const Key('home_continueCampaign'),
           icon: Icons.play_arrow_rounded,
           title: 'Continue Campaign',
           description: 'Pick up where you left off',
@@ -98,6 +102,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         const SizedBox(height: Spacing.md),
         _HomeOption(
+          key: const Key('home_newCampaign'),
           icon: Icons.add_rounded,
           title: 'New Campaign',
           description: 'Start a fresh adventure',
@@ -145,6 +150,7 @@ class _WelcomeHeader extends StatelessWidget {
 
 class _HomeOption extends StatelessWidget {
   const _HomeOption({
+    super.key,
     required this.icon,
     required this.title,
     required this.description,
