@@ -57,6 +57,14 @@ Future<Database> setUpTestEnvironment() async {
   return db;
 }
 
+/// Creates a [ProviderContainer] with optional overrides.
+/// Use for programmatic (non-widget) tests that drive the pipeline directly.
+ProviderContainer buildTestContainer({
+  List<Override> overrides = const [],
+}) {
+  return ProviderContainer(overrides: overrides);
+}
+
 /// Tears down the test environment: closes the DB and resets
 /// the [DatabaseHelper] singleton.
 Future<void> tearDownTestEnvironment(Database db) async {

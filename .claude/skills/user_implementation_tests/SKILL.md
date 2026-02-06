@@ -35,10 +35,14 @@ Run integration tests that simulate real user flows end-to-end.
 | Scenario | File | Description |
 |----------|------|-------------|
 | `create_campaign` | `integration_test/create_campaign_test.dart` | Creates a new campaign through the full form flow |
+| `record_session` | `integration_test/record_session_test.dart` | Full pipeline: record → transcribe → AI → email |
 
 ## Test Infrastructure
 
 - **Test helpers:** `integration_test/test_helpers/test_app.dart`
+- **Mock helpers:** `integration_test/test_helpers/mock_providers.dart`
 - **Database:** In-memory SQLite via `sqflite_common_ffi` with full schema
 - **Router:** Fresh `GoRouter` per test via `createAppRouter(initialLocation: ...)`
-- **No provider overrides needed** — database injection through `DatabaseHelper.setTestDatabase()` flows through the existing provider chain
+- **Provider container:** `buildTestContainer(overrides: [...])` for programmatic pipeline tests
+- **UI tests:** No provider overrides needed — database injection through `DatabaseHelper.setTestDatabase()` flows through the existing provider chain
+- **Pipeline tests:** Override `transcriptionServiceProvider`, `llmServiceProvider`, `emailServiceProvider`, and `connectivityServiceProvider` with mocks
