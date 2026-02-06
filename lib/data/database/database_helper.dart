@@ -77,8 +77,7 @@ class DatabaseHelper {
 
   /// Handle database upgrades.
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Future migrations go here
-    // if (oldVersion < 2) { ... }
+    // Add migrations here as schema evolves.
   }
 
   /// Called when database is opened.

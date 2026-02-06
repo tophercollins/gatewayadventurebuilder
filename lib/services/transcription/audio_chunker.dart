@@ -208,15 +208,22 @@ class AudioChunker {
       wavInfo.bitsPerSample,
     );
 
-    // Read audio data for this chunk
-    final sourceBytes = await sourceFile.readAsBytes();
-    final audioData = sourceBytes.sublist(
-      startByte.clamp(0, sourceBytes.length),
-      endByte.clamp(0, sourceBytes.length),
-    );
+    // Read only the needed byte range using RandomAccessFile (streaming)
+    final raf = await sourceFile.open(mode: FileMode.read);
+    try {
+      final fileLength = await raf.length();
+      final clampedStart = startByte.clamp(0, fileLength);
+      final clampedEnd = endByte.clamp(0, fileLength);
+      final readLength = clampedEnd - clampedStart;
 
-    // Write chunk file
-    await chunkFile.writeAsBytes([...chunkHeader, ...audioData]);
+      await raf.setPosition(clampedStart);
+      final audioData = await raf.read(readLength);
+
+      // Write chunk file
+      await chunkFile.writeAsBytes([...chunkHeader, ...audioData]);
+    } finally {
+      await raf.close();
+    }
 
     _temporaryFiles.add(chunkPath);
     return chunkPath;

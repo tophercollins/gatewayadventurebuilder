@@ -36,10 +36,13 @@ class NpcRelationshipsSection extends ConsumerWidget {
                 message: 'No known relationships with player characters.',
               );
             }
-            return Column(
-              children: relationships.map((rel) {
-                return _RelationshipCard(relationship: rel);
-              }).toList(),
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: relationships.length,
+              itemBuilder: (context, index) {
+                return _RelationshipCard(relationship: relationships[index]);
+              },
             );
           },
         ),

@@ -3,49 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
-import '../../data/models/campaign.dart';
 import '../../data/models/session.dart';
-import '../../data/models/world.dart';
-import '../../providers/repository_providers.dart';
+import '../../providers/campaign_providers.dart';
 import '../../utils/formatters.dart';
 import '../theme/spacing.dart';
 import '../widgets/status_badge.dart';
-
-/// Provider for campaign details.
-final campaignDetailProvider = FutureProvider.autoDispose
-    .family<CampaignDetail?, String>((ref, campaignId) async {
-      final campaignRepo = ref.watch(campaignRepositoryProvider);
-      final sessionRepo = ref.watch(sessionRepositoryProvider);
-      final playerRepo = ref.watch(playerRepositoryProvider);
-
-      final result = await campaignRepo.getCampaignWithWorld(campaignId);
-      if (result == null) return null;
-
-      final sessions = await sessionRepo.getSessionsByCampaign(campaignId);
-      final players = await playerRepo.getPlayersByCampaign(campaignId);
-
-      return CampaignDetail(
-        campaign: result.campaign,
-        world: result.world,
-        sessions: sessions,
-        playerCount: players.length,
-      );
-    });
-
-/// Campaign detail data.
-class CampaignDetail {
-  const CampaignDetail({
-    required this.campaign,
-    required this.world,
-    required this.sessions,
-    required this.playerCount,
-  });
-
-  final Campaign campaign;
-  final World world;
-  final List<Session> sessions;
-  final int playerCount;
-}
 
 /// Campaign Home screen - dashboard for a single campaign.
 /// Per APP_FLOW.md: name, game system, description, links to sessions/world/players.
@@ -209,8 +171,8 @@ class _QuickLinksSection extends StatelessWidget {
                 title: 'Sessions',
                 count: detail.sessions.length,
                 onTap: () {
-                  // For now, scroll to sessions section
-                  // TODO: Navigate to sessions list when implemented
+                  // Sessions are displayed in the Recent Sessions
+                  // section below on this screen.
                 },
               ),
             ),
@@ -353,7 +315,8 @@ class _RecentSessionsSection extends StatelessWidget {
             if (detail.sessions.length > 5)
               TextButton(
                 onPressed: () {
-                  // TODO: Navigate to full sessions list
+                  // All sessions are shown in this section;
+                  // a dedicated sessions list screen can be added later.
                 },
                 child: const Text('View all'),
               ),

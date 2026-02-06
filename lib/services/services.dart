@@ -6,7 +6,9 @@
 /// ```
 library;
 
+export 'audio/audio_playback_service.dart';
 export 'audio/audio_recording_service.dart';
 export 'connectivity/connectivity_service.dart';
 export 'processing/processing.dart';
+export 'notifications/notifications.dart';
 export 'transcription/transcription.dart';

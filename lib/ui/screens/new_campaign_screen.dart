@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
-import '../../providers/database_provider.dart';
+import '../../providers/processing_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
 
@@ -108,19 +108,8 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
     String campaignId,
     String importText,
   ) async {
-    // Store in campaign_imports table and add to processing_queue
-    // This is a stub - actual processing happens in Phase 8
-    final dbHelper = ref.read(databaseProvider);
-    final db = await dbHelper.database;
-    final now = DateTime.now().toIso8601String();
-
-    await db.insert('campaign_imports', {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'campaign_id': campaignId,
-      'raw_text': importText,
-      'status': 'pending',
-      'created_at': now,
-    });
+    final importRepo = ref.read(campaignImportRepositoryProvider);
+    await importRepo.create(campaignId: campaignId, rawText: importText);
   }
 
   @override

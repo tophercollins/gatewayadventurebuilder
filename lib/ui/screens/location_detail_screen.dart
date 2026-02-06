@@ -7,6 +7,7 @@ import '../../data/models/entity_appearance.dart';
 import '../../data/models/location.dart';
 import '../../data/models/session.dart';
 import '../../providers/repository_providers.dart';
+import '../../utils/formatters.dart';
 import '../../providers/world_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/empty_state.dart';
@@ -337,7 +338,7 @@ class _SessionCard extends StatelessWidget {
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(
-                      _formatDate(session.date),
+                      formatDate(session.date),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -356,9 +357,6 @@ class _SessionCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
-  }
 }
 
 class _LocationEditForm extends StatefulWidget {

@@ -200,7 +200,8 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
     final notifier = ref.read(recordingNotifierProvider.notifier);
     final filePath = await notifier.stopRecording();
 
-    if (mounted && filePath != null) {
+    if (!mounted) return;
+    if (filePath != null) {
       context.go(Routes.postSessionPath(widget.campaignId, widget.sessionId));
     } else {
       setState(() => _isStopping = false);

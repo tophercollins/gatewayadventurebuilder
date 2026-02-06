@@ -130,8 +130,12 @@ class _PlayersContent extends StatelessWidget {
   }
 
   Widget _buildPlayersList(BuildContext context) {
-    return Column(
-      children: playersWithCharacters.map((pwc) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: playersWithCharacters.length,
+      itemBuilder: (context, index) {
+        final pwc = playersWithCharacters[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: Spacing.md),
           child: PlayerCard(
@@ -142,7 +146,7 @@ class _PlayersContent extends StatelessWidget {
             onCharacterUpdated: (character) => _updateCharacter(character),
           ),
         );
-      }).toList(),
+      },
     );
   }
 

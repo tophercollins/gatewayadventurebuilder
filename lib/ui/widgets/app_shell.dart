@@ -146,8 +146,13 @@ class _ContentArea extends ConsumerWidget {
   }
 }
 
+/// Path segments that only serve as prefixes for nested routes and have
+/// no standalone route definition (e.g. `/campaigns/:id/sessions` has no page).
+const _intermediateSegments = {'sessions', 'characters'};
+
 /// Calculates the parent path for back navigation.
-/// Returns null if already at root.
+/// Returns null if already at root. Skips intermediate segments that
+/// have no matching route so the back button always lands on a valid page.
 String? _getParentPath(String currentPath) {
   if (currentPath == '/' || currentPath.isEmpty) {
     return null;
@@ -159,13 +164,22 @@ String? _getParentPath(String currentPath) {
     path = path.substring(0, path.length - 1);
   }
 
-  // Find the last slash
-  final lastSlashIndex = path.lastIndexOf('/');
+  // Strip the last segment
+  var lastSlashIndex = path.lastIndexOf('/');
   if (lastSlashIndex <= 0) {
     return '/';
   }
+  var parent = path.substring(0, lastSlashIndex);
 
-  return path.substring(0, lastSlashIndex);
+  // If the resulting parent ends with an intermediate-only segment, strip
+  // that segment too so we land on the nearest routable ancestor.
+  final parentLastSegment = parent.substring(parent.lastIndexOf('/') + 1);
+  if (_intermediateSegments.contains(parentLastSegment)) {
+    final idx = parent.lastIndexOf('/');
+    parent = idx <= 0 ? '/' : parent.substring(0, idx);
+  }
+
+  return parent;
 }
 
 /// Extracts campaign ID from the current route path.

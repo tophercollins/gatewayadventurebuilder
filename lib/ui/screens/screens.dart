@@ -15,7 +15,6 @@ export 'item_detail_screen.dart';
 export 'location_detail_screen.dart';
 export 'new_campaign_screen.dart';
 export 'npc_detail/npc_detail.dart';
-export 'placeholder_screen.dart';
 export 'players_screen.dart';
 export 'post_session_screen.dart';
 export 'recording_screen.dart';

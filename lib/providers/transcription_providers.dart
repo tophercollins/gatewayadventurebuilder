@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/session.dart';
@@ -5,17 +7,19 @@ import '../data/repositories/session_repository.dart';
 import '../services/transcription/transcription.dart';
 import 'repository_providers.dart';
 
-/// Provider for the TranscriptionService (mock for MVP).
+/// Provider for the TranscriptionService.
+/// macOS: local Whisper (free, offline).
+/// Windows/Linux: Gemini Flash-Lite (cloud).
 final transcriptionServiceProvider = Provider<TranscriptionService>((ref) {
-  final service = MockTranscriptionService(
-    simulateDelay: true,
-    delayFactor: 0.05, // 5% of audio duration as delay
-  );
-
+  final TranscriptionService service;
+  if (Platform.isMacOS) {
+    service = WhisperTranscriptionService();
+  } else {
+    service = GeminiTranscriptionService();
+  }
   ref.onDispose(() {
     service.dispose();
   });
-
   return service;
 });
 

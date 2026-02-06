@@ -107,7 +107,12 @@ class TranscriptionManager {
         message: 'Analyzing audio file...',
       );
 
-      final chunks = await audioChunker.splitIfNeeded(audioFilePath);
+      // Use service's preferred chunk duration if specified
+      final preferredDuration = transcriptionService.preferredChunkDurationMs;
+      final chunker = preferredDuration != null
+          ? AudioChunker(chunkDurationMs: preferredDuration)
+          : audioChunker;
+      final chunks = await chunker.splitIfNeeded(audioFilePath);
 
       if (_isCancelled) {
         throw const TranscriptionException(TranscriptionErrorType.cancelled);

@@ -45,6 +45,11 @@ abstract class TranscriptionService {
 
   /// Check if transcription is currently in progress.
   bool get isTranscribing;
+
+  /// Preferred chunk duration for this service in milliseconds.
+  /// Returns null to use the default 30-minute chunks.
+  /// Gemini needs shorter chunks (~2 min) to stay under inline data limits.
+  int? get preferredChunkDurationMs => null;
 }
 
 /// Exception thrown when transcription fails.

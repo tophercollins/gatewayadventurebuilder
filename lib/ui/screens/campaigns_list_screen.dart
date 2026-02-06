@@ -4,42 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/campaign.dart';
-import '../../providers/repository_providers.dart';
+import '../../providers/campaign_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/status_badge.dart';
-
-/// Provider for campaigns list with session counts.
-final campaignsListProvider =
-    FutureProvider.autoDispose<List<CampaignWithSessionCount>>((ref) async {
-      final user = await ref.watch(currentUserProvider.future);
-      final campaignRepo = ref.watch(campaignRepositoryProvider);
-      final sessionRepo = ref.watch(sessionRepositoryProvider);
-
-      final campaigns = await campaignRepo.getCampaignsByUser(user.id);
-
-      final result = <CampaignWithSessionCount>[];
-      for (final campaign in campaigns) {
-        final sessions = await sessionRepo.getSessionsByCampaign(campaign.id);
-        result.add(
-          CampaignWithSessionCount(
-            campaign: campaign,
-            sessionCount: sessions.length,
-          ),
-        );
-      }
-      return result;
-    });
-
-/// Campaign with session count for display.
-class CampaignWithSessionCount {
-  const CampaignWithSessionCount({
-    required this.campaign,
-    required this.sessionCount,
-  });
-
-  final Campaign campaign;
-  final int sessionCount;
-}
 
 /// Campaigns list screen - displays all campaigns.
 /// Per APP_FLOW.md: Tap to navigate to Campaign Home.

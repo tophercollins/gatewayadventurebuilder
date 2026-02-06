@@ -1,0 +1,75 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../data/models/campaign.dart';
+import '../data/models/session.dart';
+import '../data/models/world.dart';
+import 'repository_providers.dart';
+
+/// Provider for campaigns list with session counts.
+final campaignsListProvider =
+    FutureProvider.autoDispose<List<CampaignWithSessionCount>>((ref) async {
+      final user = await ref.watch(currentUserProvider.future);
+      final campaignRepo = ref.watch(campaignRepositoryProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+
+      final campaigns = await campaignRepo.getCampaignsByUser(user.id);
+
+      final result = <CampaignWithSessionCount>[];
+      for (final campaign in campaigns) {
+        final sessions = await sessionRepo.getSessionsByCampaign(campaign.id);
+        result.add(
+          CampaignWithSessionCount(
+            campaign: campaign,
+            sessionCount: sessions.length,
+          ),
+        );
+      }
+      return result;
+    });
+
+/// Campaign with session count for display.
+class CampaignWithSessionCount {
+  const CampaignWithSessionCount({
+    required this.campaign,
+    required this.sessionCount,
+  });
+
+  final Campaign campaign;
+  final int sessionCount;
+}
+
+/// Provider for campaign details.
+final campaignDetailProvider = FutureProvider.autoDispose
+    .family<CampaignDetail?, String>((ref, campaignId) async {
+      final campaignRepo = ref.watch(campaignRepositoryProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+
+      final result = await campaignRepo.getCampaignWithWorld(campaignId);
+      if (result == null) return null;
+
+      final sessions = await sessionRepo.getSessionsByCampaign(campaignId);
+      final players = await playerRepo.getPlayersByCampaign(campaignId);
+
+      return CampaignDetail(
+        campaign: result.campaign,
+        world: result.world,
+        sessions: sessions,
+        playerCount: players.length,
+      );
+    });
+
+/// Campaign detail data.
+class CampaignDetail {
+  const CampaignDetail({
+    required this.campaign,
+    required this.world,
+    required this.sessions,
+    required this.playerCount,
+  });
+
+  final Campaign campaign;
+  final World world;
+  final List<Session> sessions;
+  final int playerCount;
+}

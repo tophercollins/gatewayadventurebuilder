@@ -115,7 +115,7 @@ class ResyncService {
 
     // 4. Call LLM to analyze and suggest updates
     final result = await llmService.generateText(prompt: prompt);
-    if (!result.isSuccess) {
+    if (!result.isSuccess || result.data == null) {
       return ResyncResult.failure(result.error ?? 'LLM processing failed');
     }
 

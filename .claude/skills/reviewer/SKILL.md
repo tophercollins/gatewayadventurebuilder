@@ -2,7 +2,7 @@
 name: reviewer
 description: "Pre-commit code review. Checks staged or recent changes for bugs, security issues, performance problems, API key leaks, and adherence to project standards. Final quality gate before commit."
 argument-hint: "[file path | 'staged' | 'recent']"
-allowed-tools: Read, Glob, Grep, Bash(git *), Bash(flutter *), Bash(dart *), Bash(ls *)
+allowed-tools: Read, Glob, Grep, Bash(git *), Bash(flutter *), Bash(dart *), Bash(ls *), Bash(grep *), Bash(wc *)
 ---
 
 # Code Reviewer — Pre-Commit Quality Gate
@@ -45,7 +45,7 @@ Check for these common Flutter/Dart bug patterns:
 
 - **Missing `await`**: Async function called without `await` (result silently discarded)
 - **Missing `dispose()`**: Controllers, streams, or subscriptions created but never disposed
-- **Null safety violations**: Force-unwrapping (`!`) without prior null check, or patterns that could throw `Null check operator used on a null value`
+- **Null safety violations**: Force-unwrapping with the bang operator without prior null check, or patterns that could throw "Null check operator used on a null value"
 - **`BuildContext` across async gaps**: Using `context` after an `await` without checking `mounted`
 - **Missing `mounted` check**: Widget methods that use `context` or call `setState` after async operations
 - **Circular provider dependencies**: Provider A depends on Provider B which depends on Provider A

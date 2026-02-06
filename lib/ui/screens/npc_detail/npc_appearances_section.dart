@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/routes.dart';
 import '../../../data/models/session.dart';
+import '../../../utils/formatters.dart';
 import '../../theme/spacing.dart';
 import '../../widgets/empty_state.dart';
 
@@ -97,7 +98,7 @@ class _SessionCard extends StatelessWidget {
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(
-                      _formatDate(session.date),
+                      formatDate(session.date),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -116,7 +117,4 @@ class _SessionCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
-  }
 }

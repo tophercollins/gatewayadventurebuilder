@@ -27,6 +27,9 @@ class MockTranscriptionService implements TranscriptionService {
   int? get modelSizeBytes => 0;
 
   @override
+  int? get preferredChunkDurationMs => null;
+
+  @override
   bool get isTranscribing => _isTranscribing;
 
   @override

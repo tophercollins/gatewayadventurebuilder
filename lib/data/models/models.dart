@@ -19,4 +19,5 @@ export 'session_summary.dart';
 export 'session_transcript.dart';
 export 'transcript_segment.dart';
 export 'user.dart';
+export 'notification_settings.dart';
 export 'world.dart';

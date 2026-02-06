@@ -7,6 +7,7 @@
 library;
 
 export 'app_shell.dart';
+export 'audio_player_card.dart';
 export 'app_sidebar.dart';
 export 'breadcrumb.dart';
 export 'character_detail_card.dart';
@@ -24,8 +25,11 @@ export 'player_card.dart';
 export 'player_edit_form.dart';
 export 'recording_indicator.dart';
 export 'section_card.dart';
+export 'session_header.dart';
+export 'speed_control_button.dart';
 export 'session_details_card.dart';
 export 'status_badge.dart';
 export 'transcription_progress.dart';
 export 'connectivity_indicator.dart';
+export 'notification_listener.dart';
 export 'queue_progress_indicator.dart';

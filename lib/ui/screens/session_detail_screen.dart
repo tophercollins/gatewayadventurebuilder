@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../providers/editing_providers.dart';
+import '../../providers/playback_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/session_detail_providers.dart';
-import '../../utils/formatters.dart';
 import '../theme/spacing.dart';
+import '../widgets/audio_player_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/section_card.dart';
-import '../widgets/status_badge.dart';
+import '../widgets/session_header.dart';
 
 /// Session Detail screen - displays processed session with 4 sections.
 /// Per APP_FLOW.md Flow 7: Summary, Extracted Items, What's Next, Player Moments.
@@ -50,34 +51,8 @@ class SessionDetailScreen extends ConsumerWidget {
             );
           },
         ),
-        if (resyncState.isResyncing) const _ResyncOverlay(),
+        if (resyncState.isResyncing) const ResyncOverlay(),
       ],
-    );
-  }
-}
-
-class _ResyncOverlay extends StatelessWidget {
-  const _ResyncOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black26,
-      child: const Center(
-        child: Card(
-          child: Padding(
-            padding: EdgeInsets.all(Spacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: Spacing.md),
-                Text('Resyncing content...'),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -95,15 +70,32 @@ class _SessionDetailContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final audioAsync = ref.watch(sessionAudioProvider(sessionId));
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: ListView(
           padding: const EdgeInsets.all(Spacing.lg),
           children: [
-            _SessionHeader(
+            SessionHeader(
               detail: detail,
               onResync: () => _handleResync(context, ref),
+            ),
+            // Audio player card — shown only when audio exists for this session.
+            ...audioAsync.when(
+              loading: () => const <Widget>[],
+              error: (_, _) => const <Widget>[],
+              data: (audioInfo) {
+                if (audioInfo == null) return const <Widget>[];
+                return <Widget>[
+                  const SizedBox(height: Spacing.md),
+                  AudioPlayerCard(
+                    sessionId: sessionId,
+                    audioInfo: audioInfo,
+                  ),
+                ];
+              },
             ),
             const SizedBox(height: Spacing.xl),
             SectionCard(
@@ -120,10 +112,12 @@ class _SessionDetailContent extends ConsumerWidget {
               title: 'Extracted Items',
               icon: Icons.people_outline,
               preview: _buildEntitiesPreview(),
-              onViewMore: () =>
-                  context.go(Routes.sessionEntitiesPath(campaignId, sessionId)),
-              onEdit: () =>
-                  context.go(Routes.sessionEntitiesPath(campaignId, sessionId)),
+              onViewMore: () => context.go(
+                Routes.sessionEntitiesPath(campaignId, sessionId),
+              ),
+              onEdit: () => context.go(
+                Routes.sessionEntitiesPath(campaignId, sessionId),
+              ),
             ),
             const SizedBox(height: Spacing.md),
             SectionCard(
@@ -173,7 +167,6 @@ class _SessionDetailContent extends ConsumerWidget {
   }
 
   Future<void> _handleResync(BuildContext context, WidgetRef ref) async {
-    // Get world ID from campaign
     final campaignRepo = ref.read(campaignRepositoryProvider);
     final campaignWithWorld = await campaignRepo.getCampaignWithWorld(
       campaignId,
@@ -198,7 +191,9 @@ class _SessionDetailContent extends ConsumerWidget {
     if (result.isSuccess) {
       if (result.totalUpdates > 0) {
         ref.invalidate(
-          sessionDetailProvider((campaignId: campaignId, sessionId: sessionId)),
+          sessionDetailProvider(
+            (campaignId: campaignId, sessionId: sessionId),
+          ),
         );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -224,88 +219,5 @@ class _SessionDetailContent extends ConsumerWidget {
         ),
       );
     }
-  }
-}
-
-class _SessionHeader extends StatelessWidget {
-  const _SessionHeader({required this.detail, required this.onResync});
-
-  final SessionDetailData detail;
-  final VoidCallback onResync;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final session = detail.session;
-
-    // Check if any content has been edited
-    final hasEdits =
-        (detail.summary?.isEdited ?? false) ||
-        detail.scenes.any((s) => s.isEdited) ||
-        detail.npcs.any((n) => n.isEdited) ||
-        detail.locations.any((l) => l.isEdited) ||
-        detail.items.any((i) => i.isEdited) ||
-        detail.actionItems.any((a) => a.isEdited) ||
-        detail.playerMoments.any((m) => m.isEdited);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                session.title ?? 'Session ${session.sessionNumber ?? '?'}',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            StatusBadge(sessionStatus: session.status),
-          ],
-        ),
-        const SizedBox(height: Spacing.sm),
-        Row(
-          children: [
-            Icon(
-              Icons.calendar_today_outlined,
-              size: Spacing.iconSizeCompact,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: Spacing.xs),
-            Text(
-              formatDate(session.date),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (session.durationSeconds != null) ...[
-              const SizedBox(width: Spacing.md),
-              Icon(
-                Icons.schedule_outlined,
-                size: Spacing.iconSizeCompact,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: Spacing.xs),
-              Text(
-                formatDurationHuman(
-                  Duration(seconds: session.durationSeconds!),
-                ),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            const Spacer(),
-            if (hasEdits)
-              OutlinedButton.icon(
-                onPressed: onResync,
-                icon: const Icon(Icons.sync, size: 18),
-                label: const Text('Resync'),
-              ),
-          ],
-        ),
-      ],
-    );
   }
 }

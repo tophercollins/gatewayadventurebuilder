@@ -55,7 +55,7 @@
      - Player/character moments and quotes
 
 6. **Entity Database**
-   - NPCs, locations, items stored per campaign
+   - NPCs, locations, items stored per world (shared across campaigns in that world)
    - Entities link to sessions where they appeared
    - All data editable
 

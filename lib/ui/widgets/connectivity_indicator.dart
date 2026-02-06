@@ -146,9 +146,7 @@ class ConnectivityDot extends ConsumerWidget {
     final isOnline = connectivityStatus == ConnectivityStatus.online;
 
     final statusColor = isOnline
-        ? theme.brightness == Brightness.light
-              ? const Color(0xFF16A34A)
-              : const Color(0xFF22C55E)
+        ? theme.brightness.success
         : theme.colorScheme.error;
 
     return Container(
@@ -216,9 +214,7 @@ class ProcessingBanner extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final processingColor = theme.brightness == Brightness.light
-        ? const Color(0xFFF59E0B)
-        : const Color(0xFFFBBF24);
+    final processingColor = theme.brightness.processing;
 
     return Container(
       width: double.infinity,

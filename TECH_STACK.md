@@ -27,6 +27,7 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 | **sqflite** | ^2.3.x | SQLite plugin for Flutter |
 | **sqflite_common_ffi** | ^2.3.x | Desktop SQLite support |
 | **path_provider** | ^2.1.x | Local file paths |
+| **path** | ^1.9.0 | Cross-platform file path manipulation |
 
 **Why SQLite:**
 - Relational data (campaigns → sessions → entities)
@@ -40,7 +41,7 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| **record** | ^5.x | Cross-platform audio recording |
+| **record** | ^6.x | Cross-platform audio recording |
 
 **Why record:**
 - Simple API
@@ -85,9 +86,10 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 
 ## LLM Processing
 
-| Service | Model | Cost (per 1M tokens) |
+| Service / Package | Model / Version | Cost (per 1M tokens) / Purpose |
 |---------|-------|---------------------|
 | **Google AI** | Gemini 1.5 Flash | $0.075 in / $0.30 out |
+| **google_generative_ai** | ^0.4.0 | Dart SDK for Gemini Flash LLM integration |
 
 **Why Gemini Flash:**
 - Cheapest quality option
@@ -120,9 +122,10 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 
 ## Email Notifications
 
-| Service | Purpose |
-|---------|---------|
-| **Resend** | Transactional email |
+| Service / Package | Version | Purpose |
+|---------|---------|---------|
+| **Resend** | — | Transactional email |
+| **http** | ^1.2.0 | HTTP client for Resend email API calls |
 
 **Why Resend:**
 - Modern API
@@ -149,6 +152,10 @@ Every package, dependency, API, and tool locked to specific versions. This elimi
 | Package | Version | Purpose |
 |---------|---------|---------|
 | **riverpod** | ^2.5.x | State management |
+| **go_router** | ^14.0.0 | Declarative routing |
+| **shared_preferences** | ^2.2.0 | Onboarding state persistence |
+| **connectivity_plus** | ^6.0.0 | Network connectivity monitoring |
+| **intl** | ^0.19.0 | Date and number formatting |
 
 **Why Riverpod:**
 - Type-safe
@@ -200,7 +207,14 @@ dependencies:
     sdk: flutter
   sqflite: ^2.3.0
   path_provider: ^2.1.0
-  record: ^5.0.0
+  record: ^6.0.0
+  google_generative_ai: ^0.4.0
+  go_router: ^14.0.0
+  shared_preferences: ^2.2.0
+  intl: ^0.19.0
+  http: ^1.2.0
+  connectivity_plus: ^6.0.0
+  path: ^1.9.0
   supabase_flutter: ^2.0.0
   riverpod: ^2.5.0
   # etc.
