@@ -47,12 +47,7 @@ class AudioRecordingException implements Exception {
 }
 
 /// Recording state for UI updates.
-enum RecordingState {
-  idle,
-  recording,
-  paused,
-  stopped,
-}
+enum RecordingState { idle, recording, paused, stopped }
 
 /// Audio recording service wrapping the record package.
 /// Supports long recordings (10+ hours) via streaming to disk.
@@ -121,16 +116,11 @@ class AudioRecordingService {
 
   /// Start recording to the specified file path.
   /// If filePath is null, generates one using sessionId.
-  Future<void> start({
-    required String sessionId,
-    String? filePath,
-  }) async {
+  Future<void> start({required String sessionId, String? filePath}) async {
     // Check permissions first
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
-      throw const AudioRecordingException(
-        AudioRecordingError.permissionDenied,
-      );
+      throw const AudioRecordingException(AudioRecordingError.permissionDenied);
     }
 
     // Determine file path
@@ -173,10 +163,7 @@ class AudioRecordingService {
       _lastPauseTime = null;
       _state = RecordingState.recording;
     } on Exception catch (e) {
-      throw AudioRecordingException(
-        AudioRecordingError.unknown,
-        e.toString(),
-      );
+      throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }
   }
 
@@ -191,10 +178,7 @@ class AudioRecordingService {
       _state = RecordingState.stopped;
       return path ?? _currentFilePath;
     } on Exception catch (e) {
-      throw AudioRecordingException(
-        AudioRecordingError.unknown,
-        e.toString(),
-      );
+      throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }
   }
 
@@ -207,10 +191,7 @@ class AudioRecordingService {
       _lastPauseTime = DateTime.now();
       _state = RecordingState.paused;
     } on Exception catch (e) {
-      throw AudioRecordingException(
-        AudioRecordingError.unknown,
-        e.toString(),
-      );
+      throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }
   }
 
@@ -229,10 +210,7 @@ class AudioRecordingService {
 
       _state = RecordingState.recording;
     } on Exception catch (e) {
-      throw AudioRecordingException(
-        AudioRecordingError.unknown,
-        e.toString(),
-      );
+      throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }
   }
 
@@ -251,10 +229,7 @@ class AudioRecordingService {
 
       _reset();
     } on Exception catch (e) {
-      throw AudioRecordingException(
-        AudioRecordingError.unknown,
-        e.toString(),
-      );
+      throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }
   }
 

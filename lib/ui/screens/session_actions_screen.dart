@@ -29,10 +29,8 @@ class SessionActionsScreen extends ConsumerWidget {
         actionsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) => ErrorState(error: error.toString()),
-          data: (actions) => _ActionsContent(
-            sessionId: sessionId,
-            actions: actions,
-          ),
+          data: (actions) =>
+              _ActionsContent(sessionId: sessionId, actions: actions),
         ),
         if (editingState.isLoading) const _LoadingOverlay(),
       ],
@@ -60,10 +58,7 @@ class _LoadingOverlay extends StatelessWidget {
 }
 
 class _ActionsContent extends ConsumerStatefulWidget {
-  const _ActionsContent({
-    required this.sessionId,
-    required this.actions,
-  });
+  const _ActionsContent({required this.sessionId, required this.actions});
 
   final String sessionId;
   final List<ActionItem> actions;
@@ -101,10 +96,12 @@ class _ActionsContentState extends ConsumerState<_ActionsContent> {
     }
 
     // Group by type
-    final plotThreads =
-        _localActions.where((a) => a.actionType == 'plot_thread').toList();
-    final actionItems =
-        _localActions.where((a) => a.actionType != 'plot_thread').toList();
+    final plotThreads = _localActions
+        .where((a) => a.actionType == 'plot_thread')
+        .toList();
+    final actionItems = _localActions
+        .where((a) => a.actionType != 'plot_thread')
+        .toList();
 
     return Center(
       child: ConstrainedBox(
@@ -164,7 +161,11 @@ class _ActionSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: Spacing.iconSize, color: theme.colorScheme.primary),
+            Icon(
+              icon,
+              size: Spacing.iconSize,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(width: Spacing.sm),
             Text(
               title,
@@ -178,10 +179,7 @@ class _ActionSection extends StatelessWidget {
         ...items.map(
           (item) => Padding(
             padding: const EdgeInsets.only(bottom: Spacing.md),
-            child: _EditableActionItemCard(
-              item: item,
-              onUpdate: onUpdate,
-            ),
+            child: _EditableActionItemCard(item: item, onUpdate: onUpdate),
           ),
         ),
       ],
@@ -190,10 +188,7 @@ class _ActionSection extends StatelessWidget {
 }
 
 class _EditableActionItemCard extends ConsumerStatefulWidget {
-  const _EditableActionItemCard({
-    required this.item,
-    required this.onUpdate,
-  });
+  const _EditableActionItemCard({required this.item, required this.onUpdate});
 
   final ActionItem item;
   final void Function(ActionItem updated) onUpdate;
@@ -214,8 +209,9 @@ class _EditableActionItemCardState
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.item.title);
-    _descriptionController =
-        TextEditingController(text: widget.item.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.item.description ?? '',
+    );
     _selectedStatus = widget.item.status;
   }
 
@@ -336,8 +332,8 @@ class _EditableActionItemCardState
                             fontWeight: FontWeight.w600,
                             decoration:
                                 widget.item.status == ActionItemStatus.resolved
-                                    ? TextDecoration.lineThrough
-                                    : null,
+                                ? TextDecoration.lineThrough
+                                : null,
                           ),
                         ),
                       ),
@@ -345,7 +341,10 @@ class _EditableActionItemCardState
                     ],
                   ),
                   const SizedBox(height: Spacing.xs),
-                  _StatusBadge(label: statusInfo.label, color: statusInfo.color),
+                  _StatusBadge(
+                    label: statusInfo.label,
+                    color: statusInfo.color,
+                  ),
                 ],
               ),
             ),
@@ -480,22 +479,25 @@ class _EditableActionItemCardState
     ThemeData theme,
   ) {
     return switch (status) {
-      ActionItemStatus.open => (label: 'Open', color: theme.colorScheme.primary),
-      ActionItemStatus.inProgress => (label: 'In Progress', color: Colors.orange),
+      ActionItemStatus.open => (
+        label: 'Open',
+        color: theme.colorScheme.primary,
+      ),
+      ActionItemStatus.inProgress => (
+        label: 'In Progress',
+        color: Colors.orange,
+      ),
       ActionItemStatus.resolved => (label: 'Resolved', color: Colors.green),
       ActionItemStatus.dropped => (
-          label: 'Dropped',
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        label: 'Dropped',
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
     };
   }
 }
 
 class _StatusIndicator extends StatelessWidget {
-  const _StatusIndicator({
-    required this.status,
-    required this.color,
-  });
+  const _StatusIndicator({required this.status, required this.color});
 
   final ActionItemStatus status;
   final Color color;
@@ -518,10 +520,7 @@ class _StatusIndicator extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.label,
-    required this.color,
-  });
+  const _StatusBadge({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -539,7 +538,11 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
       ),
     );
   }

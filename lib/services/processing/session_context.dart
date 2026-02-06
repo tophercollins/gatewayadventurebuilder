@@ -92,7 +92,8 @@ class SessionContext {
       existingLocations.map((l) => l.name).toList();
 
   /// Get names of existing items.
-  List<String> get existingItemNames => existingItems.map((i) => i.name).toList();
+  List<String> get existingItemNames =>
+      existingItems.map((i) => i.name).toList();
 
   /// Get game system (from campaign or world).
   String get gameSystem =>
@@ -106,10 +107,10 @@ class SessionContextLoader {
     required CampaignRepository campaignRepo,
     required PlayerRepository playerRepo,
     required EntityRepository entityRepo,
-  })  : _sessionRepo = sessionRepo,
-        _campaignRepo = campaignRepo,
-        _playerRepo = playerRepo,
-        _entityRepo = entityRepo;
+  }) : _sessionRepo = sessionRepo,
+       _campaignRepo = campaignRepo,
+       _playerRepo = playerRepo,
+       _entityRepo = entityRepo;
 
   final SessionRepository _sessionRepo;
   final CampaignRepository _campaignRepo;
@@ -123,8 +124,9 @@ class SessionContextLoader {
     if (session == null) return null;
 
     // Load campaign and world
-    final campaignWithWorld =
-        await _campaignRepo.getCampaignWithWorld(session.campaignId);
+    final campaignWithWorld = await _campaignRepo.getCampaignWithWorld(
+      session.campaignId,
+    );
     if (campaignWithWorld == null) return null;
 
     // Load transcript
@@ -135,10 +137,10 @@ class SessionContextLoader {
     final attendees = await _sessionRepo.getAttendeesBySession(sessionId);
 
     // Load players and characters
-    final players =
-        await _playerRepo.getPlayersByCampaign(session.campaignId);
-    final characters =
-        await _playerRepo.getCharactersByCampaign(session.campaignId);
+    final players = await _playerRepo.getPlayersByCampaign(session.campaignId);
+    final characters = await _playerRepo.getCharactersByCampaign(
+      session.campaignId,
+    );
 
     // Load existing entities
     final worldId = campaignWithWorld.world.id;

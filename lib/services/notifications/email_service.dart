@@ -6,11 +6,7 @@ import '../../config/env_config.dart';
 
 /// Result of an email send operation.
 class EmailResult {
-  const EmailResult({
-    required this.success,
-    this.messageId,
-    this.error,
-  });
+  const EmailResult({required this.success, this.messageId, this.error});
 
   final bool success;
   final String? messageId;
@@ -53,11 +49,10 @@ abstract class EmailService {
 /// Resend email service implementation.
 /// Uses Resend API (https://resend.com/docs/api-reference/emails/send-email)
 class ResendEmailService implements EmailService {
-  ResendEmailService({
-    http.Client? httpClient,
-    String? fromEmail,
-  })  : _httpClient = httpClient ?? http.Client(),
-        _fromEmail = fromEmail ?? 'TTRPG Tracker <notifications@ttrpg-tracker.app>';
+  ResendEmailService({http.Client? httpClient, String? fromEmail})
+    : _httpClient = httpClient ?? http.Client(),
+      _fromEmail =
+          fromEmail ?? 'TTRPG Tracker <notifications@ttrpg-tracker.app>';
 
   final http.Client _httpClient;
   final String _fromEmail;

@@ -54,12 +54,15 @@ class PlayerRepository {
 
   Future<List<Player>> getPlayersByCampaign(String campaignId) async {
     final db = await _db.database;
-    final results = await db.rawQuery('''
+    final results = await db.rawQuery(
+      '''
       SELECT p.* FROM players p
       JOIN campaign_players cp ON p.id = cp.player_id
       WHERE cp.campaign_id = ?
       ORDER BY p.name ASC
-    ''', [campaignId]);
+    ''',
+      [campaignId],
+    );
     return results.map((m) => Player.fromMap(m)).toList();
   }
 
@@ -159,8 +162,11 @@ class PlayerRepository {
 
   Future<Character?> getCharacterById(String id) async {
     final db = await _db.database;
-    final results =
-        await db.query('characters', where: 'id = ?', whereArgs: [id]);
+    final results = await db.query(
+      'characters',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (results.isEmpty) return null;
     return Character.fromMap(results.first);
   }

@@ -29,10 +29,12 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
   @override
   void initState() {
     super.initState();
-    _descriptionController =
-        TextEditingController(text: widget.moment.description);
-    _quoteController =
-        TextEditingController(text: widget.moment.quoteText ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.moment.description,
+    );
+    _quoteController = TextEditingController(
+      text: widget.moment.quoteText ?? '',
+    );
   }
 
   @override
@@ -229,40 +231,40 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
   ) {
     return switch (type) {
       'quote' => (
-          label: 'Quote',
-          icon: Icons.format_quote_outlined,
-          color: Colors.blue,
-        ),
+        label: 'Quote',
+        icon: Icons.format_quote_outlined,
+        color: Colors.blue,
+      ),
       'roleplay' => (
-          label: 'Roleplay',
-          icon: Icons.theater_comedy_outlined,
-          color: Colors.purple,
-        ),
+        label: 'Roleplay',
+        icon: Icons.theater_comedy_outlined,
+        color: Colors.purple,
+      ),
       'combat' => (
-          label: 'Combat',
-          icon: Icons.sports_martial_arts_outlined,
-          color: Colors.red,
-        ),
+        label: 'Combat',
+        icon: Icons.sports_martial_arts_outlined,
+        color: Colors.red,
+      ),
       'puzzle' => (
-          label: 'Problem Solving',
-          icon: Icons.lightbulb_outline,
-          color: Colors.orange,
-        ),
+        label: 'Problem Solving',
+        icon: Icons.lightbulb_outline,
+        color: Colors.orange,
+      ),
       'humor' => (
-          label: 'Funny Moment',
-          icon: Icons.sentiment_very_satisfied_outlined,
-          color: Colors.amber,
-        ),
+        label: 'Funny Moment',
+        icon: Icons.sentiment_very_satisfied_outlined,
+        color: Colors.amber,
+      ),
       'teamwork' => (
-          label: 'Teamwork',
-          icon: Icons.group_outlined,
-          color: Colors.green,
-        ),
+        label: 'Teamwork',
+        icon: Icons.group_outlined,
+        color: Colors.green,
+      ),
       _ => (
-          label: 'Highlight',
-          icon: Icons.star_outline,
-          color: theme.colorScheme.primary,
-        ),
+        label: 'Highlight',
+        icon: Icons.star_outline,
+        color: theme.colorScheme.primary,
+      ),
     };
   }
 }

@@ -66,7 +66,9 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
         padding: const EdgeInsets.all(Spacing.lg),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
+            constraints: const BoxConstraints(
+              maxWidth: Spacing.maxContentWidth,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -111,16 +113,18 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
         if (state.isRecording || state.isPaused)
           IconButton.outlined(
             onPressed: state.isPaused
-                ? () => ref.read(recordingNotifierProvider.notifier).resumeRecording()
-                : () => ref.read(recordingNotifierProvider.notifier).pauseRecording(),
+                ? () => ref
+                      .read(recordingNotifierProvider.notifier)
+                      .resumeRecording()
+                : () => ref
+                      .read(recordingNotifierProvider.notifier)
+                      .pauseRecording(),
             icon: Icon(
               state.isPaused ? Icons.play_arrow : Icons.pause,
               size: 32,
             ),
             iconSize: 32,
-            style: IconButton.styleFrom(
-              minimumSize: const Size(64, 64),
-            ),
+            style: IconButton.styleFrom(minimumSize: const Size(64, 64)),
           ),
 
         const SizedBox(width: Spacing.xl),
@@ -137,15 +141,14 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
         if (state.isRecording || state.isPaused)
           IconButton.outlined(
             onPressed: _showCancelConfirmation,
-            icon: const Icon(
-              Icons.close,
-              size: 32,
-            ),
+            icon: const Icon(Icons.close, size: 32),
             iconSize: 32,
             style: IconButton.styleFrom(
               minimumSize: const Size(64, 64),
               foregroundColor: theme.colorScheme.error,
-              side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.5)),
+              side: BorderSide(
+                color: theme.colorScheme.error.withValues(alpha: 0.5),
+              ),
             ),
           ),
       ],
@@ -161,10 +164,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: theme.colorScheme.onErrorContainer,
-          ),
+          Icon(Icons.error_outline, color: theme.colorScheme.onErrorContainer),
           const SizedBox(width: Spacing.sm),
           Expanded(
             child: Text(
@@ -178,10 +178,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
             onPressed: () {
               ref.read(recordingNotifierProvider.notifier).clearError();
             },
-            icon: Icon(
-              Icons.close,
-              color: theme.colorScheme.onErrorContainer,
-            ),
+            icon: Icon(Icons.close, color: theme.colorScheme.onErrorContainer),
           ),
         ],
       ),
@@ -273,10 +270,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
 
 /// Large stop button for ending the recording.
 class _StopButton extends StatelessWidget {
-  const _StopButton({
-    required this.onPressed,
-    required this.isLoading,
-  });
+  const _StopButton({required this.onPressed, required this.isLoading});
 
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -335,7 +329,8 @@ class _TimerDisplay extends StatelessWidget {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
-    final timerText = '${hours.toString().padLeft(2, '0')}:'
+    final timerText =
+        '${hours.toString().padLeft(2, '0')}:'
         '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
 

@@ -48,10 +48,12 @@ abstract final class AppTheme {
   static ThemeData _buildTheme(ColorScheme colorScheme, Brightness brightness) {
     final isLight = brightness == Brightness.light;
 
-    final backgroundColor =
-        isLight ? AppColors.lightBackground : AppColors.darkBackground;
-    final onBackgroundColor =
-        isLight ? AppColors.lightOnBackground : AppColors.darkOnBackground;
+    final backgroundColor = isLight
+        ? AppColors.lightBackground
+        : AppColors.darkBackground;
+    final onBackgroundColor = isLight
+        ? AppColors.lightOnBackground
+        : AppColors.darkOnBackground;
     final onSurfaceVariantColor = isLight
         ? AppColors.lightOnSurfaceVariant
         : AppColors.darkOnSurfaceVariant;
@@ -113,8 +115,9 @@ abstract final class AppTheme {
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
           minimumSize: const Size(0, Spacing.buttonHeight),
-          padding:
-              const EdgeInsets.symmetric(horizontal: Spacing.buttonPaddingHorizontal),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.buttonPaddingHorizontal,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Spacing.buttonRadius),
           ),
@@ -128,8 +131,9 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.primary,
           minimumSize: const Size(0, Spacing.buttonHeight),
-          padding:
-              const EdgeInsets.symmetric(horizontal: Spacing.buttonPaddingHorizontal),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.buttonPaddingHorizontal,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Spacing.buttonRadius),
           ),
@@ -143,8 +147,9 @@ abstract final class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: colorScheme.primary,
           minimumSize: const Size(0, Spacing.buttonHeight),
-          padding:
-              const EdgeInsets.symmetric(horizontal: Spacing.buttonPaddingHorizontal),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.buttonPaddingHorizontal,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Spacing.buttonRadius),
           ),

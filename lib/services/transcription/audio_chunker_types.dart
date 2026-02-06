@@ -76,8 +76,4 @@ class AudioChunkerException implements Exception {
 }
 
 /// Error types for AudioChunker.
-enum AudioChunkerError {
-  fileNotFound,
-  invalidFormat,
-  ioError,
-}
+enum AudioChunkerError { fileNotFound, invalidFormat, ioError }

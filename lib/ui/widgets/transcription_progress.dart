@@ -20,10 +20,7 @@ class SavingStateIndicator extends StatelessWidget {
           child: CircularProgressIndicator(strokeWidth: 4),
         ),
         const SizedBox(height: Spacing.lg),
-        Text(
-          'Saving Recording...',
-          style: theme.textTheme.headlineSmall,
-        ),
+        Text('Saving Recording...', style: theme.textTheme.headlineSmall),
         const SizedBox(height: Spacing.sm),
         Text(
           'Please wait while we save your session.',
@@ -100,10 +97,7 @@ class TranscriptionProgressIndicator extends StatelessWidget {
         const SizedBox(height: Spacing.lg),
 
         // Title
-        Text(
-          'Transcribing Session',
-          style: theme.textTheme.headlineSmall,
-        ),
+        Text('Transcribing Session', style: theme.textTheme.headlineSmall),
         const SizedBox(height: Spacing.sm),
 
         // Status message
@@ -154,10 +148,7 @@ class _TranscriptionInfoCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(Icons.info_outline, color: theme.colorScheme.primary),
           const SizedBox(width: Spacing.sm),
           Expanded(
             child: Text(

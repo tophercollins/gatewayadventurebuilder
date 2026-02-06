@@ -37,17 +37,17 @@ class AppSidebar extends StatelessWidget {
   static const double collapsedWidth = 64;
 
   List<SidebarItem> get _mainItems => [
-        const SidebarItem(
-          icon: Icons.home_outlined,
-          label: 'Home',
-          path: Routes.home,
-        ),
-        const SidebarItem(
-          icon: Icons.folder_outlined,
-          label: 'Campaigns',
-          path: Routes.campaigns,
-        ),
-      ];
+    const SidebarItem(
+      icon: Icons.home_outlined,
+      label: 'Home',
+      path: Routes.home,
+    ),
+    const SidebarItem(
+      icon: Icons.folder_outlined,
+      label: 'Campaigns',
+      path: Routes.campaigns,
+    ),
+  ];
 
   List<SidebarItem> get _campaignItems {
     if (campaignId == null) return [];
@@ -87,9 +87,7 @@ class AppSidebar extends StatelessWidget {
       width: isCollapsed ? collapsedWidth : expandedWidth,
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        border: Border(
-          right: BorderSide(color: colorScheme.outline),
-        ),
+        border: Border(right: BorderSide(color: colorScheme.outline)),
       ),
       child: Column(
         children: [
@@ -105,12 +103,14 @@ class AppSidebar extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
               children: [
-                ..._mainItems.map((item) => _SidebarNavItem(
-                      item: item,
-                      isCollapsed: isCollapsed,
-                      isActive: _isActive(item.path),
-                      onTap: () => context.go(item.path),
-                    )),
+                ..._mainItems.map(
+                  (item) => _SidebarNavItem(
+                    item: item,
+                    isCollapsed: isCollapsed,
+                    isActive: _isActive(item.path),
+                    onTap: () => context.go(item.path),
+                  ),
+                ),
 
                 // Campaign section (if in campaign context)
                 if (_campaignItems.isNotEmpty) ...[
@@ -130,12 +130,14 @@ class AppSidebar extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ..._campaignItems.map((item) => _SidebarNavItem(
-                        item: item,
-                        isCollapsed: isCollapsed,
-                        isActive: _isActive(item.path),
-                        onTap: () => context.go(item.path),
-                      )),
+                  ..._campaignItems.map(
+                    (item) => _SidebarNavItem(
+                      item: item,
+                      isCollapsed: isCollapsed,
+                      isActive: _isActive(item.path),
+                      onTap: () => context.go(item.path),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -191,9 +193,7 @@ class _SidebarHeader extends StatelessWidget {
           ],
           const Spacer(),
           IconButton(
-            icon: Icon(
-              isCollapsed ? Icons.chevron_right : Icons.chevron_left,
-            ),
+            icon: Icon(isCollapsed ? Icons.chevron_right : Icons.chevron_left),
             onPressed: onToggleCollapse,
             tooltip: isCollapsed ? 'Expand sidebar' : 'Collapse sidebar',
           ),
@@ -240,8 +240,9 @@ class _SidebarNavItem extends StatelessWidget {
               horizontal: isCollapsed ? Spacing.sm : Spacing.md,
             ),
             child: Row(
-              mainAxisAlignment:
-                  isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+              mainAxisAlignment: isCollapsed
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
               children: [
                 Icon(
                   item.icon,
@@ -257,8 +258,9 @@ class _SidebarNavItem extends StatelessWidget {
                         color: isActive
                             ? colorScheme.primary
                             : colorScheme.onSurface,
-                        fontWeight:
-                            isActive ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),

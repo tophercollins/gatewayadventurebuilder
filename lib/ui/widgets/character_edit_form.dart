@@ -36,18 +36,22 @@ class _CharacterEditFormState extends State<CharacterEditForm> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.character.name);
-    _classController =
-        TextEditingController(text: widget.character.characterClass ?? '');
-    _raceController =
-        TextEditingController(text: widget.character.race ?? '');
-    _levelController =
-        TextEditingController(text: widget.character.level?.toString() ?? '');
-    _backstoryController =
-        TextEditingController(text: widget.character.backstory ?? '');
-    _goalsController =
-        TextEditingController(text: widget.character.goals ?? '');
-    _notesController =
-        TextEditingController(text: widget.character.notes ?? '');
+    _classController = TextEditingController(
+      text: widget.character.characterClass ?? '',
+    );
+    _raceController = TextEditingController(text: widget.character.race ?? '');
+    _levelController = TextEditingController(
+      text: widget.character.level?.toString() ?? '',
+    );
+    _backstoryController = TextEditingController(
+      text: widget.character.backstory ?? '',
+    );
+    _goalsController = TextEditingController(
+      text: widget.character.goals ?? '',
+    );
+    _notesController = TextEditingController(
+      text: widget.character.notes ?? '',
+    );
     _status = widget.character.status;
   }
 
@@ -173,9 +177,7 @@ class _CharacterEditFormState extends State<CharacterEditForm> {
               Expanded(
                 child: DropdownButtonFormField<CharacterStatus>(
                   initialValue: _status,
-                  decoration: const InputDecoration(
-                    labelText: 'Status',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Status'),
                   items: CharacterStatus.values.map((status) {
                     return DropdownMenuItem(
                       value: status,

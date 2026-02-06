@@ -9,10 +9,7 @@ import '../theme/spacing.dart';
 
 /// Screen for adding a new player to a campaign.
 class AddPlayerScreen extends ConsumerStatefulWidget {
-  const AddPlayerScreen({
-    required this.campaignId,
-    super.key,
-  });
+  const AddPlayerScreen({required this.campaignId, super.key});
 
   final String campaignId;
 
@@ -91,10 +88,7 @@ class _AddPlayerScreenState extends ConsumerState<AddPlayerScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Add New Player',
-                  style: theme.textTheme.headlineSmall,
-                ),
+                Text('Add New Player', style: theme.textTheme.headlineSmall),
                 const SizedBox(height: Spacing.sm),
                 Text(
                   'Add a player to this campaign. You can add characters for them later.',
@@ -146,8 +140,9 @@ class _AddPlayerScreenState extends ConsumerState<AddPlayerScreen> {
                     OutlinedButton(
                       onPressed: _isSaving
                           ? null
-                          : () =>
-                              context.go(Routes.playersPath(widget.campaignId)),
+                          : () => context.go(
+                              Routes.playersPath(widget.campaignId),
+                            ),
                       child: const Text('Cancel'),
                     ),
                     const SizedBox(width: Spacing.sm),

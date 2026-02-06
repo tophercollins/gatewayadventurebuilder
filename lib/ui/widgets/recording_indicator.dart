@@ -6,11 +6,7 @@ import '../theme/colors.dart';
 /// Recording indicator with pulsing red dot.
 /// Per FRONTEND_GUIDELINES.md: 1s cycle pulsing animation.
 class RecordingIndicator extends StatefulWidget {
-  const RecordingIndicator({
-    this.size = 24,
-    this.showLabel = true,
-    super.key,
-  });
+  const RecordingIndicator({this.size = 24, this.showLabel = true, super.key});
 
   final double size;
   final bool showLabel;
@@ -38,10 +34,7 @@ class _RecordingIndicatorState extends State<RecordingIndicator>
     _animation = Tween<double>(
       begin: 0.4,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     // Repeat the animation
     _controller.repeat(reverse: true);
@@ -73,7 +66,9 @@ class _RecordingIndicatorState extends State<RecordingIndicator>
                 color: recordingColor.withValues(alpha: _animation.value),
                 boxShadow: [
                   BoxShadow(
-                    color: recordingColor.withValues(alpha: _animation.value * 0.5),
+                    color: recordingColor.withValues(
+                      alpha: _animation.value * 0.5,
+                    ),
                     blurRadius: widget.size / 2,
                     spreadRadius: widget.size / 8,
                   ),
@@ -102,10 +97,7 @@ class _RecordingIndicatorState extends State<RecordingIndicator>
 
 /// Compact recording indicator for app bar or status bar.
 class CompactRecordingIndicator extends StatelessWidget {
-  const CompactRecordingIndicator({
-    this.duration,
-    super.key,
-  });
+  const CompactRecordingIndicator({this.duration, super.key});
 
   final Duration? duration;
 

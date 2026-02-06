@@ -42,8 +42,7 @@ class SessionSummaryScreen extends ConsumerWidget {
               summary: data.summary,
               scenes: data.scenes,
             ),
-            if (editingState.isLoading)
-              const _LoadingOverlay(),
+            if (editingState.isLoading) const _LoadingOverlay(),
           ],
         );
       },
@@ -89,10 +88,7 @@ class _SummaryContent extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(Spacing.lg),
           children: [
-            _OverallSummarySection(
-              sessionId: sessionId,
-              summary: summary,
-            ),
+            _OverallSummarySection(sessionId: sessionId, summary: summary),
             const SizedBox(height: Spacing.xl),
             _ScenesSection(scenes: scenes),
           ],
@@ -194,7 +190,9 @@ class _ScenesSection extends StatelessWidget {
       children: [
         Text(
           'Scene Breakdown',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: Spacing.md),
         if (scenes.isEmpty)
@@ -280,7 +278,9 @@ class _SceneCardState extends ConsumerState<_SceneCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InlineEditableText(
-                      text: _localScene.title ?? 'Scene ${_localScene.sceneIndex + 1}',
+                      text:
+                          _localScene.title ??
+                          'Scene ${_localScene.sceneIndex + 1}',
                       placeholder: 'Scene title',
                       isEdited: _localScene.isEdited,
                       textStyle: theme.textTheme.titleSmall?.copyWith(
@@ -291,7 +291,10 @@ class _SceneCardState extends ConsumerState<_SceneCard> {
                     if (_localScene.startTimeMs != null) ...[
                       const SizedBox(height: Spacing.xxs),
                       Text(
-                        _formatTimestamp(_localScene.startTimeMs!, _localScene.endTimeMs),
+                        _formatTimestamp(
+                          _localScene.startTimeMs!,
+                          _localScene.endTimeMs,
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

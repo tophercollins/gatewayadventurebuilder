@@ -71,8 +71,9 @@ final isQueueProcessingProvider = Provider<bool>((ref) {
 });
 
 /// Provider for pending queue items.
-final pendingQueueItemsProvider =
-    FutureProvider<List<ProcessingQueueItem>>((ref) async {
+final pendingQueueItemsProvider = FutureProvider<List<ProcessingQueueItem>>((
+  ref,
+) async {
   final manager = ref.watch(queueManagerProvider);
   return await manager.getPendingItems();
 });
@@ -80,14 +81,13 @@ final pendingQueueItemsProvider =
 /// Provider for queue item by session ID.
 final queueItemBySessionProvider =
     FutureProvider.family<ProcessingQueueItem?, String>((ref, sessionId) async {
-  final manager = ref.watch(queueManagerProvider);
-  return await manager.getItemForSession(sessionId);
-});
+      final manager = ref.watch(queueManagerProvider);
+      return await manager.getItemForSession(sessionId);
+    });
 
 /// Notifier for managing queue initialization and actions.
 class QueueNotifier extends StateNotifier<QueueState> {
-  QueueNotifier(this._manager, this._connectivity)
-      : super(const QueueState()) {
+  QueueNotifier(this._manager, this._connectivity) : super(const QueueState()) {
     _initialize();
   }
 
@@ -129,16 +129,19 @@ class QueueNotifier extends StateNotifier<QueueState> {
 }
 
 /// Provider for queue notifier with state management.
-final queueNotifierProvider =
-    StateNotifierProvider<QueueNotifier, QueueState>((ref) {
+final queueNotifierProvider = StateNotifierProvider<QueueNotifier, QueueState>((
+  ref,
+) {
   final manager = ref.watch(queueManagerProvider);
   final connectivity = ref.watch(connectivityServiceProvider);
   return QueueNotifier(manager, connectivity);
 });
 
 /// Provider for processing progress for a specific session.
-final sessionProcessingProgressProvider =
-    Provider.family<double?, String>((ref, sessionId) {
+final sessionProcessingProgressProvider = Provider.family<double?, String>((
+  ref,
+  sessionId,
+) {
   final state = ref.watch(queueNotifierProvider);
   if (state.currentItem?.sessionId == sessionId) {
     return state.progress;
@@ -147,8 +150,10 @@ final sessionProcessingProgressProvider =
 });
 
 /// Provider for whether a specific session is currently being processed.
-final isSessionProcessingProvider =
-    Provider.family<bool, String>((ref, sessionId) {
+final isSessionProcessingProvider = Provider.family<bool, String>((
+  ref,
+  sessionId,
+) {
   final state = ref.watch(queueNotifierProvider);
   return state.currentItem?.sessionId == sessionId;
 });

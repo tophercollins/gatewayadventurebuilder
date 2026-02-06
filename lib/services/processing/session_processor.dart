@@ -23,13 +23,13 @@ class SessionProcessor {
     required ActionItemRepository actionItemRepo,
     required PlayerMomentRepository momentRepo,
     required SessionContextLoader contextLoader,
-  })  : _llmService = llmService,
-        _sessionRepo = sessionRepo,
-        _summaryRepo = summaryRepo,
-        _entityRepo = entityRepo,
-        _actionItemRepo = actionItemRepo,
-        _momentRepo = momentRepo,
-        _contextLoader = contextLoader;
+  }) : _llmService = llmService,
+       _sessionRepo = sessionRepo,
+       _summaryRepo = summaryRepo,
+       _entityRepo = entityRepo,
+       _actionItemRepo = actionItemRepo,
+       _momentRepo = momentRepo,
+       _contextLoader = contextLoader;
 
   final LLMService _llmService;
   final SessionRepository _sessionRepo;
@@ -47,7 +47,10 @@ class SessionProcessor {
     ProgressCallback? onProgress,
   }) async {
     try {
-      await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.processing);
+      await _sessionRepo.updateSessionStatus(
+        sessionId,
+        SessionStatus.processing,
+      );
 
       onProgress?.call(ProcessingStep.loadingContext, 0.0);
       final context = await _contextLoader.load(sessionId);
@@ -105,7 +108,10 @@ class SessionProcessor {
     }
   }
 
-  Future<String?> _generateSummary(SessionContext ctx, String transcript) async {
+  Future<String?> _generateSummary(
+    SessionContext ctx,
+    String transcript,
+  ) async {
     final prompt = SummaryPrompt.build(
       gameSystem: ctx.gameSystem,
       campaignName: ctx.campaign.name,
@@ -268,16 +274,19 @@ class SessionProcessor {
 
     var count = 0;
     for (final moment in result.data!.moments) {
-      final player = ctx.players.where(
-        (p) => p.name.toLowerCase() == moment.playerName.toLowerCase(),
-      ).firstOrNull;
+      final player = ctx.players
+          .where((p) => p.name.toLowerCase() == moment.playerName.toLowerCase())
+          .firstOrNull;
       if (player == null) continue;
 
       String? characterId;
       if (moment.characterName != null) {
-        final character = ctx.characters.where(
-          (c) => c.name.toLowerCase() == moment.characterName!.toLowerCase(),
-        ).firstOrNull;
+        final character = ctx.characters
+            .where(
+              (c) =>
+                  c.name.toLowerCase() == moment.characterName!.toLowerCase(),
+            )
+            .firstOrNull;
         characterId = character?.id;
       }
 

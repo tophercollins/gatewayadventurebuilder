@@ -114,8 +114,8 @@ class _EditableParagraphState extends State<EditableParagraph> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveTextStyle = widget.textStyle ??
-        theme.textTheme.bodyLarge?.copyWith(height: 1.6);
+    final effectiveTextStyle =
+        widget.textStyle ?? theme.textTheme.bodyLarge?.copyWith(height: 1.6);
 
     if (_isEditing) {
       return _buildEditMode(theme, effectiveTextStyle);
@@ -212,10 +212,7 @@ class _EditableParagraphState extends State<EditableParagraph> {
     if (widget.editButtonPosition == EditButtonPosition.topRight) {
       return Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 40),
-            child: content,
-          ),
+          Padding(padding: const EdgeInsets.only(right: 40), child: content),
           Positioned(
             top: 0,
             right: 0,
@@ -249,10 +246,7 @@ class _EditableParagraphState extends State<EditableParagraph> {
 
 /// Buttons for save/cancel in edit mode.
 class _EditButtons extends StatelessWidget {
-  const _EditButtons({
-    required this.onCancel,
-    required this.onSave,
-  });
+  const _EditButtons({required this.onCancel, required this.onSave});
 
   final VoidCallback onCancel;
   final VoidCallback onSave;

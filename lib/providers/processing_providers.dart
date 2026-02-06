@@ -20,15 +20,17 @@ final summaryRepositoryProvider = Provider<SummaryRepository>((ref) {
 });
 
 /// Provider for ProcessingQueueRepository.
-final processingQueueRepositoryProvider =
-    Provider<ProcessingQueueRepository>((ref) {
+final processingQueueRepositoryProvider = Provider<ProcessingQueueRepository>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
   return ProcessingQueueRepository(db);
 });
 
 /// Provider for CampaignImportRepository.
-final campaignImportRepositoryProvider =
-    Provider<CampaignImportRepository>((ref) {
+final campaignImportRepositoryProvider = Provider<CampaignImportRepository>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
   return CampaignImportRepository(db);
 });
@@ -126,9 +128,9 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
   ProcessingStateNotifier({
     required SessionProcessor processor,
     OnProcessingComplete? onComplete,
-  })  : _processor = processor,
-        _onComplete = onComplete,
-        super(const ProcessingState());
+  }) : _processor = processor,
+       _onComplete = onComplete,
+       super(const ProcessingState());
 
   final SessionProcessor _processor;
   final OnProcessingComplete? _onComplete;
@@ -145,10 +147,7 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
     final result = await _processor.processSession(
       sessionId,
       onProgress: (step, progress) {
-        state = state.copyWith(
-          currentStep: step,
-          progress: progress,
-        );
+        state = state.copyWith(currentStep: step, progress: progress);
       },
     );
 
@@ -157,10 +156,7 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
       // Trigger notification callback
       await _onComplete?.call(sessionId);
     } else {
-      state = ProcessingState(
-        isProcessing: false,
-        error: result.error,
-      );
+      state = ProcessingState(isProcessing: false, error: result.error);
     }
 
     return result;
@@ -175,48 +171,50 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
 /// Provider for processing state management.
 final processingStateProvider =
     StateNotifierProvider<ProcessingStateNotifier, ProcessingState>((ref) {
-  final processor = ref.watch(sessionProcessorProvider);
-  final notificationService = ref.watch(notificationServiceProvider);
-  final settings = ref.watch(notificationSettingsProvider);
-  final summaryRepo = ref.watch(summaryRepositoryProvider);
-  final sessionRepo = ref.watch(sessionRepositoryProvider);
-  final campaignRepo = ref.watch(campaignRepositoryProvider);
-  final inAppNotifier = ref.watch(inAppNotificationProvider.notifier);
+      final processor = ref.watch(sessionProcessorProvider);
+      final notificationService = ref.watch(notificationServiceProvider);
+      final settings = ref.watch(notificationSettingsProvider);
+      final summaryRepo = ref.watch(summaryRepositoryProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      final campaignRepo = ref.watch(campaignRepositoryProvider);
+      final inAppNotifier = ref.watch(inAppNotificationProvider.notifier);
 
-  return ProcessingStateNotifier(
-    processor: processor,
-    onComplete: (sessionId) async {
-      // Show in-app notification
-      final session = await sessionRepo.getSessionById(sessionId);
-      if (session != null) {
-        inAppNotifier.showProcessingComplete(
-          sessionId: sessionId,
-          sessionTitle: session.title ?? 'Session ${session.sessionNumber}',
-        );
-      }
+      return ProcessingStateNotifier(
+        processor: processor,
+        onComplete: (sessionId) async {
+          // Show in-app notification
+          final session = await sessionRepo.getSessionById(sessionId);
+          if (session != null) {
+            inAppNotifier.showProcessingComplete(
+              sessionId: sessionId,
+              sessionTitle: session.title ?? 'Session ${session.sessionNumber}',
+            );
+          }
 
-      // Send email notification if configured
-      if (settings.isConfigured) {
-        try {
-          final summary = await summaryRepo.getSummaryBySession(sessionId);
-          if (session != null && summary != null) {
-            final campaign = await campaignRepo.getCampaignById(session.campaignId);
-            if (campaign != null) {
-              await notificationService.notifySessionProcessed(
-                settings: settings,
-                campaign: campaign,
-                session: session,
-                summary: summary,
-              );
+          // Send email notification if configured
+          if (settings.isConfigured) {
+            try {
+              final summary = await summaryRepo.getSummaryBySession(sessionId);
+              if (session != null && summary != null) {
+                final campaign = await campaignRepo.getCampaignById(
+                  session.campaignId,
+                );
+                if (campaign != null) {
+                  await notificationService.notifySessionProcessed(
+                    settings: settings,
+                    campaign: campaign,
+                    session: session,
+                    summary: summary,
+                  );
+                }
+              }
+            } catch (_) {
+              // Email failures should not block the user
             }
           }
-        } catch (_) {
-          // Email failures should not block the user
-        }
-      }
-    },
-  );
-});
+        },
+      );
+    });
 
 /// Provider to check if LLM service is available.
 final llmAvailableProvider = FutureProvider<bool>((ref) async {
@@ -242,7 +240,5 @@ final importProcessorProvider = Provider<ImportProcessor>((ref) {
 
 /// Provider for NotificationService.
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService(
-    emailService: ref.watch(emailServiceProvider),
-  );
+  return NotificationService(emailService: ref.watch(emailServiceProvider));
 });

@@ -47,9 +47,7 @@ abstract class LLMService {
   });
 
   /// Raw text generation for custom prompts.
-  Future<LLMResult<String>> generateText({
-    required String prompt,
-  });
+  Future<LLMResult<String>> generateText({required String prompt});
 
   /// Check if the service is available (API key configured).
   Future<bool> isAvailable();

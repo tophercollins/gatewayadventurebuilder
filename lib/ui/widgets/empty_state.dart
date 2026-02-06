@@ -84,11 +84,7 @@ class EmptySectionState extends StatelessWidget {
 
 /// A bordered empty state for use in card-like containers.
 class EmptyStateCard extends StatelessWidget {
-  const EmptyStateCard({
-    required this.icon,
-    required this.message,
-    super.key,
-  });
+  const EmptyStateCard({required this.icon, required this.message, super.key});
 
   final IconData icon;
   final String message;
@@ -124,10 +120,7 @@ class EmptyStateCard extends StatelessWidget {
 
 /// Error state widget.
 class ErrorState extends StatelessWidget {
-  const ErrorState({
-    required this.error,
-    super.key,
-  });
+  const ErrorState({required this.error, super.key});
 
   final String error;
 
@@ -158,11 +151,7 @@ class ErrorState extends StatelessWidget {
 
 /// Not found state widget.
 class NotFoundState extends StatelessWidget {
-  const NotFoundState({
-    this.message = 'Not found',
-    this.onBack,
-    super.key,
-  });
+  const NotFoundState({this.message = 'Not found', this.onBack, super.key});
 
   final String message;
   final VoidCallback? onBack;
@@ -184,10 +173,7 @@ class NotFoundState extends StatelessWidget {
           Text(message, style: theme.textTheme.titleLarge),
           if (onBack != null) ...[
             const SizedBox(height: Spacing.md),
-            FilledButton(
-              onPressed: onBack,
-              child: const Text('Go Back'),
-            ),
+            FilledButton(onPressed: onBack, child: const Text('Go Back')),
           ],
         ],
       ),

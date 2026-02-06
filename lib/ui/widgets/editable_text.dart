@@ -177,8 +177,7 @@ class _InlineEditableTextState extends State<InlineEditableText> {
                       ),
                     ),
                   ),
-                  if (widget.isEdited)
-                    _EditedIndicator(),
+                  if (widget.isEdited) _EditedIndicator(),
                 ],
               ),
             ],
@@ -199,10 +198,7 @@ class _InlineEditableTextState extends State<InlineEditableText> {
 
 /// Buttons for save/cancel in edit mode.
 class _EditButtons extends StatelessWidget {
-  const _EditButtons({
-    required this.onCancel,
-    required this.onSave,
-  });
+  const _EditButtons({required this.onCancel, required this.onSave});
 
   final VoidCallback onCancel;
   final VoidCallback onSave;

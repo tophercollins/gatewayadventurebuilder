@@ -29,10 +29,10 @@ class ImportProcessor {
     required CampaignImportRepository importRepo,
     required CampaignRepository campaignRepo,
     required EntityRepository entityRepo,
-  })  : _llmService = llmService,
-        _importRepo = importRepo,
-        _campaignRepo = campaignRepo,
-        _entityRepo = entityRepo;
+  }) : _llmService = llmService,
+       _importRepo = importRepo,
+       _campaignRepo = campaignRepo,
+       _entityRepo = entityRepo;
 
   final LLMService _llmService;
   final CampaignImportRepository _importRepo;
@@ -55,8 +55,9 @@ class ImportProcessor {
       await _importRepo.markProcessing(importId);
 
       // Get campaign and world info
-      final campaignWithWorld =
-          await _campaignRepo.getCampaignWithWorld(importRecord.campaignId);
+      final campaignWithWorld = await _campaignRepo.getCampaignWithWorld(
+        importRecord.campaignId,
+      );
       if (campaignWithWorld == null) {
         await _importRepo.markError(importId);
         return const ImportProcessingResult(
@@ -126,10 +127,7 @@ class ImportProcessor {
       );
     } catch (e) {
       await _importRepo.markError(importId);
-      return ImportProcessingResult(
-        success: false,
-        error: e.toString(),
-      );
+      return ImportProcessingResult(success: false, error: e.toString());
     }
   }
 

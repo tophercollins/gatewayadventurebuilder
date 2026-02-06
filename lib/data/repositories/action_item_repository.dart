@@ -35,8 +35,11 @@ class ActionItemRepository {
 
   Future<ActionItem?> getById(String id) async {
     final db = await _db.database;
-    final results =
-        await db.query('action_items', where: 'id = ?', whereArgs: [id]);
+    final results = await db.query(
+      'action_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (results.isEmpty) return null;
     return ActionItem.fromMap(results.first);
   }

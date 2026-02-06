@@ -100,10 +100,10 @@ class QueueManager {
     required SessionProcessor processor,
     required ConnectivityService connectivity,
     QueueConfig config = const QueueConfig(),
-  })  : _queueRepo = queueRepo,
-        _processor = processor,
-        _connectivity = connectivity,
-        _config = config;
+  }) : _queueRepo = queueRepo,
+       _processor = processor,
+       _connectivity = connectivity,
+       _config = config;
 
   final ProcessingQueueRepository _queueRepo;
   final SessionProcessor _processor;
@@ -188,12 +188,14 @@ class QueueManager {
     final item = await _queueRepo.getNextPending();
     if (item == null) return;
 
-    _updateState(_state.copyWith(
-      isProcessing: true,
-      currentItem: item,
-      progress: 0.0,
-      clearError: true,
-    ));
+    _updateState(
+      _state.copyWith(
+        isProcessing: true,
+        currentItem: item,
+        progress: 0.0,
+        clearError: true,
+      ),
+    );
 
     try {
       await _queueRepo.markProcessing(item.id);
@@ -201,10 +203,7 @@ class QueueManager {
       final result = await _processor.processSession(
         item.sessionId,
         onProgress: (step, progress) {
-          _updateState(_state.copyWith(
-            currentStep: step,
-            progress: progress,
-          ));
+          _updateState(_state.copyWith(currentStep: step, progress: progress));
         },
       );
 
@@ -217,11 +216,13 @@ class QueueManager {
       await _handleError(item, e.toString());
     }
 
-    _updateState(_state.copyWith(
-      isProcessing: false,
-      clearCurrentItem: true,
-      progress: 0.0,
-    ));
+    _updateState(
+      _state.copyWith(
+        isProcessing: false,
+        clearCurrentItem: true,
+        progress: 0.0,
+      ),
+    );
 
     await _updatePendingCount();
 

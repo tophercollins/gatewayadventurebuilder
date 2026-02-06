@@ -13,10 +13,7 @@ import '../widgets/player_card.dart';
 /// Screen displaying all players and their characters in a campaign.
 /// Provides buttons to add new players and characters.
 class PlayersScreen extends ConsumerWidget {
-  const PlayersScreen({
-    required this.campaignId,
-    super.key,
-  });
+  const PlayersScreen({required this.campaignId, super.key});
 
   final String campaignId;
 
@@ -58,10 +55,7 @@ class _ErrorContent extends StatelessWidget {
               color: theme.colorScheme.error,
             ),
             const SizedBox(height: Spacing.md),
-            Text(
-              'Failed to load players',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text('Failed to load players', style: theme.textTheme.titleMedium),
             const SizedBox(height: Spacing.sm),
             Text(
               error.toString(),
@@ -115,10 +109,7 @@ class _PlayersContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Players & Characters',
-          style: theme.textTheme.headlineSmall,
-        ),
+        Text('Players & Characters', style: theme.textTheme.headlineSmall),
         Wrap(
           spacing: Spacing.sm,
           children: [
@@ -189,10 +180,7 @@ class _EmptyState extends StatelessWidget {
               color: theme.colorScheme.outline,
             ),
             const SizedBox(height: Spacing.md),
-            Text(
-              'No players yet',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text('No players yet', style: theme.textTheme.titleMedium),
             const SizedBox(height: Spacing.sm),
             Text(
               'Add players and their characters to this campaign',

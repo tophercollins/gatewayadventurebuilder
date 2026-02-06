@@ -39,8 +39,11 @@ class PlayerMomentRepository {
 
   Future<PlayerMoment?> getById(String id) async {
     final db = await _db.database;
-    final results =
-        await db.query('player_moments', where: 'id = ?', whereArgs: [id]);
+    final results = await db.query(
+      'player_moments',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (results.isEmpty) return null;
     return PlayerMoment.fromMap(results.first);
   }

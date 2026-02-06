@@ -4,10 +4,7 @@ import '../theme/spacing.dart';
 
 /// A single breadcrumb segment.
 class BreadcrumbItem {
-  const BreadcrumbItem({
-    required this.label,
-    this.onTap,
-  });
+  const BreadcrumbItem({required this.label, this.onTap});
 
   final String label;
   final VoidCallback? onTap;
@@ -18,10 +15,7 @@ class BreadcrumbItem {
 /// Breadcrumb navigation for drill-down pages.
 /// Shows the navigation path with clickable segments.
 class Breadcrumb extends StatelessWidget {
-  const Breadcrumb({
-    required this.items,
-    super.key,
-  });
+  const Breadcrumb({required this.items, super.key});
 
   final List<BreadcrumbItem> items;
 
@@ -48,10 +42,7 @@ class Breadcrumb extends StatelessWidget {
                 ),
               ),
             ],
-            _BreadcrumbSegment(
-              item: items[i],
-              isLast: i == items.length - 1,
-            ),
+            _BreadcrumbSegment(item: items[i], isLast: i == items.length - 1),
           ],
         ],
       ),
@@ -60,10 +51,7 @@ class Breadcrumb extends StatelessWidget {
 }
 
 class _BreadcrumbSegment extends StatelessWidget {
-  const _BreadcrumbSegment({
-    required this.item,
-    required this.isLast,
-  });
+  const _BreadcrumbSegment({required this.item, required this.isLast});
 
   final BreadcrumbItem item;
   final bool isLast;
@@ -79,10 +67,7 @@ class _BreadcrumbSegment extends StatelessWidget {
     );
 
     if (!item.isClickable || isLast) {
-      return Text(
-        item.label,
-        style: textStyle,
-      );
+      return Text(item.label, style: textStyle);
     }
 
     return InkWell(
@@ -93,10 +78,7 @@ class _BreadcrumbSegment extends StatelessWidget {
           horizontal: Spacing.xs,
           vertical: Spacing.xxs,
         ),
-        child: Text(
-          item.label,
-          style: textStyle,
-        ),
+        child: Text(item.label, style: textStyle),
       ),
     );
   }

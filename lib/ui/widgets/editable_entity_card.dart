@@ -30,7 +30,8 @@ class EditableEntityCard extends StatefulWidget {
     required String name,
     String? subtitle,
     String? description,
-  }) onSave;
+  })
+  onSave;
 
   @override
   State<EditableEntityCard> createState() => _EditableEntityCardState();
@@ -47,8 +48,9 @@ class _EditableEntityCardState extends State<EditableEntityCard> {
     super.initState();
     _nameController = TextEditingController(text: widget.name);
     _subtitleController = TextEditingController(text: widget.subtitle ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.description ?? '',
+    );
   }
 
   @override

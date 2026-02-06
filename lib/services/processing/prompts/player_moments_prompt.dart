@@ -10,12 +10,14 @@ class PlayerMomentsPrompt {
   }) {
     final attendeeDetails = attendees.isEmpty
         ? 'No attendee information available'
-        : attendees.map((a) {
-            if (a.characterName != null) {
-              return '- ${a.playerName} playing ${a.characterName}';
-            }
-            return '- ${a.playerName}';
-          }).join('\n');
+        : attendees
+              .map((a) {
+                if (a.characterName != null) {
+                  return '- ${a.playerName} playing ${a.characterName}';
+                }
+                return '- ${a.playerName}';
+              })
+              .join('\n');
 
     return '''
 You are an expert at analyzing TTRPG sessions. Extract memorable player moments, highlights, and quotes from this session transcript.

@@ -13,37 +13,39 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
-        child: Padding(
-          padding: const EdgeInsets.all(Spacing.lg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const _WelcomeHeader(),
-              const SizedBox(height: Spacing.xxl),
-              _HomeOption(
-                icon: Icons.play_arrow_rounded,
-                title: 'Continue Campaign',
-                description: 'Pick up where you left off',
-                onTap: () => context.go(Routes.campaigns),
-              ),
-              const SizedBox(height: Spacing.md),
-              _HomeOption(
-                icon: Icons.add_rounded,
-                title: 'New Campaign',
-                description: 'Start a fresh adventure',
-                onTap: () => context.go(Routes.newCampaign),
-              ),
-              const SizedBox(height: Spacing.md),
-              _HomeOption(
-                icon: Icons.history_rounded,
-                title: 'Review Sessions',
-                description: 'Browse past sessions and world data',
-                onTap: () => context.go(Routes.campaigns),
-              ),
-            ],
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
+          child: Padding(
+            padding: const EdgeInsets.all(Spacing.lg),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const _WelcomeHeader(),
+                const SizedBox(height: Spacing.xxl),
+                _HomeOption(
+                  icon: Icons.play_arrow_rounded,
+                  title: 'Continue Campaign',
+                  description: 'Pick up where you left off',
+                  onTap: () => context.go(Routes.campaigns),
+                ),
+                const SizedBox(height: Spacing.md),
+                _HomeOption(
+                  icon: Icons.add_rounded,
+                  title: 'New Campaign',
+                  description: 'Start a fresh adventure',
+                  onTap: () => context.go(Routes.newCampaign),
+                ),
+                const SizedBox(height: Spacing.md),
+                _HomeOption(
+                  icon: Icons.history_rounded,
+                  title: 'Review Sessions',
+                  description: 'Browse past sessions and world data',
+                  onTap: () => context.go(Routes.campaigns),
+                ),
+              ],
+            ),
           ),
         ),
       ),

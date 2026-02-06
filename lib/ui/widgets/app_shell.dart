@@ -93,14 +93,17 @@ class _ContentArea extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final hasBreadcrumbs = breadcrumbs != null && breadcrumbs!.isNotEmpty;
-    final canPop = GoRouter.of(context).canPop();
+    final currentPath = GoRouterState.of(context).uri.path;
+
+    // Calculate parent path for back navigation
+    final parentPath = _getParentPath(currentPath);
 
     return Scaffold(
       appBar: AppBar(
-        leading: showBackButton && canPop
+        leading: parentPath != null
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.pop(),
+                onPressed: () => context.go(parentPath),
                 tooltip: 'Back',
               )
             : null,
@@ -143,6 +146,28 @@ class _ContentArea extends ConsumerWidget {
   }
 }
 
+/// Calculates the parent path for back navigation.
+/// Returns null if already at root.
+String? _getParentPath(String currentPath) {
+  if (currentPath == '/' || currentPath.isEmpty) {
+    return null;
+  }
+
+  // Remove trailing slash if present
+  var path = currentPath;
+  if (path.endsWith('/') && path.length > 1) {
+    path = path.substring(0, path.length - 1);
+  }
+
+  // Find the last slash
+  final lastSlashIndex = path.lastIndexOf('/');
+  if (lastSlashIndex <= 0) {
+    return '/';
+  }
+
+  return path.substring(0, lastSlashIndex);
+}
+
 /// Extracts campaign ID from the current route path.
 String? extractCampaignId(String path) {
   final regex = RegExp(r'/campaigns/([^/]+)');
@@ -161,19 +186,18 @@ List<BreadcrumbItem> buildBreadcrumbs({
 
   // Always start with Home
   if (currentPath != '/') {
-    items.add(BreadcrumbItem(
-      label: 'Home',
-      onTap: () => context.go('/'),
-    ));
+    items.add(BreadcrumbItem(label: 'Home', onTap: () => context.go('/')));
   }
 
   // Check if we're in campaigns
   if (currentPath.startsWith('/campaigns')) {
     if (currentPath != '/campaigns') {
-      items.add(BreadcrumbItem(
-        label: 'Campaigns',
-        onTap: () => context.go('/campaigns'),
-      ));
+      items.add(
+        BreadcrumbItem(
+          label: 'Campaigns',
+          onTap: () => context.go('/campaigns'),
+        ),
+      );
     }
 
     // Check if we're in a specific campaign
@@ -183,10 +207,12 @@ List<BreadcrumbItem> buildBreadcrumbs({
 
       // Only add campaign breadcrumb if we're deeper than campaign home
       if (currentPath != campaignPath) {
-        items.add(BreadcrumbItem(
-          label: campaignName ?? 'Campaign',
-          onTap: () => context.go(campaignPath),
-        ));
+        items.add(
+          BreadcrumbItem(
+            label: campaignName ?? 'Campaign',
+            onTap: () => context.go(campaignPath),
+          ),
+        );
       }
 
       // Check for session paths
@@ -198,10 +224,12 @@ List<BreadcrumbItem> buildBreadcrumbs({
 
         // Only add session breadcrumb if we're deeper than session detail
         if (currentPath != sessionPath && sessionId != 'new') {
-          items.add(BreadcrumbItem(
-            label: sessionName ?? 'Session',
-            onTap: () => context.go(sessionPath),
-          ));
+          items.add(
+            BreadcrumbItem(
+              label: sessionName ?? 'Session',
+              onTap: () => context.go(sessionPath),
+            ),
+          );
         }
       }
     }

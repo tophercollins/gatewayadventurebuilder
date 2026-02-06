@@ -146,10 +146,13 @@ class ProcessingQueueRepository {
   /// Get count of pending items.
   Future<int> getPendingCount() async {
     final db = await _db.database;
-    final result = await db.rawQuery('''
+    final result = await db.rawQuery(
+      '''
       SELECT COUNT(*) as count FROM processing_queue
       WHERE status = ?
-    ''', [ProcessingStatus.pending.value]);
+    ''',
+      [ProcessingStatus.pending.value],
+    );
     return result.first['count'] as int? ?? 0;
   }
 }

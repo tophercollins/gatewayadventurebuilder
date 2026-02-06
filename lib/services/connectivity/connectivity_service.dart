@@ -3,17 +3,13 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// Connectivity status enum for simpler state management.
-enum ConnectivityStatus {
-  online,
-  offline,
-  unknown,
-}
+enum ConnectivityStatus { online, offline, unknown }
 
 /// Service for monitoring network connectivity state.
 /// Provides a stream of connectivity changes and triggers callbacks on reconnect.
 class ConnectivityService {
   ConnectivityService({Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity();
+    : _connectivity = connectivity ?? Connectivity();
 
   final Connectivity _connectivity;
 
@@ -77,7 +73,9 @@ class ConnectivityService {
 
     // Check if any connection type is available (not none)
     final hasConnection = results.any((r) => r != ConnectivityResult.none);
-    return hasConnection ? ConnectivityStatus.online : ConnectivityStatus.offline;
+    return hasConnection
+        ? ConnectivityStatus.online
+        : ConnectivityStatus.offline;
   }
 
   /// Dispose of resources.

@@ -110,8 +110,11 @@ class CampaignRepository {
 
   Future<Campaign?> getCampaignById(String id) async {
     final db = await _db.database;
-    final results =
-        await db.query('campaigns', where: 'id = ?', whereArgs: [id]);
+    final results = await db.query(
+      'campaigns',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (results.isEmpty) return null;
     return Campaign.fromMap(results.first);
   }
@@ -129,12 +132,15 @@ class CampaignRepository {
 
   Future<List<Campaign>> getCampaignsByUser(String userId) async {
     final db = await _db.database;
-    final results = await db.rawQuery('''
+    final results = await db.rawQuery(
+      '''
       SELECT c.* FROM campaigns c
       JOIN worlds w ON c.world_id = w.id
       WHERE w.user_id = ?
       ORDER BY c.updated_at DESC
-    ''', [userId]);
+    ''',
+      [userId],
+    );
     return results.map((m) => Campaign.fromMap(m)).toList();
   }
 
@@ -155,7 +161,8 @@ class CampaignRepository {
 
   /// Get campaign with its world.
   Future<({Campaign campaign, World world})?> getCampaignWithWorld(
-      String campaignId) async {
+    String campaignId,
+  ) async {
     final campaign = await getCampaignById(campaignId);
     if (campaign == null) return null;
     final world = await getWorldById(campaign.worldId);

@@ -40,8 +40,11 @@ class SessionRepository {
 
   Future<Session?> getSessionById(String id) async {
     final db = await _db.database;
-    final results =
-        await db.query('sessions', where: 'id = ?', whereArgs: [id]);
+    final results = await db.query(
+      'sessions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (results.isEmpty) return null;
     return Session.fromMap(results.first);
   }
@@ -59,10 +62,13 @@ class SessionRepository {
 
   Future<int> getNextSessionNumber(String campaignId) async {
     final db = await _db.database;
-    final results = await db.rawQuery('''
+    final results = await db.rawQuery(
+      '''
       SELECT MAX(session_number) as max_num FROM sessions
       WHERE campaign_id = ?
-    ''', [campaignId]);
+    ''',
+      [campaignId],
+    );
     final maxNum = results.first['max_num'] as int?;
     return (maxNum ?? 0) + 1;
   }
@@ -81,10 +87,7 @@ class SessionRepository {
     final db = await _db.database;
     await db.update(
       'sessions',
-      {
-        'status': status.value,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
+      {'status': status.value, 'updated_at': DateTime.now().toIso8601String()},
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -187,10 +190,13 @@ class SessionRepository {
     final db = await _db.database;
 
     // Get next version number
-    final versionResults = await db.rawQuery('''
+    final versionResults = await db.rawQuery(
+      '''
       SELECT MAX(version) as max_ver FROM session_transcripts
       WHERE session_id = ?
-    ''', [sessionId]);
+    ''',
+      [sessionId],
+    );
     final maxVer = versionResults.first['max_ver'] as int?;
     final nextVersion = (maxVer ?? 0) + 1;
 
@@ -245,7 +251,8 @@ class SessionRepository {
   }
 
   Future<List<TranscriptSegment>> getSegmentsByTranscript(
-      String transcriptId) async {
+    String transcriptId,
+  ) async {
     final db = await _db.database;
     final results = await db.query(
       'transcript_segments',

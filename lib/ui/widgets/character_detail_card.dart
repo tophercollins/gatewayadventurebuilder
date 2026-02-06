@@ -61,10 +61,7 @@ class _CharacterDetailCardState extends State<CharacterDetailCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    character.name,
-                    style: theme.textTheme.titleSmall,
-                  ),
+                  Text(character.name, style: theme.textTheme.titleSmall),
                   if (_hasSubtitle(character))
                     Text(
                       _buildSubtitle(character),
@@ -94,10 +91,7 @@ class _CharacterDetailCardState extends State<CharacterDetailCard> {
     return Container(
       width: 8,
       height: 8,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 
@@ -138,12 +132,12 @@ class _CharacterDetailCardState extends State<CharacterDetailCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Character Details',
-                style: theme.textTheme.labelMedium,
-              ),
+              Text('Character Details', style: theme.textTheme.labelMedium),
               IconButton(
-                icon: const Icon(Icons.edit_outlined, size: Spacing.iconSizeCompact),
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  size: Spacing.iconSizeCompact,
+                ),
                 onPressed: () => setState(() => _isEditing = true),
                 tooltip: 'Edit character',
                 padding: EdgeInsets.zero,
@@ -193,15 +187,9 @@ class _CharacterDetailCardState extends State<CharacterDetailCard> {
         children: [
           SizedBox(
             width: 60,
-            child: Text(
-              label,
-              style: theme.textTheme.labelSmall,
-            ),
+            child: Text(label, style: theme.textTheme.labelSmall),
           ),
-          Text(
-            value,
-            style: theme.textTheme.bodySmall,
-          ),
+          Text(value, style: theme.textTheme.bodySmall),
         ],
       ),
     );

@@ -34,8 +34,9 @@ class _NpcEditFormState extends State<NpcEditForm> {
     super.initState();
     _nameController = TextEditingController(text: widget.npc.name);
     _roleController = TextEditingController(text: widget.npc.role ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.npc.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.npc.description ?? '',
+    );
     _notesController = TextEditingController(text: widget.npc.notes ?? '');
     _status = widget.npc.status;
   }
@@ -107,7 +108,10 @@ class _NpcEditFormState extends State<NpcEditForm> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: NpcStatus.values.map((s) {
-                return DropdownMenuItem<NpcStatus>(value: s, child: Text(s.name));
+                return DropdownMenuItem<NpcStatus>(
+                  value: s,
+                  child: Text(s.name),
+                );
               }).toList(),
               onChanged: _isSaving ? null : (v) => setState(() => _status = v!),
             ),

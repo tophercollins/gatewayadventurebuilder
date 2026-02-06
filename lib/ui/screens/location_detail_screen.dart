@@ -33,9 +33,12 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final locationAsync = ref.watch(locationByIdProvider(widget.locationId));
-    final sessionsAsync = ref.watch(entitySessionsProvider(
-      (type: EntityType.location, entityId: widget.locationId),
-    ));
+    final sessionsAsync = ref.watch(
+      entitySessionsProvider((
+        type: EntityType.location,
+        entityId: widget.locationId,
+      )),
+    );
 
     return locationAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -62,9 +65,9 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     ref.invalidate(locationByIdProvider(widget.locationId));
     setState(() => _isEditing = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location updated')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Location updated')));
     }
   }
 }
@@ -222,7 +225,8 @@ class _LocationInfoSection extends StatelessWidget {
             Text(location.description!, style: theme.textTheme.bodyMedium),
           ],
           if (location.notes != null) ...[
-            if (location.description != null) const SizedBox(height: Spacing.md),
+            if (location.description != null)
+              const SizedBox(height: Spacing.md),
             Text(
               'Notes',
               style: theme.textTheme.labelMedium?.copyWith(
@@ -280,10 +284,10 @@ class _AppearancesSection extends StatelessWidget {
             }
             return Column(
               children: sessions
-                  .map((session) => _SessionCard(
-                        session: session,
-                        campaignId: campaignId,
-                      ))
+                  .map(
+                    (session) =>
+                        _SessionCard(session: session, campaignId: campaignId),
+                  )
                   .toList(),
             );
           },
@@ -306,9 +310,8 @@ class _SessionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push(
-          Routes.sessionDetailPath(campaignId, session.id),
-        ),
+        onTap: () =>
+            context.push(Routes.sessionDetailPath(campaignId, session.id)),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(
           margin: const EdgeInsets.only(bottom: Spacing.sm),
@@ -330,8 +333,7 @@ class _SessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.title ??
-                          'Session ${session.sessionNumber ?? ""}',
+                      session.title ?? 'Session ${session.sessionNumber ?? ""}',
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(
@@ -386,12 +388,13 @@ class _LocationEditFormState extends State<_LocationEditForm> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.location.name);
-    _typeController =
-        TextEditingController(text: widget.location.locationType ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.location.description ?? '');
-    _notesController =
-        TextEditingController(text: widget.location.notes ?? '');
+    _typeController = TextEditingController(
+      text: widget.location.locationType ?? '',
+    );
+    _descriptionController = TextEditingController(
+      text: widget.location.description ?? '',
+    );
+    _notesController = TextEditingController(text: widget.location.notes ?? '');
   }
 
   @override

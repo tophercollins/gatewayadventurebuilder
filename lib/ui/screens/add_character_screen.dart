@@ -10,10 +10,7 @@ import '../theme/spacing.dart';
 
 /// Screen for adding a new character to a campaign.
 class AddCharacterScreen extends ConsumerStatefulWidget {
-  const AddCharacterScreen({
-    required this.campaignId,
-    super.key,
-  });
+  const AddCharacterScreen({required this.campaignId, super.key});
 
   final String campaignId;
 
@@ -121,10 +118,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
               color: theme.colorScheme.error,
             ),
             const SizedBox(height: Spacing.md),
-            Text(
-              'Failed to load players',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text('Failed to load players', style: theme.textTheme.titleMedium),
             const SizedBox(height: Spacing.sm),
             Text(
               error.toString(),
@@ -150,10 +144,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Add New Character',
-                  style: theme.textTheme.headlineSmall,
-                ),
+                Text('Add New Character', style: theme.textTheme.headlineSmall),
                 const SizedBox(height: Spacing.sm),
                 Text(
                   'Create a character for one of the players in this campaign.',
@@ -218,10 +209,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Player',
-                  style: theme.textTheme.titleSmall,
-                ),
+                Text('Player', style: theme.textTheme.titleSmall),
                 const SizedBox(height: Spacing.sm),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedPlayerId,
@@ -258,10 +246,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Character Details',
-                  style: theme.textTheme.titleSmall,
-                ),
+                Text('Character Details', style: theme.textTheme.titleSmall),
                 const SizedBox(height: Spacing.md),
                 TextFormField(
                   controller: _nameController,

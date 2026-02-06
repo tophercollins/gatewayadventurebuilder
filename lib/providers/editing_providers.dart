@@ -13,19 +13,13 @@ import 'repository_providers.dart';
 
 /// State for tracking editing operations.
 class EditingState {
-  const EditingState({
-    this.isLoading = false,
-    this.error,
-  });
+  const EditingState({this.isLoading = false, this.error});
 
   final bool isLoading;
   final String? error;
 
   EditingState copyWith({bool? isLoading, String? error}) {
-    return EditingState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
+    return EditingState(isLoading: isLoading ?? this.isLoading, error: error);
   }
 }
 
@@ -103,8 +97,8 @@ class SummaryEditingNotifier extends StateNotifier<EditingState> {
 /// Provider for summary editing notifier.
 final summaryEditingProvider =
     StateNotifierProvider<SummaryEditingNotifier, EditingState>((ref) {
-  return SummaryEditingNotifier(ref);
-});
+      return SummaryEditingNotifier(ref);
+    });
 
 /// Notifier for managing entity edits (NPCs, locations, items).
 class EntityEditingNotifier extends StateNotifier<EditingState> {
@@ -229,8 +223,8 @@ class EntityEditingNotifier extends StateNotifier<EditingState> {
 /// Provider for entity editing notifier.
 final entityEditingProvider =
     StateNotifierProvider<EntityEditingNotifier, EditingState>((ref) {
-  return EntityEditingNotifier(ref);
-});
+      return EntityEditingNotifier(ref);
+    });
 
 /// Notifier for managing action item edits.
 class ActionItemEditingNotifier extends StateNotifier<EditingState> {
@@ -252,7 +246,10 @@ class ActionItemEditingNotifier extends StateNotifier<EditingState> {
       final repo = _ref.read(actionItemRepositoryProvider);
       final item = await repo.getById(itemId);
       if (item == null) {
-        state = state.copyWith(isLoading: false, error: 'Action item not found');
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Action item not found',
+        );
         return null;
       }
 
@@ -281,8 +278,8 @@ class ActionItemEditingNotifier extends StateNotifier<EditingState> {
 /// Provider for action item editing notifier.
 final actionItemEditingProvider =
     StateNotifierProvider<ActionItemEditingNotifier, EditingState>((ref) {
-  return ActionItemEditingNotifier(ref);
-});
+      return ActionItemEditingNotifier(ref);
+    });
 
 /// Notifier for managing player moment edits.
 class PlayerMomentEditingNotifier extends StateNotifier<EditingState> {
@@ -331,8 +328,8 @@ class PlayerMomentEditingNotifier extends StateNotifier<EditingState> {
 /// Provider for player moment editing notifier.
 final playerMomentEditingProvider =
     StateNotifierProvider<PlayerMomentEditingNotifier, EditingState>((ref) {
-  return PlayerMomentEditingNotifier(ref);
-});
+      return PlayerMomentEditingNotifier(ref);
+    });
 
 /// Provider for ResyncService.
 final resyncServiceProvider = Provider<ResyncService>((ref) {
@@ -346,11 +343,7 @@ final resyncServiceProvider = Provider<ResyncService>((ref) {
 
 /// State for resync operations.
 class ResyncState {
-  const ResyncState({
-    this.isResyncing = false,
-    this.lastResult,
-    this.error,
-  });
+  const ResyncState({this.isResyncing = false, this.lastResult, this.error});
 
   final bool isResyncing;
   final ResyncResult? lastResult;
@@ -404,7 +397,8 @@ class ResyncNotifier extends StateNotifier<ResyncState> {
 }
 
 /// Provider for resync notifier.
-final resyncProvider =
-    StateNotifierProvider<ResyncNotifier, ResyncState>((ref) {
+final resyncProvider = StateNotifierProvider<ResyncNotifier, ResyncState>((
+  ref,
+) {
   return ResyncNotifier(ref);
 });

@@ -78,8 +78,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 /// Provider for notification settings state.
 final notificationSettingsProvider =
     StateNotifierProvider<NotificationSettingsNotifier, NotificationSettings>(
-  (ref) => NotificationSettingsNotifier(),
-);
+      (ref) => NotificationSettingsNotifier(),
+    );
 
 /// In-app notification state for showing snackbars/toasts.
 class InAppNotification {
@@ -94,11 +94,7 @@ class InAppNotification {
   final InAppNotificationType type;
 }
 
-enum InAppNotificationType {
-  info,
-  success,
-  error,
-}
+enum InAppNotificationType { info, success, error }
 
 /// Notifier for in-app notification state.
 class InAppNotificationNotifier extends StateNotifier<InAppNotification?> {
@@ -139,5 +135,5 @@ class InAppNotificationNotifier extends StateNotifier<InAppNotification?> {
 /// Provider for in-app notifications.
 final inAppNotificationProvider =
     StateNotifierProvider<InAppNotificationNotifier, InAppNotification?>(
-  (ref) => InAppNotificationNotifier(),
-);
+      (ref) => InAppNotificationNotifier(),
+    );

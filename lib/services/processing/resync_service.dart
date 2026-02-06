@@ -19,15 +19,15 @@ class ResyncResult {
     this.scenesUpdated = 0,
     this.entitiesUpdated = 0,
     this.actionItemsUpdated = 0,
-  })  : error = null,
-        isSuccess = true;
+  }) : error = null,
+       isSuccess = true;
 
   const ResyncResult.failure(this.error)
-      : isSuccess = false,
-        summaryUpdated = false,
-        scenesUpdated = 0,
-        entitiesUpdated = 0,
-        actionItemsUpdated = 0;
+    : isSuccess = false,
+      summaryUpdated = false,
+      scenesUpdated = 0,
+      entitiesUpdated = 0,
+      actionItemsUpdated = 0;
 
   final bool isSuccess;
   final String? error;
@@ -98,7 +98,8 @@ class ResyncService {
     final content = await _collectSessionContent(sessionId, worldId);
 
     // 2. Check if there's anything edited
-    final hasEdits = (content.summary?.isEdited ?? false) ||
+    final hasEdits =
+        (content.summary?.isEdited ?? false) ||
         content.editedScenes.isNotEmpty ||
         content.editedNpcs.isNotEmpty ||
         content.editedLocations.isNotEmpty ||
@@ -136,8 +137,10 @@ class ResyncService {
 
     // Get entities from world that appeared in this session
     final appearances = await entityRepo.getAppearancesBySession(sessionId);
-    final npcIds =
-        appearances.where((a) => a.entityType.value == 'npc').map((a) => a.entityId).toSet();
+    final npcIds = appearances
+        .where((a) => a.entityType.value == 'npc')
+        .map((a) => a.entityId)
+        .toSet();
     final locationIds = appearances
         .where((a) => a.entityType.value == 'location')
         .map((a) => a.entityId)
@@ -164,14 +167,16 @@ class ResyncService {
   String _buildPrompt(SessionContent content) {
     // Format edited content
     final editedEntities = _formatEditedEntities(content);
-    final editedSummary =
-        content.summary?.isEdited == true ? content.summary!.overallSummary ?? '' : 'None';
+    final editedSummary = content.summary?.isEdited == true
+        ? content.summary!.overallSummary ?? ''
+        : 'None';
     final editedScenes = _formatScenes(content.editedScenes);
     final editedActionItems = _formatActionItems(content.editedActionItems);
 
     // Format current unedited content
-    final currentSummary =
-        content.summary?.isEdited != true ? content.summary?.overallSummary ?? 'None' : 'None';
+    final currentSummary = content.summary?.isEdited != true
+        ? content.summary?.overallSummary ?? 'None'
+        : 'None';
     final currentScenes = _formatScenes(content.uneditedScenes);
     final currentEntities = _formatCurrentEntities(content);
     final currentActionItems = _formatActionItems(content.uneditedActionItems);
@@ -181,7 +186,8 @@ class ResyncService {
       editedSummary: editedSummary,
       editedScenes: editedScenes,
       editedActionItems: editedActionItems,
-      editedPlayerMoments: 'None', // Player moments are less likely to affect other content
+      editedPlayerMoments:
+          'None', // Player moments are less likely to affect other content
       currentSummary: currentSummary,
       currentScenes: currentScenes,
       currentEntities: currentEntities,
@@ -195,21 +201,27 @@ class ResyncService {
     if (content.editedNpcs.isNotEmpty) {
       buffer.writeln('NPCs:');
       for (final npc in content.editedNpcs) {
-        buffer.writeln('- ${npc.name}: ${npc.description ?? "No description"} (${npc.role ?? "unknown role"})');
+        buffer.writeln(
+          '- ${npc.name}: ${npc.description ?? "No description"} (${npc.role ?? "unknown role"})',
+        );
       }
     }
 
     if (content.editedLocations.isNotEmpty) {
       buffer.writeln('Locations:');
       for (final loc in content.editedLocations) {
-        buffer.writeln('- ${loc.name}: ${loc.description ?? "No description"} (${loc.locationType ?? "unknown type"})');
+        buffer.writeln(
+          '- ${loc.name}: ${loc.description ?? "No description"} (${loc.locationType ?? "unknown type"})',
+        );
       }
     }
 
     if (content.editedItems.isNotEmpty) {
       buffer.writeln('Items:');
       for (final item in content.editedItems) {
-        buffer.writeln('- ${item.name}: ${item.description ?? "No description"} (${item.itemType ?? "unknown type"})');
+        buffer.writeln(
+          '- ${item.name}: ${item.description ?? "No description"} (${item.itemType ?? "unknown type"})',
+        );
       }
     }
 
@@ -218,12 +230,22 @@ class ResyncService {
 
   String _formatScenes(List<Scene> scenes) {
     if (scenes.isEmpty) return 'None';
-    return scenes.map((s) => '- Scene ${s.sceneIndex + 1}: ${s.title ?? "Untitled"}\n  ${s.summary ?? "No summary"}').join('\n');
+    return scenes
+        .map(
+          (s) =>
+              '- Scene ${s.sceneIndex + 1}: ${s.title ?? "Untitled"}\n  ${s.summary ?? "No summary"}',
+        )
+        .join('\n');
   }
 
   String _formatActionItems(List<ActionItem> items) {
     if (items.isEmpty) return 'None';
-    return items.map((a) => '- [${a.status.value}] ${a.title}: ${a.description ?? "No description"}').join('\n');
+    return items
+        .map(
+          (a) =>
+              '- [${a.status.value}] ${a.title}: ${a.description ?? "No description"}',
+        )
+        .join('\n');
   }
 
   String _formatCurrentEntities(SessionContent content) {
@@ -250,7 +272,9 @@ class ResyncService {
     if (uneditedItems.isNotEmpty) {
       buffer.writeln('Items:');
       for (final item in uneditedItems) {
-        buffer.writeln('- ${item.name}: ${item.description ?? "No description"}');
+        buffer.writeln(
+          '- ${item.name}: ${item.description ?? "No description"}',
+        );
       }
     }
 
@@ -275,9 +299,11 @@ class ResyncService {
     var actionItemsUpdated = 0;
 
     // Apply summary updates (only if not already edited)
-    if (updates.containsKey('summary_updates') && content.summary?.isEdited != true) {
+    if (updates.containsKey('summary_updates') &&
+        content.summary?.isEdited != true) {
       final summaryUpdates = updates['summary_updates'] as Map<String, dynamic>;
-      if (summaryUpdates['overall_summary'] != null && content.summary != null) {
+      if (summaryUpdates['overall_summary'] != null &&
+          content.summary != null) {
         final updated = content.summary!.copyWith(
           overallSummary: summaryUpdates['overall_summary'] as String,
           updatedAt: DateTime.now(),
@@ -330,7 +356,8 @@ class ResyncService {
 
     // Apply action item updates (only to unedited items)
     if (updates.containsKey('action_item_updates')) {
-      for (final itemUpdate in updates['action_item_updates'] as List<dynamic>) {
+      for (final itemUpdate
+          in updates['action_item_updates'] as List<dynamic>) {
         final title = itemUpdate['title'] as String;
         final item = content.uneditedActionItems.firstWhere(
           (a) => a.title == title,
@@ -338,7 +365,8 @@ class ResyncService {
         );
         final updated = item.copyWith(
           title: itemUpdate['new_title'] as String? ?? item.title,
-          description: itemUpdate['new_description'] as String? ?? item.description,
+          description:
+              itemUpdate['new_description'] as String? ?? item.description,
           updatedAt: DateTime.now(),
         );
         await actionItemRepo.update(updated);

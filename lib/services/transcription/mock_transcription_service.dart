@@ -8,10 +8,7 @@ import 'transcription_service.dart';
 /// Mock implementation of TranscriptionService for development/testing.
 /// Generates realistic fake TTRPG transcript data without requiring whisper.cpp.
 class MockTranscriptionService implements TranscriptionService {
-  MockTranscriptionService({
-    this.simulateDelay = true,
-    this.delayFactor = 0.1,
-  });
+  MockTranscriptionService({this.simulateDelay = true, this.delayFactor = 0.1});
 
   /// Whether to simulate processing delay.
   final bool simulateDelay;
@@ -66,12 +63,14 @@ class MockTranscriptionService implements TranscriptionService {
       final durationMs = estimatedDurationSec * 1000;
 
       // Report preparing phase
-      onProgress?.call(const TranscriptionProgress(
-        currentChunk: 0,
-        totalChunks: 1,
-        phase: TranscriptionPhase.preparing,
-        message: 'Preparing mock transcription...',
-      ));
+      onProgress?.call(
+        const TranscriptionProgress(
+          currentChunk: 0,
+          totalChunks: 1,
+          phase: TranscriptionPhase.preparing,
+          message: 'Preparing mock transcription...',
+        ),
+      );
 
       // Simulate processing delay
       if (simulateDelay) {
@@ -88,12 +87,14 @@ class MockTranscriptionService implements TranscriptionService {
 
           await Future<void>.delayed(Duration(milliseconds: stepDelay));
 
-          onProgress?.call(TranscriptionProgress(
-            currentChunk: i,
-            totalChunks: steps,
-            phase: TranscriptionPhase.transcribing,
-            message: 'Processing audio segment $i of $steps...',
-          ));
+          onProgress?.call(
+            TranscriptionProgress(
+              currentChunk: i,
+              totalChunks: steps,
+              phase: TranscriptionPhase.transcribing,
+              message: 'Processing audio segment $i of $steps...',
+            ),
+          );
         }
       }
 
@@ -105,12 +106,14 @@ class MockTranscriptionService implements TranscriptionService {
       final result = _generateMockTranscript(durationMs);
 
       // Report complete
-      onProgress?.call(const TranscriptionProgress(
-        currentChunk: 1,
-        totalChunks: 1,
-        phase: TranscriptionPhase.complete,
-        message: 'Transcription complete',
-      ));
+      onProgress?.call(
+        const TranscriptionProgress(
+          currentChunk: 1,
+          totalChunks: 1,
+          phase: TranscriptionPhase.complete,
+          message: 'Transcription complete',
+        ),
+      );
 
       return result;
     } finally {
@@ -147,11 +150,13 @@ class MockTranscriptionService implements TranscriptionService {
       // Get random dialogue line
       final text = _getRandomDialogue(random, segmentIndex);
 
-      segments.add(TranscriptSegmentData(
-        text: text,
-        startTimeMs: currentTimeMs,
-        endTimeMs: endTimeMs,
-      ));
+      segments.add(
+        TranscriptSegmentData(
+          text: text,
+          startTimeMs: currentTimeMs,
+          endTimeMs: endTimeMs,
+        ),
+      );
 
       if (textBuffer.isNotEmpty) {
         textBuffer.write(' ');

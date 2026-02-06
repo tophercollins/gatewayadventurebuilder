@@ -37,7 +37,9 @@ class _NpcDetailScreenState extends ConsumerState<NpcDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final npcAsync = ref.watch(npcByIdProvider(widget.npcId));
-    final relationshipsAsync = ref.watch(npcRelationshipsProvider(widget.npcId));
+    final relationshipsAsync = ref.watch(
+      npcRelationshipsProvider(widget.npcId),
+    );
     final quotesAsync = ref.watch(npcQuotesProvider(widget.npcId));
     final sessionsAsync = ref.watch(
       entitySessionsProvider((type: EntityType.npc, entityId: widget.npcId)),
@@ -70,9 +72,9 @@ class _NpcDetailScreenState extends ConsumerState<NpcDetailScreen> {
     ref.invalidate(npcByIdProvider(widget.npcId));
     setState(() => _isEditing = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('NPC updated')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('NPC updated')));
     }
   }
 }
@@ -111,11 +113,7 @@ class _NpcDetailContent extends StatelessWidget {
               NpcHeader(npc: npc, onEdit: onEditToggle),
               const SizedBox(height: Spacing.lg),
               if (isEditing)
-                NpcEditForm(
-                  npc: npc,
-                  onSave: onSave,
-                  onCancel: onEditToggle,
-                )
+                NpcEditForm(npc: npc, onSave: onSave, onCancel: onEditToggle)
               else ...[
                 NpcInfoSection(npc: npc),
                 const SizedBox(height: Spacing.lg),

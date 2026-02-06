@@ -51,7 +51,10 @@ class StatusBadge extends StatelessWidget {
     if (sessionStatus != null) {
       return switch (sessionStatus!) {
         SessionStatus.recording => ('Recording', theme.brightness.recording),
-        SessionStatus.transcribing => ('Transcribing', theme.brightness.processing),
+        SessionStatus.transcribing => (
+          'Transcribing',
+          theme.brightness.processing,
+        ),
         SessionStatus.processing => ('Processing', theme.brightness.processing),
         SessionStatus.queued => ('Queued', theme.brightness.queued),
         SessionStatus.complete => ('Complete', theme.brightness.complete),

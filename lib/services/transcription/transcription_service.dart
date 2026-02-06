@@ -49,11 +49,7 @@ abstract class TranscriptionService {
 
 /// Exception thrown when transcription fails.
 class TranscriptionException implements Exception {
-  const TranscriptionException(
-    this.type, {
-    this.message,
-    this.details,
-  });
+  const TranscriptionException(this.type, {this.message, this.details});
 
   /// The type of error that occurred.
   final TranscriptionErrorType type;

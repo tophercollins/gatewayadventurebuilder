@@ -124,7 +124,6 @@ extension StatusColors on Brightness {
       ? AppColors.lightStatusQueued
       : AppColors.darkStatusQueued;
 
-  Color get success => this == Brightness.light
-      ? AppColors.lightSuccess
-      : AppColors.darkSuccess;
+  Color get success =>
+      this == Brightness.light ? AppColors.lightSuccess : AppColors.darkSuccess;
 }

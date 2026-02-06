@@ -50,19 +50,23 @@ class EntityMatcher {
           if (updatedNpc != match) {
             await _entityRepo.updateNpc(updatedNpc);
             wasUpdated = true;
-            results.add(EntityMatchResult(
-              entity: updatedNpc,
-              isNew: false,
-              wasUpdated: true,
-            ));
+            results.add(
+              EntityMatchResult(
+                entity: updatedNpc,
+                isNew: false,
+                wasUpdated: true,
+              ),
+            );
             continue;
           }
         }
-        results.add(EntityMatchResult(
-          entity: match,
-          isNew: false,
-          wasUpdated: wasUpdated,
-        ));
+        results.add(
+          EntityMatchResult(
+            entity: match,
+            isNew: false,
+            wasUpdated: wasUpdated,
+          ),
+        );
       } else {
         // New NPC - create it
         final newNpc = await _entityRepo.createNpc(
@@ -71,7 +75,9 @@ class EntityMatcher {
           description: extracted.description,
           role: extracted.role,
         );
-        results.add(EntityMatchResult(entity: newNpc, isNew: true, wasUpdated: false));
+        results.add(
+          EntityMatchResult(entity: newNpc, isNew: true, wasUpdated: false),
+        );
       }
     }
 
@@ -96,19 +102,23 @@ class EntityMatcher {
           if (updatedLoc != match) {
             await _entityRepo.updateLocation(updatedLoc);
             wasUpdated = true;
-            results.add(EntityMatchResult(
-              entity: updatedLoc,
-              isNew: false,
-              wasUpdated: true,
-            ));
+            results.add(
+              EntityMatchResult(
+                entity: updatedLoc,
+                isNew: false,
+                wasUpdated: true,
+              ),
+            );
             continue;
           }
         }
-        results.add(EntityMatchResult(
-          entity: match,
-          isNew: false,
-          wasUpdated: wasUpdated,
-        ));
+        results.add(
+          EntityMatchResult(
+            entity: match,
+            isNew: false,
+            wasUpdated: wasUpdated,
+          ),
+        );
       } else {
         final newLocation = await _entityRepo.createLocation(
           worldId: worldId,
@@ -116,7 +126,13 @@ class EntityMatcher {
           description: extracted.description,
           locationType: extracted.locationType,
         );
-        results.add(EntityMatchResult(entity: newLocation, isNew: true, wasUpdated: false));
+        results.add(
+          EntityMatchResult(
+            entity: newLocation,
+            isNew: true,
+            wasUpdated: false,
+          ),
+        );
       }
     }
 
@@ -141,19 +157,23 @@ class EntityMatcher {
           if (updatedItem != match) {
             await _entityRepo.updateItem(updatedItem);
             wasUpdated = true;
-            results.add(EntityMatchResult(
-              entity: updatedItem,
-              isNew: false,
-              wasUpdated: true,
-            ));
+            results.add(
+              EntityMatchResult(
+                entity: updatedItem,
+                isNew: false,
+                wasUpdated: true,
+              ),
+            );
             continue;
           }
         }
-        results.add(EntityMatchResult(
-          entity: match,
-          isNew: false,
-          wasUpdated: wasUpdated,
-        ));
+        results.add(
+          EntityMatchResult(
+            entity: match,
+            isNew: false,
+            wasUpdated: wasUpdated,
+          ),
+        );
       } else {
         final newItem = await _entityRepo.createItem(
           worldId: worldId,
@@ -162,7 +182,9 @@ class EntityMatcher {
           itemType: extracted.itemType,
           properties: extracted.properties,
         );
-        results.add(EntityMatchResult(entity: newItem, isNew: true, wasUpdated: false));
+        results.add(
+          EntityMatchResult(entity: newItem, isNew: true, wasUpdated: false),
+        );
       }
     }
 

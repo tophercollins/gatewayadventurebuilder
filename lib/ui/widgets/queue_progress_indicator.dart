@@ -8,10 +8,7 @@ import '../theme/spacing.dart';
 /// Progress indicator for session cards showing processing progress.
 /// Shows a linear progress bar when the session is being processed.
 class SessionQueueProgress extends ConsumerWidget {
-  const SessionQueueProgress({
-    required this.sessionId,
-    super.key,
-  });
+  const SessionQueueProgress({required this.sessionId, super.key});
 
   final String sessionId;
 
@@ -49,10 +46,7 @@ class SessionQueueProgress extends ConsumerWidget {
 /// Detailed progress indicator with step description.
 /// Used when more space is available (e.g., session detail page).
 class SessionQueueProgressDetailed extends ConsumerWidget {
-  const SessionQueueProgressDetailed({
-    required this.sessionId,
-    super.key,
-  });
+  const SessionQueueProgressDetailed({required this.sessionId, super.key});
 
   final String sessionId;
 
@@ -74,9 +68,7 @@ class SessionQueueProgressDetailed extends ConsumerWidget {
       decoration: BoxDecoration(
         color: processingColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
-        border: Border.all(
-          color: processingColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: processingColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +226,9 @@ class QueueStatusCard extends ConsumerWidget {
               ],
             ),
           ),
-          if (queueState.pendingCount > 0 && !queueState.isProcessing && isOnline)
+          if (queueState.pendingCount > 0 &&
+              !queueState.isProcessing &&
+              isOnline)
             TextButton(
               onPressed: () {
                 ref.read(queueNotifierProvider.notifier).processNow();

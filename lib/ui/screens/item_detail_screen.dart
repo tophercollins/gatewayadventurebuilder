@@ -32,9 +32,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final itemAsync = ref.watch(itemByIdProvider(widget.itemId));
-    final sessionsAsync = ref.watch(entitySessionsProvider(
-      (type: EntityType.item, entityId: widget.itemId),
-    ));
+    final sessionsAsync = ref.watch(
+      entitySessionsProvider((type: EntityType.item, entityId: widget.itemId)),
+    );
 
     return itemAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -61,9 +61,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     ref.invalidate(itemByIdProvider(widget.itemId));
     setState(() => _isEditing = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item updated')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Item updated')));
     }
   }
 }
@@ -292,10 +292,10 @@ class _AppearancesSection extends StatelessWidget {
             }
             return Column(
               children: sessions
-                  .map((session) => _SessionCard(
-                        session: session,
-                        campaignId: campaignId,
-                      ))
+                  .map(
+                    (session) =>
+                        _SessionCard(session: session, campaignId: campaignId),
+                  )
                   .toList(),
             );
           },
@@ -318,9 +318,8 @@ class _SessionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push(
-          Routes.sessionDetailPath(campaignId, session.id),
-        ),
+        onTap: () =>
+            context.push(Routes.sessionDetailPath(campaignId, session.id)),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(
           margin: const EdgeInsets.only(bottom: Spacing.sm),
@@ -342,8 +341,7 @@ class _SessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.title ??
-                          'Session ${session.sessionNumber ?? ""}',
+                      session.title ?? 'Session ${session.sessionNumber ?? ""}',
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(
@@ -400,10 +398,12 @@ class _ItemEditFormState extends State<_ItemEditForm> {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
     _typeController = TextEditingController(text: widget.item.itemType ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.item.description ?? '');
-    _propertiesController =
-        TextEditingController(text: widget.item.properties ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.item.description ?? '',
+    );
+    _propertiesController = TextEditingController(
+      text: widget.item.properties ?? '',
+    );
     _notesController = TextEditingController(text: widget.item.notes ?? '');
   }
 

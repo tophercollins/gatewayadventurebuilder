@@ -9,8 +9,8 @@ import 'transcript_result.dart';
 import 'transcription_service.dart';
 
 /// Callback for transcription manager progress updates.
-typedef TranscriptionManagerCallback = void Function(
-    TranscriptionManagerProgress);
+typedef TranscriptionManagerCallback =
+    void Function(TranscriptionManagerProgress);
 
 /// Progress information from TranscriptionManager.
 class TranscriptionManagerProgress {
@@ -154,12 +154,14 @@ class TranscriptionManager {
           return segment.withOffsetMs(chunk.startTimeMs);
         }).toList();
 
-        chunkResults.add(TranscriptResult(
-          fullText: result.fullText,
-          segments: adjustedSegments,
-          modelName: result.modelName,
-          language: result.language,
-        ));
+        chunkResults.add(
+          TranscriptResult(
+            fullText: result.fullText,
+            segments: adjustedSegments,
+            modelName: result.modelName,
+            language: result.language,
+          ),
+        );
       }
 
       // Merge results
@@ -275,13 +277,15 @@ class TranscriptionManager {
     String? message,
     TranscriptionException? error,
   }) {
-    callback?.call(TranscriptionManagerProgress(
-      sessionId: sessionId,
-      phase: phase,
-      currentChunk: currentChunk,
-      totalChunks: totalChunks,
-      message: message,
-      error: error,
-    ));
+    callback?.call(
+      TranscriptionManagerProgress(
+        sessionId: sessionId,
+        phase: phase,
+        currentChunk: currentChunk,
+        totalChunks: totalChunks,
+        message: message,
+        error: error,
+      ),
+    );
   }
 }

@@ -261,7 +261,8 @@ class _PostSessionScreenState extends ConsumerState<PostSessionScreen> {
         const SizedBox(height: Spacing.lg),
         const InfoCard(
           icon: Icons.auto_awesome,
-          message: 'Your session has been transcribed and is queued for AI '
+          message:
+              'Your session has been transcribed and is queued for AI '
               'processing. You will be notified when summaries are ready.',
         ),
         const SizedBox(height: Spacing.xl),

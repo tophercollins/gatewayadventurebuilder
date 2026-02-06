@@ -2,9 +2,7 @@ import 'dart:convert';
 
 /// Response model for session summary extraction.
 class SummaryResponse {
-  const SummaryResponse({
-    required this.overallSummary,
-  });
+  const SummaryResponse({required this.overallSummary});
 
   final String overallSummary;
 
@@ -33,7 +31,9 @@ class ScenesResponse {
   factory ScenesResponse.fromJson(Map<String, dynamic> json) {
     final sceneList = json['scenes'] as List<dynamic>? ?? [];
     return ScenesResponse(
-      scenes: sceneList.map((e) => SceneData.fromJson(e as Map<String, dynamic>)).toList(),
+      scenes: sceneList
+          .map((e) => SceneData.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -87,9 +87,15 @@ class EntitiesResponse {
     final locList = json['locations'] as List<dynamic>? ?? [];
     final itemList = json['items'] as List<dynamic>? ?? [];
     return EntitiesResponse(
-      npcs: npcList.map((e) => NpcData.fromJson(e as Map<String, dynamic>)).toList(),
-      locations: locList.map((e) => LocationData.fromJson(e as Map<String, dynamic>)).toList(),
-      items: itemList.map((e) => ItemData.fromJson(e as Map<String, dynamic>)).toList(),
+      npcs: npcList
+          .map((e) => NpcData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      locations: locList
+          .map((e) => LocationData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      items: itemList
+          .map((e) => ItemData.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -193,7 +199,9 @@ class ActionItemsResponse {
   factory ActionItemsResponse.fromJson(Map<String, dynamic> json) {
     final items = json['action_items'] as List<dynamic>? ?? [];
     return ActionItemsResponse(
-      actionItems: items.map((e) => ActionItemData.fromJson(e as Map<String, dynamic>)).toList(),
+      actionItems: items
+          .map((e) => ActionItemData.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -236,7 +244,9 @@ class PlayerMomentsResponse {
   factory PlayerMomentsResponse.fromJson(Map<String, dynamic> json) {
     final items = json['player_moments'] as List<dynamic>? ?? [];
     return PlayerMomentsResponse(
-      moments: items.map((e) => PlayerMomentData.fromJson(e as Map<String, dynamic>)).toList(),
+      moments: items
+          .map((e) => PlayerMomentData.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 

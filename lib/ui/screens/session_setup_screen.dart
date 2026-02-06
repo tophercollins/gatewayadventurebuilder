@@ -12,10 +12,7 @@ import '../theme/spacing.dart';
 /// Session setup screen for selecting attendees before recording.
 /// Per APP_FLOW.md Flow 5: Start a Session (Recording).
 class SessionSetupScreen extends ConsumerStatefulWidget {
-  const SessionSetupScreen({
-    required this.campaignId,
-    super.key,
-  });
+  const SessionSetupScreen({required this.campaignId, super.key});
 
   final String campaignId;
 
@@ -39,7 +36,9 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final playersAsync = ref.watch(playersWithCharactersProvider(widget.campaignId));
+    final playersAsync = ref.watch(
+      playersWithCharactersProvider(widget.campaignId),
+    );
     final selection = ref.watch(attendeeSelectionProvider);
 
     return Padding(
@@ -70,10 +69,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Header
-        Text(
-          'Who is playing today?',
-          style: theme.textTheme.headlineSmall,
-        ),
+        Text('Who is playing today?', style: theme.textTheme.headlineSmall),
         const SizedBox(height: Spacing.sm),
         Text(
           'Select the players and characters present for this session.',
@@ -105,15 +101,15 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
         Expanded(
           child: ListView.separated(
             itemCount: players.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: theme.colorScheme.outlineVariant,
-            ),
+            separatorBuilder: (context, index) =>
+                Divider(height: 1, color: theme.colorScheme.outlineVariant),
             itemBuilder: (context, index) {
               final playerWithChars = players[index];
               return _PlayerAttendeeItem(
                 playerWithCharacters: playerWithChars,
-                isSelected: selection.isPlayerSelected(playerWithChars.player.id),
+                isSelected: selection.isPlayerSelected(
+                  playerWithChars.player.id,
+                ),
                 onToggle: () => _togglePlayer(playerWithChars),
               );
             },
@@ -168,9 +164,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                     ),
                   )
                 : const Icon(Icons.mic),
-            label: Text(
-              _isStarting ? 'Starting...' : 'Start Recording',
-            ),
+            label: Text(_isStarting ? 'Starting...' : 'Start Recording'),
           ),
         ),
 
@@ -199,10 +193,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: Spacing.md),
-          Text(
-            'No players yet',
-            style: theme.textTheme.titleLarge,
-          ),
+          Text('No players yet', style: theme.textTheme.titleLarge),
           const SizedBox(height: Spacing.sm),
           Text(
             'Add players to your campaign before starting a session.',
@@ -228,16 +219,9 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: theme.colorScheme.error,
-          ),
+          Icon(Icons.error_outline, size: 64, color: theme.colorScheme.error),
           const SizedBox(height: Spacing.md),
-          Text(
-            'Failed to load players',
-            style: theme.textTheme.titleLarge,
-          ),
+          Text('Failed to load players', style: theme.textTheme.titleLarge),
           const SizedBox(height: Spacing.sm),
           Text(
             error,
@@ -268,10 +252,9 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     final activeChar = playerWithChars.characters
         .where((c) => c.status == CharacterStatus.active)
         .firstOrNull;
-    ref.read(attendeeSelectionProvider.notifier).togglePlayer(
-          playerWithChars.player.id,
-          activeChar?.id,
-        );
+    ref
+        .read(attendeeSelectionProvider.notifier)
+        .togglePlayer(playerWithChars.player.id, activeChar?.id);
   }
 
   Future<void> _startRecording(List<PlayerWithCharacters> players) async {
@@ -285,8 +268,9 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       final selection = ref.read(attendeeSelectionProvider);
 
       // Get next session number
-      final sessionNumber =
-          await sessionRepo.getNextSessionNumber(widget.campaignId);
+      final sessionNumber = await sessionRepo.getNextSessionNumber(
+        widget.campaignId,
+      );
 
       // Create session with status 'recording'
       final session = await sessionRepo.createSession(
@@ -341,8 +325,9 @@ class _PlayerAttendeeItem extends StatelessWidget {
     final theme = Theme.of(context);
     final player = playerWithCharacters.player;
     final characters = playerWithCharacters.characters;
-    final activeChar =
-        characters.where((c) => c.status == CharacterStatus.active).firstOrNull;
+    final activeChar = characters
+        .where((c) => c.status == CharacterStatus.active)
+        .firstOrNull;
 
     return InkWell(
       onTap: onToggle,
@@ -354,10 +339,7 @@ class _PlayerAttendeeItem extends StatelessWidget {
         child: Row(
           children: [
             // Checkbox
-            Checkbox(
-              value: isSelected,
-              onChanged: (_) => onToggle(),
-            ),
+            Checkbox(value: isSelected, onChanged: (_) => onToggle()),
             const SizedBox(width: Spacing.sm),
 
             // Avatar
@@ -417,7 +399,8 @@ class _PlayerAttendeeItem extends StatelessWidget {
   String _formatCharacterInfo(Character character) {
     final parts = <String>[character.name];
 
-    if (character.characterClass != null && character.characterClass!.isNotEmpty) {
+    if (character.characterClass != null &&
+        character.characterClass!.isNotEmpty) {
       if (character.level != null) {
         parts.add('Level ${character.level} ${character.characterClass}');
       } else {

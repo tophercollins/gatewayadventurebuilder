@@ -24,9 +24,10 @@ class SessionPlayersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final momentsAsync = ref.watch(
-      sessionPlayerMomentsProvider(
-        (campaignId: campaignId, sessionId: sessionId),
-      ),
+      sessionPlayerMomentsProvider((
+        campaignId: campaignId,
+        sessionId: sessionId,
+      )),
     );
     final editingState = ref.watch(playerMomentEditingProvider);
 

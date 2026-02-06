@@ -59,17 +59,13 @@ class RecordingScreenState {
 
 /// Notifier for managing recording state and timer.
 class RecordingNotifier extends StateNotifier<RecordingScreenState> {
-  RecordingNotifier(this._audioService)
-      : super(const RecordingScreenState());
+  RecordingNotifier(this._audioService) : super(const RecordingScreenState());
 
   final AudioRecordingService _audioService;
   Timer? _timer;
 
   /// Initialize with session and campaign IDs.
-  void initialize({
-    required String sessionId,
-    required String campaignId,
-  }) {
+  void initialize({required String sessionId, required String campaignId}) {
     state = state.copyWith(
       sessionId: sessionId,
       campaignId: campaignId,
@@ -83,10 +79,7 @@ class RecordingNotifier extends StateNotifier<RecordingScreenState> {
 
     try {
       await _audioService.start(sessionId: state.sessionId!);
-      state = state.copyWith(
-        state: RecordingState.recording,
-        clearError: true,
-      );
+      state = state.copyWith(state: RecordingState.recording, clearError: true);
       _startTimer();
     } on AudioRecordingException catch (e) {
       state = state.copyWith(error: e);
@@ -99,10 +92,7 @@ class RecordingNotifier extends StateNotifier<RecordingScreenState> {
 
     try {
       final filePath = await _audioService.stop();
-      state = state.copyWith(
-        state: RecordingState.stopped,
-        filePath: filePath,
-      );
+      state = state.copyWith(state: RecordingState.stopped, filePath: filePath);
       return filePath;
     } on AudioRecordingException catch (e) {
       state = state.copyWith(error: e);
@@ -172,9 +162,9 @@ class RecordingNotifier extends StateNotifier<RecordingScreenState> {
 /// Provider for the recording notifier.
 final recordingNotifierProvider =
     StateNotifierProvider<RecordingNotifier, RecordingScreenState>((ref) {
-  final audioService = ref.watch(audioRecordingServiceProvider);
-  return RecordingNotifier(audioService);
-});
+      final audioService = ref.watch(audioRecordingServiceProvider);
+      return RecordingNotifier(audioService);
+    });
 
 /// Provider for session attendee selection state.
 class AttendeeSelectionState {
@@ -231,7 +221,9 @@ class AttendeeSelectionNotifier extends StateNotifier<AttendeeSelectionState> {
   }
 
   /// Select all players and their characters.
-  void selectAll(List<(String playerId, String? characterId)> playerCharacters) {
+  void selectAll(
+    List<(String playerId, String? characterId)> playerCharacters,
+  ) {
     final playerIds = <String>{};
     final characterIds = <String>{};
 
@@ -272,5 +264,5 @@ class AttendeeSelectionNotifier extends StateNotifier<AttendeeSelectionState> {
 /// Provider for attendee selection state.
 final attendeeSelectionProvider =
     StateNotifierProvider<AttendeeSelectionNotifier, AttendeeSelectionState>(
-  (ref) => AttendeeSelectionNotifier(),
-);
+      (ref) => AttendeeSelectionNotifier(),
+    );

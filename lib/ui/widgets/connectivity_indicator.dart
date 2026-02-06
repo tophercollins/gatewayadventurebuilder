@@ -32,18 +32,23 @@ class ConnectivityIndicator extends ConsumerWidget {
         : ref.watch(currentConnectivityProvider);
 
     final isOnline = connectivityStatus == ConnectivityStatus.online;
+    final isOffline = connectivityStatus == ConnectivityStatus.offline;
     final pendingCount = queueState.pendingCount;
     final isProcessing = queueState.isProcessing;
 
     final statusColor = isOnline
         ? theme.brightness.success
-        : colorScheme.error;
+        : isOffline
+        ? colorScheme.error
+        : colorScheme.outline; // Unknown/initializing
 
     final statusText = isProcessing
         ? 'Processing'
         : isOnline
-            ? 'Online'
-            : 'Offline';
+        ? 'Online'
+        : isOffline
+        ? 'Offline'
+        : 'Checking...';
 
     final iconSize = compact ? Spacing.iconSizeCompact : Spacing.iconSize;
     final badgeSize = compact ? 14.0 : 16.0;
@@ -69,7 +74,9 @@ class ConnectivityIndicator extends ConsumerWidget {
                         height: iconSize * 0.6,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            statusColor,
+                          ),
                         ),
                       )
                     : Container(
@@ -115,13 +122,11 @@ class ConnectivityIndicator extends ConsumerWidget {
           SizedBox(width: compact ? Spacing.xs : Spacing.sm),
           Text(
             statusText,
-            style: (compact
-                    ? theme.textTheme.labelSmall
-                    : theme.textTheme.bodySmall)
-                ?.copyWith(
-              color: statusColor,
-              fontWeight: FontWeight.w500,
-            ),
+            style:
+                (compact
+                        ? theme.textTheme.labelSmall
+                        : theme.textTheme.bodySmall)
+                    ?.copyWith(color: statusColor, fontWeight: FontWeight.w500),
           ),
         ],
       ],
@@ -142,17 +147,14 @@ class ConnectivityDot extends ConsumerWidget {
 
     final statusColor = isOnline
         ? theme.brightness == Brightness.light
-            ? const Color(0xFF16A34A)
-            : const Color(0xFF22C55E)
+              ? const Color(0xFF16A34A)
+              : const Color(0xFF22C55E)
         : theme.colorScheme.error;
 
     return Container(
       width: 8,
       height: 8,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: statusColor,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor),
     );
   }
 }
@@ -167,7 +169,8 @@ class OfflineBanner extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final connectivityStatus = ref.watch(currentConnectivityProvider);
 
-    if (connectivityStatus == ConnectivityStatus.online) {
+    // Only show banner when explicitly offline, not when unknown/initializing
+    if (connectivityStatus != ConnectivityStatus.offline) {
       return const SizedBox.shrink();
     }
 

@@ -6,11 +6,7 @@ import '../theme/spacing.dart';
 
 /// A card widget for displaying a player moment/highlight.
 class MomentCard extends StatelessWidget {
-  const MomentCard({
-    required this.moment,
-    required this.onEdit,
-    super.key,
-  });
+  const MomentCard({required this.moment, required this.onEdit, super.key});
 
   final PlayerMoment moment;
   final VoidCallback onEdit;
@@ -69,40 +65,40 @@ class MomentCard extends StatelessWidget {
   ) {
     return switch (type) {
       'quote' => (
-          label: 'Quote',
-          icon: Icons.format_quote_outlined,
-          color: Colors.blue,
-        ),
+        label: 'Quote',
+        icon: Icons.format_quote_outlined,
+        color: Colors.blue,
+      ),
       'roleplay' => (
-          label: 'Roleplay',
-          icon: Icons.theater_comedy_outlined,
-          color: Colors.purple,
-        ),
+        label: 'Roleplay',
+        icon: Icons.theater_comedy_outlined,
+        color: Colors.purple,
+      ),
       'combat' => (
-          label: 'Combat',
-          icon: Icons.sports_martial_arts_outlined,
-          color: Colors.red,
-        ),
+        label: 'Combat',
+        icon: Icons.sports_martial_arts_outlined,
+        color: Colors.red,
+      ),
       'puzzle' => (
-          label: 'Problem Solving',
-          icon: Icons.lightbulb_outline,
-          color: Colors.orange,
-        ),
+        label: 'Problem Solving',
+        icon: Icons.lightbulb_outline,
+        color: Colors.orange,
+      ),
       'humor' => (
-          label: 'Funny Moment',
-          icon: Icons.sentiment_very_satisfied_outlined,
-          color: Colors.amber,
-        ),
+        label: 'Funny Moment',
+        icon: Icons.sentiment_very_satisfied_outlined,
+        color: Colors.amber,
+      ),
       'teamwork' => (
-          label: 'Teamwork',
-          icon: Icons.group_outlined,
-          color: Colors.green,
-        ),
+        label: 'Teamwork',
+        icon: Icons.group_outlined,
+        color: Colors.green,
+      ),
       _ => (
-          label: 'Highlight',
-          icon: Icons.star_outline,
-          color: theme.colorScheme.primary,
-        ),
+        label: 'Highlight',
+        icon: Icons.star_outline,
+        color: theme.colorScheme.primary,
+      ),
     };
   }
 }

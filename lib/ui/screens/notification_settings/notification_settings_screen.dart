@@ -66,13 +66,11 @@ class _NotificationSettingsScreenState
 
               // Email Service Status
               emailAvailable.when(
-                data: (available) => NotificationServiceStatus(
-                  available: available,
-                ),
+                data: (available) =>
+                    NotificationServiceStatus(available: available),
                 loading: () => const SizedBox.shrink(),
-                error: (error, stack) => const NotificationServiceStatus(
-                  available: false,
-                ),
+                error: (error, stack) =>
+                    const NotificationServiceStatus(available: false),
               ),
               const SizedBox(height: Spacing.lg),
 
@@ -139,9 +137,7 @@ class _NotificationSettingsScreenState
                 ),
                 const SizedBox(height: Spacing.xs),
                 Text(
-                  currentEmail?.isNotEmpty == true
-                      ? currentEmail!
-                      : 'Not set',
+                  currentEmail?.isNotEmpty == true ? currentEmail! : 'Not set',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: currentEmail?.isNotEmpty == true
                         ? theme.colorScheme.onSurface

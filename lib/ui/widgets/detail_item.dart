@@ -23,11 +23,7 @@ class DetailItem extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        Icon(icon, size: 20, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: Spacing.sm),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,

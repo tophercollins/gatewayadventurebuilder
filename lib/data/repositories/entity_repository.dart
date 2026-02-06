@@ -78,7 +78,12 @@ class EntityRepository {
       updatedAt: DateTime.now(),
       isEdited: markEdited ? true : npc.isEdited,
     );
-    await db.update('npcs', updated.toMap(), where: 'id = ?', whereArgs: [npc.id]);
+    await db.update(
+      'npcs',
+      updated.toMap(),
+      where: 'id = ?',
+      whereArgs: [npc.id],
+    );
   }
 
   Future<void> deleteNpc(String id) async {
@@ -117,8 +122,11 @@ class EntityRepository {
 
   Future<Location?> getLocationById(String id) async {
     final db = await _db.database;
-    final results =
-        await db.query('locations', where: 'id = ?', whereArgs: [id]);
+    final results = await db.query(
+      'locations',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (results.isEmpty) return null;
     return Location.fromMap(results.first);
   }
@@ -134,14 +142,21 @@ class EntityRepository {
     return results.map((m) => Location.fromMap(m)).toList();
   }
 
-  Future<void> updateLocation(Location location, {bool markEdited = false}) async {
+  Future<void> updateLocation(
+    Location location, {
+    bool markEdited = false,
+  }) async {
     final db = await _db.database;
     final updated = location.copyWith(
       updatedAt: DateTime.now(),
       isEdited: markEdited ? true : location.isEdited,
     );
-    await db.update('locations', updated.toMap(),
-        where: 'id = ?', whereArgs: [location.id]);
+    await db.update(
+      'locations',
+      updated.toMap(),
+      where: 'id = ?',
+      whereArgs: [location.id],
+    );
   }
 
   Future<void> deleteLocation(String id) async {
@@ -202,7 +217,12 @@ class EntityRepository {
       updatedAt: DateTime.now(),
       isEdited: markEdited ? true : item.isEdited,
     );
-    await db.update('items', updated.toMap(), where: 'id = ?', whereArgs: [item.id]);
+    await db.update(
+      'items',
+      updated.toMap(),
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
   }
 
   Future<void> deleteItem(String id) async {
@@ -238,7 +258,8 @@ class EntityRepository {
   }
 
   Future<List<EntityAppearance>> getAppearancesBySession(
-      String sessionId) async {
+    String sessionId,
+  ) async {
     final db = await _db.database;
     final results = await db.query(
       'entity_appearances',

@@ -143,7 +143,12 @@ class SummaryRepository {
       updatedAt: DateTime.now(),
       isEdited: markEdited ? true : scene.isEdited,
     );
-    await db.update('scenes', updated.toMap(), where: 'id = ?', whereArgs: [scene.id]);
+    await db.update(
+      'scenes',
+      updated.toMap(),
+      where: 'id = ?',
+      whereArgs: [scene.id],
+    );
   }
 
   Future<void> deleteScene(String id) async {

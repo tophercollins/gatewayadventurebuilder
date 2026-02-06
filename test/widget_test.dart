@@ -16,9 +16,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: StartupScreen()),
-      ),
+      const ProviderScope(child: MaterialApp(home: StartupScreen())),
     );
 
     // Startup screen shows app title while loading
@@ -31,9 +29,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: HomeScreen()),
-      ),
+      const ProviderScope(child: MaterialApp(home: HomeScreen())),
     );
 
     // Home screen content is displayed
@@ -52,9 +48,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: OnboardingScreen()),
-      ),
+      const ProviderScope(child: MaterialApp(home: OnboardingScreen())),
     );
 
     await tester.pumpAndSettle();
@@ -74,9 +68,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: OnboardingScreen()),
-      ),
+      const ProviderScope(child: MaterialApp(home: OnboardingScreen())),
     );
 
     await tester.pumpAndSettle();

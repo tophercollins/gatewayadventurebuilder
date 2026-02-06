@@ -7,10 +7,7 @@ import 'email_templates.dart';
 
 /// Result of a notification operation.
 class NotificationResult {
-  const NotificationResult({
-    required this.emailSent,
-    this.emailError,
-  });
+  const NotificationResult({required this.emailSent, this.emailError});
 
   final bool emailSent;
   final String? emailError;
@@ -20,9 +17,8 @@ class NotificationResult {
 
 /// Service for sending notifications.
 class NotificationService {
-  NotificationService({
-    required EmailService emailService,
-  }) : _emailService = emailService;
+  NotificationService({required EmailService emailService})
+    : _emailService = emailService;
 
   final EmailService _emailService;
 
@@ -48,7 +44,8 @@ class NotificationService {
     }
 
     // Build summary preview (truncate to reasonable length)
-    final summaryText = summary.overallSummary ?? 'Session processed successfully';
+    final summaryText =
+        summary.overallSummary ?? 'Session processed successfully';
     final summaryPreview = _truncateSummary(summaryText, 200);
 
     // Create email content

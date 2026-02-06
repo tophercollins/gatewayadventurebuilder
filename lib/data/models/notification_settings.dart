@@ -69,10 +69,6 @@ class NotificationSettings {
 
   @override
   int get hashCode {
-    return Object.hash(
-      emailEnabled,
-      emailAddress,
-      notifyOnProcessingComplete,
-    );
+    return Object.hash(emailEnabled, emailAddress, notifyOnProcessingComplete);
   }
 }

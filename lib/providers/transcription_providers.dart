@@ -99,7 +99,7 @@ class TranscriptionState {
 /// Notifier for managing transcription state.
 class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
   TranscriptionNotifier(this._manager, this._sessionRepo)
-      : super(const TranscriptionState());
+    : super(const TranscriptionState());
 
   final TranscriptionManager _manager;
   final SessionRepository _sessionRepo;
@@ -129,10 +129,7 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
       );
 
       // Update session status to queued (ready for AI processing)
-      await _sessionRepo.updateSessionStatus(
-        sessionId,
-        SessionStatus.queued,
-      );
+      await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.queued);
 
       state = state.copyWith(
         phase: TranscriptionPhase.complete,
@@ -149,10 +146,7 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
       );
 
       // Update session status to error
-      await _sessionRepo.updateSessionStatus(
-        sessionId,
-        SessionStatus.error,
-      );
+      await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.error);
     } catch (e) {
       final error = TranscriptionException(
         TranscriptionErrorType.unknown,
@@ -167,10 +161,7 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
       );
 
       // Update session status to error
-      await _sessionRepo.updateSessionStatus(
-        sessionId,
-        SessionStatus.error,
-      );
+      await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.error);
     }
   }
 
@@ -203,28 +194,35 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
 /// Provider for the TranscriptionNotifier.
 final transcriptionNotifierProvider =
     StateNotifierProvider<TranscriptionNotifier, TranscriptionState>((ref) {
-  final manager = ref.watch(transcriptionManagerProvider);
-  final sessionRepo = ref.watch(sessionRepositoryProvider);
-  return TranscriptionNotifier(manager, sessionRepo);
-});
+      final manager = ref.watch(transcriptionManagerProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      return TranscriptionNotifier(manager, sessionRepo);
+    });
 
 /// Provider for checking if a session has a transcript.
-final sessionHasTranscriptProvider =
-    FutureProvider.family<bool, String>((ref, sessionId) async {
+final sessionHasTranscriptProvider = FutureProvider.family<bool, String>((
+  ref,
+  sessionId,
+) async {
   final sessionRepo = ref.watch(sessionRepositoryProvider);
   final transcript = await sessionRepo.getLatestTranscript(sessionId);
   return transcript != null;
 });
 
 /// Provider for getting the latest transcript for a session.
-final sessionTranscriptProvider = FutureProvider.family((ref, String sessionId) async {
+final sessionTranscriptProvider = FutureProvider.family((
+  ref,
+  String sessionId,
+) async {
   final sessionRepo = ref.watch(sessionRepositoryProvider);
   return sessionRepo.getLatestTranscript(sessionId);
 });
 
 /// Provider for getting transcript segments for a session.
-final transcriptSegmentsProvider =
-    FutureProvider.family((ref, String transcriptId) async {
+final transcriptSegmentsProvider = FutureProvider.family((
+  ref,
+  String transcriptId,
+) async {
   final sessionRepo = ref.watch(sessionRepositoryProvider);
   return sessionRepo.getSegmentsByTranscript(transcriptId);
 });

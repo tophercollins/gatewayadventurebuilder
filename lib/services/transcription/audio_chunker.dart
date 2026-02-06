@@ -36,8 +36,23 @@ class AudioChunker {
       );
     }
 
-    // Read WAV header to get audio info
-    final wavInfo = await _readWavInfo(file);
+    // Try to read WAV header, but fallback to simple estimation if it fails
+    WavInfo wavInfo;
+    try {
+      wavInfo = await _readWavInfo(file);
+    } catch (e) {
+      // Fallback: estimate based on file size (assume 44.1kHz, 16-bit, mono WAV)
+      final fileSize = await file.length();
+      final estimatedDurationMs = ((fileSize - 44) / 88200 * 1000).round();
+      wavInfo = WavInfo(
+        numChannels: 1,
+        sampleRate: 44100,
+        bitsPerSample: 16,
+        dataSize: fileSize - 44,
+        durationMs: estimatedDurationMs > 0 ? estimatedDurationMs : 60000,
+        headerSize: 44,
+      );
+    }
     final totalDurationMs = wavInfo.durationMs;
 
     // If audio is shorter than chunk duration, return single chunk
@@ -56,16 +71,17 @@ class AudioChunker {
 
     // Calculate number of chunks needed
     final effectiveChunkDuration = chunkDurationMs - overlapMs;
-    final numChunks = ((totalDurationMs - overlapMs) /
-            effectiveChunkDuration)
+    final numChunks = ((totalDurationMs - overlapMs) / effectiveChunkDuration)
         .ceil();
 
     final chunks = <AudioChunk>[];
 
     for (var i = 0; i < numChunks; i++) {
       final startTimeMs = i * effectiveChunkDuration;
-      final endTimeMs =
-          (startTimeMs + chunkDurationMs).clamp(0, totalDurationMs);
+      final endTimeMs = (startTimeMs + chunkDurationMs).clamp(
+        0,
+        totalDurationMs,
+      );
 
       // Create chunk file
       final chunkPath = await _createChunkFile(
@@ -76,14 +92,16 @@ class AudioChunker {
         i,
       );
 
-      chunks.add(AudioChunk(
-        filePath: chunkPath,
-        chunkIndex: i,
-        totalChunks: numChunks,
-        startTimeMs: startTimeMs,
-        endTimeMs: endTimeMs,
-        isTemporary: true,
-      ));
+      chunks.add(
+        AudioChunk(
+          filePath: chunkPath,
+          chunkIndex: i,
+          totalChunks: numChunks,
+          startTimeMs: startTimeMs,
+          endTimeMs: endTimeMs,
+          isTemporary: true,
+        ),
+      );
     }
 
     return chunks;
@@ -170,11 +188,10 @@ class AudioChunker {
     int endTimeMs,
     int chunkIndex,
   ) async {
-    final bytesPerSecond = wavInfo.sampleRate *
-        wavInfo.numChannels *
-        (wavInfo.bitsPerSample ~/ 8);
-    final startByte = wavInfo.headerSize +
-        ((startTimeMs / 1000) * bytesPerSecond).round();
+    final bytesPerSecond =
+        wavInfo.sampleRate * wavInfo.numChannels * (wavInfo.bitsPerSample ~/ 8);
+    final startByte =
+        wavInfo.headerSize + ((startTimeMs / 1000) * bytesPerSecond).round();
     final endByte =
         wavInfo.headerSize + ((endTimeMs / 1000) * bytesPerSecond).round();
     final chunkDataSize = endByte - startByte;

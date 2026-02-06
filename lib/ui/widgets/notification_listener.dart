@@ -7,10 +7,7 @@ import '../theme/spacing.dart';
 /// Widget that listens for in-app notifications and shows snackbars.
 /// Should be placed near the top of the widget tree.
 class NotificationListener extends ConsumerStatefulWidget {
-  const NotificationListener({
-    required this.child,
-    super.key,
-  });
+  const NotificationListener({required this.child, super.key});
 
   final Widget child;
 
@@ -22,14 +19,11 @@ class NotificationListener extends ConsumerStatefulWidget {
 class _NotificationListenerState extends ConsumerState<NotificationListener> {
   @override
   Widget build(BuildContext context) {
-    ref.listen<InAppNotification?>(
-      inAppNotificationProvider,
-      (previous, next) {
-        if (next != null && previous != next) {
-          _showNotification(context, next);
-        }
-      },
-    );
+    ref.listen<InAppNotification?>(inAppNotificationProvider, (previous, next) {
+      if (next != null && previous != next) {
+        _showNotification(context, next);
+      }
+    });
 
     return widget.child;
   }

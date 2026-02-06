@@ -12,15 +12,13 @@ class EnvConfig {
   static const _resendApiKey = 'resend_api_key';
 
   // Gemini
-  static Future<String?> getGeminiApiKey() =>
-      _storage.read(key: _geminiApiKey);
+  static Future<String?> getGeminiApiKey() => _storage.read(key: _geminiApiKey);
 
   static Future<void> setGeminiApiKey(String value) =>
       _storage.write(key: _geminiApiKey, value: value);
 
   // Supabase
-  static Future<String?> getSupabaseUrl() =>
-      _storage.read(key: _supabaseUrl);
+  static Future<String?> getSupabaseUrl() => _storage.read(key: _supabaseUrl);
 
   static Future<void> setSupabaseUrl(String value) =>
       _storage.write(key: _supabaseUrl, value: value);
@@ -32,8 +30,7 @@ class EnvConfig {
       _storage.write(key: _supabaseAnonKey, value: value);
 
   // Resend
-  static Future<String?> getResendApiKey() =>
-      _storage.read(key: _resendApiKey);
+  static Future<String?> getResendApiKey() => _storage.read(key: _resendApiKey);
 
   static Future<void> setResendApiKey(String value) =>
       _storage.write(key: _resendApiKey, value: value);

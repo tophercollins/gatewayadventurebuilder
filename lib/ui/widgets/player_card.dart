@@ -72,10 +72,7 @@ class _PlayerCardState extends State<PlayerCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.player.name,
-                    style: theme.textTheme.titleMedium,
-                  ),
+                  Text(widget.player.name, style: theme.textTheme.titleMedium),
                   if (widget.characters.isNotEmpty)
                     Text(
                       '${widget.characters.length} character${widget.characters.length == 1 ? '' : 's'}',
@@ -103,10 +100,7 @@ class _PlayerCardState extends State<PlayerCard> {
           _buildPlayerDetails(theme),
           if (widget.characters.isNotEmpty) ...[
             const SizedBox(height: Spacing.md),
-            Text(
-              'Characters',
-              style: theme.textTheme.titleSmall,
-            ),
+            Text('Characters', style: theme.textTheme.titleSmall),
             const SizedBox(height: Spacing.sm),
             ...widget.characters.map((character) {
               return Padding(
@@ -148,27 +142,15 @@ class _PlayerCardState extends State<PlayerCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Player Details',
-                style: theme.textTheme.titleSmall,
-              ),
+              Text('Player Details', style: theme.textTheme.titleSmall),
               const SizedBox(height: Spacing.sm),
               if (widget.player.notes != null &&
                   widget.player.notes!.isNotEmpty) ...[
-                Text(
-                  'Notes:',
-                  style: theme.textTheme.labelMedium,
-                ),
+                Text('Notes:', style: theme.textTheme.labelMedium),
                 const SizedBox(height: Spacing.xxs),
-                Text(
-                  widget.player.notes!,
-                  style: theme.textTheme.bodyMedium,
-                ),
+                Text(widget.player.notes!, style: theme.textTheme.bodyMedium),
               ] else
-                Text(
-                  'No notes',
-                  style: theme.textTheme.bodySmall,
-                ),
+                Text('No notes', style: theme.textTheme.bodySmall),
             ],
           ),
         ),

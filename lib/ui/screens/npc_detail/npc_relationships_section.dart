@@ -8,10 +8,7 @@ import '../../widgets/empty_state.dart';
 
 /// Section displaying NPC relationships with player characters.
 class NpcRelationshipsSection extends ConsumerWidget {
-  const NpcRelationshipsSection({
-    required this.relationshipsAsync,
-    super.key,
-  });
+  const NpcRelationshipsSection({required this.relationshipsAsync, super.key});
 
   final AsyncValue<List<NpcRelationship>> relationshipsAsync;
 
@@ -59,8 +56,9 @@ class _RelationshipCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final characterAsync =
-        ref.watch(characterByIdProvider(relationship.characterId));
+    final characterAsync = ref.watch(
+      characterByIdProvider(relationship.characterId),
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: Spacing.sm),
@@ -109,8 +107,10 @@ class _RelationshipCard extends ConsumerWidget {
               vertical: Spacing.xxs,
             ),
             decoration: BoxDecoration(
-              color: _sentimentColor(theme, relationship.sentiment)
-                  .withValues(alpha: 0.1),
+              color: _sentimentColor(
+                theme,
+                relationship.sentiment,
+              ).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(Spacing.badgeRadius),
             ),
             child: Text(

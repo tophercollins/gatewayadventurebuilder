@@ -110,48 +110,40 @@ class _SessionDetailContent extends ConsumerWidget {
               title: 'Session Summary',
               icon: Icons.description_outlined,
               preview: detail.summarySnippet,
-              onViewMore: () => context.go(
-                Routes.sessionSummaryPath(campaignId, sessionId),
-              ),
-              onEdit: () => context.go(
-                Routes.sessionSummaryPath(campaignId, sessionId),
-              ),
+              onViewMore: () =>
+                  context.go(Routes.sessionSummaryPath(campaignId, sessionId)),
+              onEdit: () =>
+                  context.go(Routes.sessionSummaryPath(campaignId, sessionId)),
             ),
             const SizedBox(height: Spacing.md),
             SectionCard(
               title: 'Extracted Items',
               icon: Icons.people_outline,
               preview: _buildEntitiesPreview(),
-              onViewMore: () => context.go(
-                Routes.sessionEntitiesPath(campaignId, sessionId),
-              ),
-              onEdit: () => context.go(
-                Routes.sessionEntitiesPath(campaignId, sessionId),
-              ),
+              onViewMore: () =>
+                  context.go(Routes.sessionEntitiesPath(campaignId, sessionId)),
+              onEdit: () =>
+                  context.go(Routes.sessionEntitiesPath(campaignId, sessionId)),
             ),
             const SizedBox(height: Spacing.md),
             SectionCard(
               title: "What's Next",
               icon: Icons.checklist_outlined,
               preview: detail.actionItemsSnippet,
-              onViewMore: () => context.go(
-                Routes.sessionActionsPath(campaignId, sessionId),
-              ),
-              onEdit: () => context.go(
-                Routes.sessionActionsPath(campaignId, sessionId),
-              ),
+              onViewMore: () =>
+                  context.go(Routes.sessionActionsPath(campaignId, sessionId)),
+              onEdit: () =>
+                  context.go(Routes.sessionActionsPath(campaignId, sessionId)),
             ),
             const SizedBox(height: Spacing.md),
             SectionCard(
               title: 'Player Moments',
               icon: Icons.star_outline,
               preview: detail.playerMomentsSnippet,
-              onViewMore: () => context.go(
-                Routes.sessionPlayersPath(campaignId, sessionId),
-              ),
-              onEdit: () => context.go(
-                Routes.sessionPlayersPath(campaignId, sessionId),
-              ),
+              onViewMore: () =>
+                  context.go(Routes.sessionPlayersPath(campaignId, sessionId)),
+              onEdit: () =>
+                  context.go(Routes.sessionPlayersPath(campaignId, sessionId)),
             ),
           ],
         ),
@@ -162,13 +154,19 @@ class _SessionDetailContent extends ConsumerWidget {
   String _buildEntitiesPreview() {
     final counts = <String>[];
     if (detail.npcs.isNotEmpty) {
-      counts.add('${detail.npcs.length} NPC${detail.npcs.length == 1 ? '' : 's'}');
+      counts.add(
+        '${detail.npcs.length} NPC${detail.npcs.length == 1 ? '' : 's'}',
+      );
     }
     if (detail.locations.isNotEmpty) {
-      counts.add('${detail.locations.length} location${detail.locations.length == 1 ? '' : 's'}');
+      counts.add(
+        '${detail.locations.length} location${detail.locations.length == 1 ? '' : 's'}',
+      );
     }
     if (detail.items.isNotEmpty) {
-      counts.add('${detail.items.length} item${detail.items.length == 1 ? '' : 's'}');
+      counts.add(
+        '${detail.items.length} item${detail.items.length == 1 ? '' : 's'}',
+      );
     }
     if (counts.isEmpty) return 'No entities extracted';
     return counts.join(', ');
@@ -177,12 +175,14 @@ class _SessionDetailContent extends ConsumerWidget {
   Future<void> _handleResync(BuildContext context, WidgetRef ref) async {
     // Get world ID from campaign
     final campaignRepo = ref.read(campaignRepositoryProvider);
-    final campaignWithWorld = await campaignRepo.getCampaignWithWorld(campaignId);
+    final campaignWithWorld = await campaignRepo.getCampaignWithWorld(
+      campaignId,
+    );
     if (campaignWithWorld == null) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Campaign not found')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Campaign not found')));
       }
       return;
     }
@@ -202,7 +202,9 @@ class _SessionDetailContent extends ConsumerWidget {
         );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Resync complete: ${result.totalUpdates} item(s) updated'),
+            content: Text(
+              'Resync complete: ${result.totalUpdates} item(s) updated',
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -226,10 +228,7 @@ class _SessionDetailContent extends ConsumerWidget {
 }
 
 class _SessionHeader extends StatelessWidget {
-  const _SessionHeader({
-    required this.detail,
-    required this.onResync,
-  });
+  const _SessionHeader({required this.detail, required this.onResync});
 
   final SessionDetailData detail;
   final VoidCallback onResync;
@@ -240,7 +239,8 @@ class _SessionHeader extends StatelessWidget {
     final session = detail.session;
 
     // Check if any content has been edited
-    final hasEdits = (detail.summary?.isEdited ?? false) ||
+    final hasEdits =
+        (detail.summary?.isEdited ?? false) ||
         detail.scenes.any((s) => s.isEdited) ||
         detail.npcs.any((n) => n.isEdited) ||
         detail.locations.any((l) => l.isEdited) ||
@@ -288,7 +288,9 @@ class _SessionHeader extends StatelessWidget {
               ),
               const SizedBox(width: Spacing.xs),
               Text(
-                formatDurationHuman(Duration(seconds: session.durationSeconds!)),
+                formatDurationHuman(
+                  Duration(seconds: session.durationSeconds!),
+                ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

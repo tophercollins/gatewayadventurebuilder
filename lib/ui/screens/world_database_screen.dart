@@ -104,7 +104,8 @@ class _WorldDatabaseContent extends StatelessWidget {
             : const EmptyState(
                 icon: Icons.public_outlined,
                 title: 'No entities yet',
-                message: 'NPCs, locations, and items will appear here '
+                message:
+                    'NPCs, locations, and items will appear here '
                     'as they are discovered in your sessions.',
               ),
       ),
@@ -113,10 +114,7 @@ class _WorldDatabaseContent extends StatelessWidget {
 }
 
 class _SearchBar extends StatelessWidget {
-  const _SearchBar({
-    required this.searchQuery,
-    required this.onChanged,
-  });
+  const _SearchBar({required this.searchQuery, required this.onChanged});
 
   final String searchQuery;
   final ValueChanged<String> onChanged;
@@ -225,9 +223,8 @@ class _NpcsList extends StatelessWidget {
             subtitle: item.npc.role,
             description: item.npc.description,
             appearanceCount: item.appearanceCount,
-            onTap: () => context.push(
-              Routes.npcDetailPath(campaignId, item.npc.id),
-            ),
+            onTap: () =>
+                context.push(Routes.npcDetailPath(campaignId, item.npc.id)),
           ),
         );
       },
@@ -337,9 +334,8 @@ class _ItemsList extends StatelessWidget {
             subtitle: item.item.itemType,
             description: item.item.description,
             appearanceCount: item.appearanceCount,
-            onTap: () => context.push(
-              Routes.itemDetailPath(campaignId, item.item.id),
-            ),
+            onTap: () =>
+                context.push(Routes.itemDetailPath(campaignId, item.item.id)),
           ),
         );
       },
