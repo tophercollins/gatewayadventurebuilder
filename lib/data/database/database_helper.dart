@@ -1,0 +1,109 @@
+import 'dart:io';
+
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'schema.dart';
+
+/// SQLite database helper for desktop platforms.
+/// Uses sqflite_common_ffi for Windows/Mac/Linux support.
+class DatabaseHelper {
+  static DatabaseHelper? _instance;
+  static Database? _database;
+
+  DatabaseHelper._();
+
+  /// Singleton instance.
+  static DatabaseHelper get instance {
+    _instance ??= DatabaseHelper._();
+    return _instance!;
+  }
+
+  /// Database version for migrations.
+  static const int _version = 1;
+
+  /// Database filename.
+  static const String _dbName = 'ttrpg_tracker.db';
+
+  /// Get database instance, initializing if needed.
+  Future<Database> get database async {
+    _database ??= await _initDatabase();
+    return _database!;
+  }
+
+  /// Initialize the database.
+  Future<Database> _initDatabase() async {
+    // Initialize FFI for desktop
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    final String dbPath = join(appDir.path, 'ttrpg_tracker', _dbName);
+
+    // Ensure directory exists
+    final dbDir = Directory(dirname(dbPath));
+    if (!await dbDir.exists()) {
+      await dbDir.create(recursive: true);
+    }
+
+    return await databaseFactoryFfi.openDatabase(
+      dbPath,
+      options: OpenDatabaseOptions(
+        version: _version,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+        onOpen: _onOpen,
+      ),
+    );
+  }
+
+  /// Create all tables on first launch.
+  Future<void> _onCreate(Database db, int version) async {
+    final batch = db.batch();
+
+    // Create all tables
+    for (final sql in DatabaseSchema.createTableStatements) {
+      batch.execute(sql);
+    }
+
+    // Create all indexes
+    for (final sql in DatabaseSchema.createIndexStatements) {
+      batch.execute(sql);
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  /// Handle database upgrades.
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Future migrations go here
+    // if (oldVersion < 2) { ... }
+  }
+
+  /// Called when database is opened.
+  Future<void> _onOpen(Database db) async {
+    // Enable foreign keys
+    await db.execute('PRAGMA foreign_keys = ON');
+  }
+
+  /// Close the database.
+  Future<void> close() async {
+    final db = _database;
+    if (db != null) {
+      await db.close();
+      _database = null;
+    }
+  }
+
+  /// Delete the database file. Use with caution.
+  Future<void> deleteDatabase() async {
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    final String dbPath = join(appDir.path, 'ttrpg_tracker', _dbName);
+    final file = File(dbPath);
+    if (await file.exists()) {
+      await close();
+      await file.delete();
+    }
+  }
+}

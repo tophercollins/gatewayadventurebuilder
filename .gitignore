@@ -1,0 +1,42 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+*.iml
+.metadata
+pubspec.lock
+
+# IDE
+.idea/
+*.swp
+*.swo
+.vscode/
+
+# macOS
+.DS_Store
+macos/Flutter/ephemeral/
+macos/Pods/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Windows
+windows/flutter/ephemeral/
+
+# Environment & Secrets
+.env
+.env.*
+*.key
+*.pem
+
+# API keys - never commit
+lib/config/secrets.dart
+
+# Audio files (large, local only)
+audio_files/
+
+# Coverage
+coverage/
+
+# Flutter crash logs
+flutter_*.log

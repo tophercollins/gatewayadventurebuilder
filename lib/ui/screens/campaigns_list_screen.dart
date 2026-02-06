@@ -1,0 +1,245 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../config/routes.dart';
+import '../../data/models/campaign.dart';
+import '../../providers/repository_providers.dart';
+import '../theme/spacing.dart';
+import '../widgets/status_badge.dart';
+
+/// Provider for campaigns list with session counts.
+final campaignsListProvider =
+    FutureProvider.autoDispose<List<CampaignWithSessionCount>>((ref) async {
+      final user = await ref.watch(currentUserProvider.future);
+      final campaignRepo = ref.watch(campaignRepositoryProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+
+      final campaigns = await campaignRepo.getCampaignsByUser(user.id);
+
+      final result = <CampaignWithSessionCount>[];
+      for (final campaign in campaigns) {
+        final sessions = await sessionRepo.getSessionsByCampaign(campaign.id);
+        result.add(
+          CampaignWithSessionCount(
+            campaign: campaign,
+            sessionCount: sessions.length,
+          ),
+        );
+      }
+      return result;
+    });
+
+/// Campaign with session count for display.
+class CampaignWithSessionCount {
+  const CampaignWithSessionCount({
+    required this.campaign,
+    required this.sessionCount,
+  });
+
+  final Campaign campaign;
+  final int sessionCount;
+}
+
+/// Campaigns list screen - displays all campaigns.
+/// Per APP_FLOW.md: Tap to navigate to Campaign Home.
+class CampaignsListScreen extends ConsumerWidget {
+  const CampaignsListScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final campaignsAsync = ref.watch(campaignsListProvider);
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
+        child: campaignsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => _ErrorState(error: error.toString()),
+          data: (campaigns) {
+            if (campaigns.isEmpty) {
+              return const _EmptyState();
+            }
+            return _CampaignsList(campaigns: campaigns);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _CampaignsList extends StatelessWidget {
+  const _CampaignsList({required this.campaigns});
+
+  final List<CampaignWithSessionCount> campaigns;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(Spacing.md),
+      itemCount: campaigns.length,
+      itemBuilder: (context, index) {
+        final item = campaigns[index];
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: index < campaigns.length - 1 ? Spacing.sm : 0,
+          ),
+          child: _CampaignCard(
+            campaign: item.campaign,
+            sessionCount: item.sessionCount,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CampaignCard extends StatelessWidget {
+  const _CampaignCard({required this.campaign, required this.sessionCount});
+
+  final Campaign campaign;
+  final int sessionCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(Spacing.cardRadius),
+      child: InkWell(
+        onTap: () => context.go(Routes.campaignPath(campaign.id)),
+        borderRadius: BorderRadius.circular(Spacing.cardRadius),
+        child: Container(
+          padding: const EdgeInsets.all(Spacing.cardPadding),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.colorScheme.outline),
+            borderRadius: BorderRadius.circular(Spacing.cardRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      campaign.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  StatusBadge(status: campaign.status),
+                ],
+              ),
+              if (campaign.gameSystem != null) ...[
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  campaign.gameSystem!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              const SizedBox(height: Spacing.sm),
+              Row(
+                children: [
+                  Icon(
+                    Icons.book_outlined,
+                    size: Spacing.iconSizeCompact,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  Text(
+                    '$sessionCount ${sessionCount == 1 ? 'session' : 'sessions'}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(Spacing.xl),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.folder_open_outlined,
+            size: 64,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: Spacing.md),
+          Text(
+            'No campaigns yet',
+            style: theme.textTheme.titleLarge,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: Spacing.sm),
+          Text(
+            'Create your first campaign to start tracking sessions',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: Spacing.lg),
+          FilledButton.icon(
+            onPressed: () => context.go(Routes.newCampaign),
+            icon: const Icon(Icons.add),
+            label: const Text('Create your first campaign'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.error});
+
+  final String error;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(Spacing.xl),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: theme.colorScheme.error),
+          const SizedBox(height: Spacing.md),
+          Text(
+            'Something went wrong',
+            style: theme.textTheme.titleLarge,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: Spacing.sm),
+          Text(
+            error,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}

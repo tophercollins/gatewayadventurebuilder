@@ -1,0 +1,47 @@
+name: ttrpg_tracker
+description: "TTRPG Session Tracker — record, transcribe, and analyze tabletop RPG sessions."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.0
+
+  # Local Database
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0
+  path_provider: ^2.1.0
+
+  # Audio Recording
+  record: ^5.0.0
+
+  # Backend & Sync
+  supabase_flutter: ^2.0.0
+
+  # AI/LLM
+  google_generative_ai: ^0.4.0
+
+  # Utilities
+  uuid: ^4.0.0
+  flutter_secure_storage: ^9.0.0
+  path: ^1.9.0
+
+  # Connectivity
+  connectivity_plus: ^6.0.0
+
+  # Routing
+  go_router: ^14.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
