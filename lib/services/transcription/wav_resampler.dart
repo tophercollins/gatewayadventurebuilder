@@ -90,8 +90,19 @@ class WavResampler {
             bitsPerSample = fmtBd.getUint16(14, Endian.little);
           }
         } else if (chunkId == 'data') {
-          dataSize = chunkSize;
           dataOffset = pos + 8;
+          final actualDataSize = fileLength - dataOffset;
+          // Streaming WAV recorders may write a placeholder dataSize
+          // that never gets updated. Use actual file size instead.
+          if (chunkSize == 0 ||
+              chunkSize > actualDataSize ||
+              (actualDataSize - chunkSize).abs() > 4096) {
+            debugPrint(
+              '[WavResampler] WARNING: data chunk size ($chunkSize) differs '
+              'from actual data ($actualDataSize). Using actual file size.',
+            );
+          }
+          dataSize = actualDataSize;
           break;
         }
 

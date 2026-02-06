@@ -181,8 +181,8 @@ class AudioChunker {
             bitsPerSample = fmtBd.getUint16(14, Endian.little);
           }
         } else if (chunkId == 'data') {
-          dataSize = chunkSize;
           dataOffset = pos + 8;
+          dataSize = fileLength - dataOffset;
           break;
         }
 
