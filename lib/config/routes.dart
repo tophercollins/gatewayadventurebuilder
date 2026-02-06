@@ -9,9 +9,11 @@ import '../ui/screens/home_screen.dart';
 import '../ui/screens/item_detail_screen.dart';
 import '../ui/screens/location_detail_screen.dart';
 import '../ui/screens/new_campaign_screen.dart';
-import '../ui/screens/npc_detail_screen.dart';
-import '../ui/screens/placeholder_screen.dart';
+import '../ui/screens/notification_settings/notification_settings_screen.dart';
+import '../ui/screens/npc_detail/npc_detail_screen.dart';
+import '../ui/screens/onboarding/onboarding_screen.dart';
 import '../ui/screens/players_screen.dart';
+import '../ui/screens/startup_screen.dart';
 import '../ui/screens/post_session_screen.dart';
 import '../ui/screens/recording_screen.dart';
 import '../ui/screens/session_actions_screen.dart';
@@ -27,8 +29,11 @@ import '../ui/widgets/app_shell.dart';
 /// Defined per APP_FLOW.md screen inventory.
 abstract final class Routes {
   // Core
+  static const String startup = '/startup';
   static const String home = '/';
   static const String onboarding = '/onboarding';
+  static const String settings = '/settings';
+  static const String notificationSettings = '/settings/notifications';
 
   // Campaigns
   static const String campaigns = '/campaigns';
@@ -53,7 +58,8 @@ abstract final class Routes {
   // World & Players
   static const String worldDatabase = '/campaigns/:id/world';
   static const String npcDetail = '/campaigns/:id/world/npcs/:npcId';
-  static const String locationDetail = '/campaigns/:id/world/locations/:locationId';
+  static const String locationDetail =
+      '/campaigns/:id/world/locations/:locationId';
   static const String itemDetail = '/campaigns/:id/world/items/:itemId';
   static const String players = '/campaigns/:id/players';
   static const String newPlayer = '/campaigns/:id/players/new';
@@ -99,15 +105,22 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 /// GoRouter configuration for the app.
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: Routes.home,
+  initialLocation: Routes.startup,
   routes: [
+    // Startup - checks onboarding state and redirects
+    GoRoute(
+      path: Routes.startup,
+      name: 'startup',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const StartupScreen(),
+    ),
+
     // Onboarding - outside shell (no sidebar)
     GoRoute(
       path: Routes.onboarding,
       name: 'onboarding',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) =>
-          const PlaceholderScreen(title: 'Onboarding', route: '/onboarding'),
+      builder: (context, state) => const OnboardingScreen(),
     ),
 
     // Main shell with sidebar
@@ -159,6 +172,26 @@ final GoRouter appRouter = GoRouter(
             title: 'New Campaign',
             showBack: true,
             child: const NewCampaignScreen(),
+          ),
+        ),
+
+        // Settings
+        GoRoute(
+          path: Routes.settings,
+          name: 'settings',
+          redirect: (context, state) => Routes.notificationSettings,
+        ),
+
+        // Notification Settings
+        GoRoute(
+          path: Routes.notificationSettings,
+          name: 'notificationSettings',
+          pageBuilder: (context, state) => _buildPage(
+            context: context,
+            state: state,
+            title: 'Notification Settings',
+            showBack: true,
+            child: const NotificationSettingsScreen(),
           ),
         ),
 
@@ -330,10 +363,7 @@ final List<RouteBase> _campaignRoutes = [
         state: state,
         title: 'Session',
         showBack: true,
-        child: SessionDetailScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: SessionDetailScreen(campaignId: id, sessionId: sessionId),
       );
     },
     routes: _sessionRoutes,
@@ -354,10 +384,7 @@ final List<RouteBase> _sessionRoutes = [
         state: state,
         title: 'Recording',
         showBack: true,
-        child: RecordingScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: RecordingScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),
@@ -374,10 +401,7 @@ final List<RouteBase> _sessionRoutes = [
         state: state,
         title: 'Session Complete',
         showBack: true,
-        child: PostSessionScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: PostSessionScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),
@@ -394,10 +418,7 @@ final List<RouteBase> _sessionRoutes = [
         state: state,
         title: 'Summary',
         showBack: true,
-        child: SessionSummaryScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: SessionSummaryScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),
@@ -414,10 +435,7 @@ final List<RouteBase> _sessionRoutes = [
         state: state,
         title: 'Extracted Items',
         showBack: true,
-        child: SessionEntitiesScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: SessionEntitiesScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),
@@ -434,10 +452,7 @@ final List<RouteBase> _sessionRoutes = [
         state: state,
         title: "What's Next",
         showBack: true,
-        child: SessionActionsScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: SessionActionsScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),
@@ -454,10 +469,7 @@ final List<RouteBase> _sessionRoutes = [
         state: state,
         title: 'Player Moments',
         showBack: true,
-        child: SessionPlayersScreen(
-          campaignId: id,
-          sessionId: sessionId,
-        ),
+        child: SessionPlayersScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),
@@ -476,53 +488,7 @@ CustomTransitionPage<void> _buildPage({
     child: child,
     transitionDuration: const Duration(milliseconds: 200),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
+      return FadeTransition(opacity: animation, child: child);
     },
   );
-}
-
-/// Placeholder content widget for routes (body only, no scaffold).
-class _PlaceholderContent extends StatelessWidget {
-  const _PlaceholderContent({
-    required this.title,
-    required this.route,
-  });
-
-  final String title;
-  final String route;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: theme.textTheme.headlineLarge,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            route,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontFamily: 'monospace',
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'Placeholder Content',
-            style: theme.textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
 }

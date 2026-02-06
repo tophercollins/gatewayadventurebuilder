@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/repositories/campaign_import_repository.dart';
 import '../data/repositories/processing_queue_repository.dart';
 import '../data/repositories/summary_repository.dart';
+import '../services/notifications/notification_service.dart';
 import '../services/processing/import_processor.dart';
 import '../services/processing/llm_service.dart';
 import '../services/processing/processing_types.dart';
 import '../services/processing/session_context.dart';
 import '../services/processing/session_processor.dart';
 import 'database_provider.dart';
+import 'notification_providers.dart';
 import 'repository_providers.dart';
 
 /// Provider for SummaryRepository.
@@ -116,11 +118,20 @@ class ProcessingState {
   }
 }
 
+/// Callback type for notification after processing.
+typedef OnProcessingComplete = Future<void> Function(String sessionId);
+
 /// Notifier for managing processing state.
 class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
-  ProcessingStateNotifier(this._processor) : super(const ProcessingState());
+  ProcessingStateNotifier({
+    required SessionProcessor processor,
+    OnProcessingComplete? onComplete,
+  })  : _processor = processor,
+        _onComplete = onComplete,
+        super(const ProcessingState());
 
   final SessionProcessor _processor;
+  final OnProcessingComplete? _onComplete;
 
   /// Process a session.
   Future<ProcessingResult> processSession(String sessionId) async {
@@ -143,6 +154,8 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
 
     if (result.success) {
       state = const ProcessingState(isProcessing: false);
+      // Trigger notification callback
+      await _onComplete?.call(sessionId);
     } else {
       state = ProcessingState(
         isProcessing: false,
@@ -163,7 +176,46 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
 final processingStateProvider =
     StateNotifierProvider<ProcessingStateNotifier, ProcessingState>((ref) {
   final processor = ref.watch(sessionProcessorProvider);
-  return ProcessingStateNotifier(processor);
+  final notificationService = ref.watch(notificationServiceProvider);
+  final settings = ref.watch(notificationSettingsProvider);
+  final summaryRepo = ref.watch(summaryRepositoryProvider);
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  final campaignRepo = ref.watch(campaignRepositoryProvider);
+  final inAppNotifier = ref.watch(inAppNotificationProvider.notifier);
+
+  return ProcessingStateNotifier(
+    processor: processor,
+    onComplete: (sessionId) async {
+      // Show in-app notification
+      final session = await sessionRepo.getSessionById(sessionId);
+      if (session != null) {
+        inAppNotifier.showProcessingComplete(
+          sessionId: sessionId,
+          sessionTitle: session.title ?? 'Session ${session.sessionNumber}',
+        );
+      }
+
+      // Send email notification if configured
+      if (settings.isConfigured) {
+        try {
+          final summary = await summaryRepo.getSummaryBySession(sessionId);
+          if (session != null && summary != null) {
+            final campaign = await campaignRepo.getCampaignById(session.campaignId);
+            if (campaign != null) {
+              await notificationService.notifySessionProcessed(
+                settings: settings,
+                campaign: campaign,
+                session: session,
+                summary: summary,
+              );
+            }
+          }
+        } catch (_) {
+          // Email failures should not block the user
+        }
+      }
+    },
+  );
 });
 
 /// Provider to check if LLM service is available.
@@ -185,5 +237,12 @@ final importProcessorProvider = Provider<ImportProcessor>((ref) {
     importRepo: ref.watch(campaignImportRepositoryProvider),
     campaignRepo: ref.watch(campaignRepositoryProvider),
     entityRepo: ref.watch(entityRepositoryProvider),
+  );
+});
+
+/// Provider for NotificationService.
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  return NotificationService(
+    emailService: ref.watch(emailServiceProvider),
   );
 });

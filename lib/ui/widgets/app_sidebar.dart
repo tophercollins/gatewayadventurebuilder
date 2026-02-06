@@ -140,6 +140,22 @@ class AppSidebar extends StatelessWidget {
               ],
             ),
           ),
+
+          // Settings at bottom
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+            child: _SidebarNavItem(
+              item: const SidebarItem(
+                icon: Icons.settings_outlined,
+                label: 'Settings',
+                path: Routes.notificationSettings,
+              ),
+              isCollapsed: isCollapsed,
+              isActive: _isActive(Routes.notificationSettings),
+              onTap: () => context.go(Routes.notificationSettings),
+            ),
+          ),
         ],
       ),
     );

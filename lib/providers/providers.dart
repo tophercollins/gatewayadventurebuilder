@@ -1,6 +1,7 @@
 // Barrel file for all Riverpod providers.
 export 'database_provider.dart';
 export 'editing_providers.dart';
+export 'onboarding_providers.dart';
 export 'player_providers.dart';
 export 'processing_providers.dart';
 export 'recording_providers.dart';

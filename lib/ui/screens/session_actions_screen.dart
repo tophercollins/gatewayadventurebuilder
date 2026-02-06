@@ -413,7 +413,7 @@ class _EditableActionItemCardState
         ),
         const SizedBox(height: Spacing.sm),
         DropdownButtonFormField<ActionItemStatus>(
-          value: _selectedStatus,
+          initialValue: _selectedStatus,
           decoration: InputDecoration(
             labelText: 'Status',
             isDense: true,
