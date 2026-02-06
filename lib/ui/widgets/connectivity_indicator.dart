@@ -35,19 +35,22 @@ class ConnectivityIndicator extends ConsumerWidget {
     final pendingCount = queueState.pendingCount;
     final isProcessing = queueState.isProcessing;
 
+    // Hide indicator entirely when status is unknown and not processing
+    if (!isOnline && !isOffline && !isProcessing) {
+      return const SizedBox.shrink();
+    }
+
     final statusColor = isOnline
         ? theme.brightness.success
         : isOffline
         ? colorScheme.error
-        : colorScheme.outline; // Unknown/initializing
+        : colorScheme.outline;
 
     final statusText = isProcessing
         ? 'Processing'
         : isOnline
         ? 'Online'
-        : isOffline
-        ? 'Offline'
-        : 'Checking...';
+        : 'Offline';
 
     final iconSize = compact ? Spacing.iconSizeCompact : Spacing.iconSize;
     final badgeSize = compact ? 14.0 : 16.0;
