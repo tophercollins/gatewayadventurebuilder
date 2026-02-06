@@ -1,13 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/models/notification_settings.dart';
 import '../services/notifications/email_service.dart';
 
 const _settingsKey = 'notification_settings';
-const _storage = FlutterSecureStorage();
 
 /// Provider for EmailService.
 final emailServiceProvider = Provider<EmailService>((ref) {
@@ -20,28 +19,22 @@ final emailServiceAvailableProvider = FutureProvider<bool>((ref) async {
   return await emailService.isAvailable();
 });
 
-/// Loads notification settings from secure storage.
+/// Loads notification settings from SharedPreferences.
 Future<NotificationSettings> _loadSettings() async {
-  try {
-    final json = await _storage.read(key: _settingsKey);
-    if (json == null || json.isEmpty) {
-      return const NotificationSettings();
-    }
-    final map = jsonDecode(json) as Map<String, dynamic>;
-    return NotificationSettings.fromMap(map);
-  } catch (_) {
+  final prefs = await SharedPreferences.getInstance();
+  final json = prefs.getString(_settingsKey);
+  if (json == null || json.isEmpty) {
     return const NotificationSettings();
   }
+  final map = jsonDecode(json) as Map<String, dynamic>;
+  return NotificationSettings.fromMap(map);
 }
 
-/// Saves notification settings to secure storage.
+/// Saves notification settings to SharedPreferences.
 Future<void> _saveSettings(NotificationSettings settings) async {
-  try {
-    final json = jsonEncode(settings.toMap());
-    await _storage.write(key: _settingsKey, value: json);
-  } catch (_) {
-    // Secure storage may not be available (e.g. missing entitlements).
-  }
+  final prefs = await SharedPreferences.getInstance();
+  final json = jsonEncode(settings.toMap());
+  await prefs.setString(_settingsKey, json);
 }
 
 /// Provider that loads notification settings from storage once at startup.
@@ -79,8 +72,8 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 }
 
 /// Provider for notification settings state.
-/// Waits for settings to load from secure storage before creating the notifier,
-/// so consumers always see persisted values instead of defaults.
+/// Waits for settings to load from SharedPreferences before creating the
+/// notifier, so consumers always see persisted values instead of defaults.
 final notificationSettingsProvider =
     StateNotifierProvider<NotificationSettingsNotifier, NotificationSettings>(
       (ref) {
