@@ -92,6 +92,12 @@ class QueueState {
   }
 }
 
+/// Callback when a queue item completes successfully.
+typedef QueueItemCompleteCallback = Future<void> Function(
+  String sessionId,
+  ProcessingResult result,
+);
+
 /// Manages the processing queue for offline-first session processing.
 /// Monitors the queue, checks connectivity, and processes items when online.
 class QueueManager {
@@ -100,10 +106,14 @@ class QueueManager {
     required SessionProcessor processor,
     required ConnectivityService connectivity,
     QueueConfig config = const QueueConfig(),
+    this.onItemComplete,
   }) : _queueRepo = queueRepo,
        _processor = processor,
        _connectivity = connectivity,
        _config = config;
+
+  /// Called after a queue item is successfully processed.
+  final QueueItemCompleteCallback? onItemComplete;
 
   final ProcessingQueueRepository _queueRepo;
   final SessionProcessor _processor;
@@ -209,6 +219,11 @@ class QueueManager {
 
       if (result.success) {
         await _queueRepo.markComplete(item.id);
+        try {
+          await onItemComplete?.call(item.sessionId, result);
+        } catch (_) {
+          // Notification failures should not affect queue processing.
+        }
       } else {
         await _handleError(item, result.error ?? 'Unknown error');
       }

@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/processing_queue.dart';
 import '../services/connectivity/connectivity_service.dart';
 import '../services/processing/queue_manager.dart';
+import 'campaign_providers.dart';
+import 'notification_providers.dart';
 import 'processing_providers.dart';
+import 'repository_providers.dart';
 
 export '../services/connectivity/connectivity_service.dart'
     show ConnectivityStatus;
@@ -43,6 +46,50 @@ final queueManagerProvider = Provider<QueueManager>((ref) {
     queueRepo: queueRepo,
     processor: processor,
     connectivity: connectivity,
+    onItemComplete: (sessionId, result) async {
+      final notificationService = ref.read(notificationServiceProvider);
+      final settings = ref.read(notificationSettingsProvider);
+      final sessionRepo = ref.read(sessionRepositoryProvider);
+      final summaryRepo = ref.read(summaryRepositoryProvider);
+      final campaignRepo = ref.read(campaignRepositoryProvider);
+      final inAppNotifier = ref.read(inAppNotificationProvider.notifier);
+
+      // Show in-app notification
+      final session = await sessionRepo.getSessionById(sessionId);
+      if (session != null) {
+        inAppNotifier.showProcessingComplete(
+          sessionId: sessionId,
+          sessionTitle: session.title ?? 'Session ${session.sessionNumber}',
+        );
+      }
+
+      // Send email notification if configured
+      if (settings.isConfigured) {
+        final summary = await summaryRepo.getSummaryBySession(sessionId);
+        if (session != null && summary != null) {
+          final campaign = await campaignRepo.getCampaignById(
+            session.campaignId,
+          );
+          final transcript = await sessionRepo.getLatestTranscript(sessionId);
+          if (campaign != null) {
+            await notificationService.notifySessionProcessed(
+              settings: settings,
+              campaign: campaign,
+              session: session,
+              summary: summary,
+              durationSeconds: session.durationSeconds,
+              sceneCount: result.sceneCount,
+              npcCount: result.npcCount,
+              locationCount: result.locationCount,
+              itemCount: result.itemCount,
+              actionItemCount: result.actionItemCount,
+              momentCount: result.momentCount,
+              transcript: transcript?.displayText,
+            );
+          }
+        }
+      }
+    },
   );
 
   ref.onDispose(() => manager.dispose());
@@ -90,12 +137,14 @@ final queueItemBySessionProvider =
 
 /// Notifier for managing queue initialization and actions.
 class QueueNotifier extends StateNotifier<QueueState> {
-  QueueNotifier(this._manager, this._connectivity) : super(const QueueState()) {
+  QueueNotifier(this._manager, this._connectivity, this._ref)
+      : super(const QueueState()) {
     _initialize();
   }
 
   final QueueManager _manager;
   final ConnectivityService _connectivity;
+  final Ref _ref;
 
   Future<void> _initialize() async {
     // Initialize connectivity first
@@ -106,6 +155,10 @@ class QueueNotifier extends StateNotifier<QueueState> {
 
     // Listen to state changes
     _manager.stateStream.listen((newState) {
+      // Refresh session lists when queue processing completes
+      if (state.isProcessing && !newState.isProcessing) {
+        _ref.read(sessionsRevisionProvider.notifier).state++;
+      }
       state = newState;
     });
   }
@@ -137,7 +190,7 @@ final queueNotifierProvider = StateNotifierProvider<QueueNotifier, QueueState>((
 ) {
   final manager = ref.watch(queueManagerProvider);
   final connectivity = ref.watch(connectivityServiceProvider);
-  return QueueNotifier(manager, connectivity);
+  return QueueNotifier(manager, connectivity, ref);
 });
 
 /// Provider for processing progress for a specific session.
