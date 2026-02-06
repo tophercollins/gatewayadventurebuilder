@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 
 import 'app.dart';
+import 'config/env_config.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   JustAudioMediaKit.ensureInitialized();
-  runApp(const ProviderScope(child: TTRPGTrackerApp()));
+  await EnvConfig.init();
+  runApp(const ProviderScope(child: HistoryCheckApp()));
 }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/campaign.dart';
 import '../data/models/session.dart';
 import '../data/models/world.dart';
+import '../data/repositories/campaign_repository.dart';
+import 'processing_providers.dart';
 import 'repository_providers.dart';
 
 /// Revision counter to force campaign list refresh.
@@ -82,3 +84,55 @@ class CampaignDetail {
   final List<Session> sessions;
   final int playerCount;
 }
+
+/// Service for campaign CRUD operations.
+/// Centralizes repo access and revision bumping.
+class CampaignEditor {
+  CampaignEditor(this._campaignRepo, this._ref);
+
+  final CampaignRepository _campaignRepo;
+  final Ref _ref;
+
+  /// Creates a campaign with an optional import text.
+  /// Returns the new campaign's ID.
+  Future<String> createCampaign({
+    required String name,
+    String? gameSystem,
+    String? description,
+    String? importText,
+  }) async {
+    final user = await _ref.read(currentUserProvider.future);
+    final campaign = await _campaignRepo.createCampaign(
+      userId: user.id,
+      name: name,
+      gameSystem: gameSystem,
+      description: description,
+    );
+
+    if (importText != null && importText.isNotEmpty) {
+      final importRepo = _ref.read(campaignImportRepositoryProvider);
+      await importRepo.create(campaignId: campaign.id, rawText: importText);
+    }
+
+    _ref.read(campaignsRevisionProvider.notifier).state++;
+    return campaign.id;
+  }
+
+  /// Updates a campaign.
+  Future<void> updateCampaign(Campaign updated) async {
+    await _campaignRepo.updateCampaign(updated);
+    _ref.read(campaignsRevisionProvider.notifier).state++;
+  }
+
+  /// Deletes a campaign and all its data.
+  Future<void> deleteCampaign(String campaignId) async {
+    await _campaignRepo.deleteCampaign(campaignId);
+    _ref.read(campaignsRevisionProvider.notifier).state++;
+  }
+}
+
+/// Provider for campaign editor operations.
+final campaignEditorProvider = Provider<CampaignEditor>((ref) {
+  final campaignRepo = ref.watch(campaignRepositoryProvider);
+  return CampaignEditor(campaignRepo, ref);
+});

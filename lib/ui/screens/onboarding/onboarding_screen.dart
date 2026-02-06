@@ -85,6 +85,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   RecordPage(),
                   TranscribePage(),
                   InsightsPage(),
+                  ThemePreferencePage(),
                 ],
               ),
             ),

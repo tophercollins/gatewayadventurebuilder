@@ -3,9 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/podcast_providers.dart';
-import '../../providers/processing_providers.dart';
-import '../../providers/session_detail_providers.dart';
-import '../../providers/transcription_providers.dart';
 import '../theme/spacing.dart';
 
 /// A card widget that displays a podcast-style recap script for a session.
@@ -273,53 +270,11 @@ class _PodcastCardState extends ConsumerState<PodcastCard> {
           );
   }
 
-  Future<void> _generate(WidgetRef ref) async {
-    final generator = ref.read(podcastGeneratorProvider);
-    final notifier = ref.read(podcastGenerationStateProvider.notifier);
-    final summaryRepo = ref.read(summaryRepositoryProvider);
-
-    // Load session summary
-    final summary = await summaryRepo.getSummaryBySession(widget.sessionId);
-    if (summary == null || summary.overallSummary == null) {
-      notifier.setError(
-        'No session summary available. Process the session first.',
-      );
-      return;
-    }
-
-    // Load transcript text
-    final transcriptAsync = ref.read(
-      sessionTranscriptProvider(widget.sessionId),
+  void _generate(WidgetRef ref) {
+    ref.read(podcastGenerationStateProvider.notifier).generate(
+      sessionId: widget.sessionId,
+      campaignId: widget.campaignId,
     );
-    final transcriptText = transcriptAsync.valueOrNull?.displayText ?? '';
-
-    // Load campaign name and attendees from session detail
-    final detailAsync = ref.read(
-      sessionDetailProvider(
-        (campaignId: widget.campaignId, sessionId: widget.sessionId),
-      ),
-    );
-    final detail = detailAsync.valueOrNull;
-    final campaignName = detail?.session.title ?? 'Campaign Session';
-    final attendeeNames =
-        detail?.players.values.map((p) => p.name).toList();
-
-    notifier.setGenerating();
-
-    final result = await generator.generateScript(
-      summary: summary.overallSummary!,
-      transcript: transcriptText,
-      campaignName: campaignName,
-      attendeeNames: attendeeNames,
-    );
-
-    if (result.isSuccess && result.data != null) {
-      await summaryRepo.updatePodcastScript(summary.id, result.data!);
-      notifier.setComplete();
-      ref.invalidate(podcastScriptProvider(widget.sessionId));
-    } else {
-      notifier.setError(result.error ?? 'Failed to generate podcast script');
-    }
   }
 
   void _copyToClipboard(BuildContext context, String text) {

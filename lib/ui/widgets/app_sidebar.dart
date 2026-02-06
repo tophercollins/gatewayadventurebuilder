@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
-import '../../providers/theme_provider.dart';
 import '../theme/spacing.dart';
 
 /// Navigation item for the sidebar.
@@ -21,7 +19,7 @@ class SidebarItem {
 
 /// Collapsible sidebar navigation for desktop.
 /// Shows on screens > 1024px width.
-class AppSidebar extends ConsumerWidget {
+class AppSidebar extends StatelessWidget {
   const AppSidebar({
     required this.isCollapsed,
     required this.onToggleCollapse,
@@ -48,6 +46,16 @@ class AppSidebar extends ConsumerWidget {
       icon: Icons.folder_outlined,
       label: 'Campaigns',
       path: Routes.campaigns,
+    ),
+    const SidebarItem(
+      icon: Icons.public_outlined,
+      label: 'Worlds',
+      path: Routes.worlds,
+    ),
+    const SidebarItem(
+      icon: Icons.people_outline,
+      label: 'Players',
+      path: Routes.allPlayers,
     ),
     const SidebarItem(
       icon: Icons.bar_chart_outlined,
@@ -85,18 +93,21 @@ class AppSidebar extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: isCollapsed ? collapsedWidth : expandedWidth,
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: colorScheme.surface,
         border: Border(right: BorderSide(color: colorScheme.outline)),
       ),
-      child: Column(
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
         children: [
           // Header with collapse toggle
           _SidebarHeader(
@@ -150,15 +161,6 @@ class AppSidebar extends ConsumerWidget {
             ),
           ),
 
-          // Theme toggle
-          if (!isCollapsed)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.md,
-                vertical: Spacing.xs,
-              ),
-              child: _ThemeToggle(),
-            ),
           // Settings at bottom
           const Divider(height: 1),
           Padding(
@@ -175,6 +177,7 @@ class AppSidebar extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -201,7 +204,7 @@ class _SidebarHeader extends StatelessWidget {
             const SizedBox(width: Spacing.md),
             Expanded(
               child: Text(
-                'TTRPG Tracker',
+                'History Check',
                 style: theme.textTheme.titleMedium,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -290,60 +293,3 @@ class _SidebarNavItem extends StatelessWidget {
   }
 }
 
-class _ThemeToggle extends ConsumerWidget {
-  const _ThemeToggle();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        Icon(
-          _iconForMode(themeMode),
-          size: Spacing.iconSize,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: Spacing.sm),
-        Expanded(
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<ThemeMode>(
-              value: themeMode,
-              isExpanded: true,
-              isDense: true,
-              style: theme.textTheme.bodySmall,
-              items: const [
-                DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text('System'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.light,
-                  child: Text('Light'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.dark,
-                  child: Text('Dark'),
-                ),
-              ],
-              onChanged: (mode) {
-                if (mode != null) {
-                  ref.read(themeModeProvider.notifier).setThemeMode(mode);
-                }
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  IconData _iconForMode(ThemeMode mode) {
-    return switch (mode) {
-      ThemeMode.system => Icons.brightness_auto,
-      ThemeMode.light => Icons.light_mode,
-      ThemeMode.dark => Icons.dark_mode,
-    };
-  }
-}

@@ -2,28 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../config/constants.dart';
 import '../../config/routes.dart';
 import '../../providers/campaign_providers.dart';
-import '../../providers/processing_providers.dart';
-import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
-
-/// Common game systems for dropdown.
-const _gameSystems = [
-  'Dungeons & Dragons 5e',
-  'Pathfinder 2e',
-  'Pathfinder 1e',
-  'Call of Cthulhu',
-  'Vampire: The Masquerade',
-  'Shadowrun',
-  'Starfinder',
-  'GURPS',
-  'Savage Worlds',
-  'Fate Core',
-  'Blades in the Dark',
-  'Monster of the Week',
-  'Other',
-];
 
 /// New Campaign screen - form to create a new campaign.
 /// Per APP_FLOW.md Flow 3: name (required), game system, description.
@@ -66,29 +48,17 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final user = await ref.read(currentUserProvider.future);
-      final campaignRepo = ref.read(campaignRepositoryProvider);
-
-      // Create campaign (auto-creates world with same name)
-      final campaign = await campaignRepo.createCampaign(
-        userId: user.id,
+      final campaignId = await ref.read(campaignEditorProvider).createCampaign(
         name: _nameController.text.trim(),
         gameSystem: _getGameSystem(),
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
+        importText: _importController.text.trim(),
       );
 
-      // Handle import text if provided (stub for Phase 8)
-      final importText = _importController.text.trim();
-      if (importText.isNotEmpty) {
-        await _storeImportForProcessing(campaign.id, importText);
-      }
-
-      ref.read(campaignsRevisionProvider.notifier).state++;
-
       if (mounted) {
-        context.go(Routes.campaignPath(campaign.id));
+        context.go(Routes.campaignPath(campaignId));
       }
     } catch (e) {
       if (mounted) {
@@ -104,15 +74,6 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  /// Stores import text for Phase 8 processing.
-  Future<void> _storeImportForProcessing(
-    String campaignId,
-    String importText,
-  ) async {
-    final importRepo = ref.read(campaignImportRepositoryProvider);
-    await importRepo.create(campaignId: campaignId, rawText: importText);
   }
 
   @override
@@ -194,7 +155,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         DropdownButtonFormField<String>(
           initialValue: _selectedGameSystem,
           hint: const Text('Select game system'),
-          items: _gameSystems.map((system) {
+          items: gameSystems.map((system) {
             return DropdownMenuItem(value: system, child: Text(system));
           }).toList(),
           onChanged: (value) {

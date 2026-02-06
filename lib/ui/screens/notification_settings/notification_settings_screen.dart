@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/notification_providers.dart';
+import '../../../providers/theme_provider.dart';
 import '../../theme/spacing.dart';
 import 'notification_settings_widgets.dart';
 
@@ -50,8 +51,21 @@ class _NotificationSettingsScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Notification Settings',
+                'Settings',
                 style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: Spacing.xl),
+
+              // Appearance Section
+              _ThemeSection(),
+              const SizedBox(height: Spacing.xl),
+
+              // Notifications Header
+              Text(
+                'Notifications',
+                style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -62,7 +76,7 @@ class _NotificationSettingsScreenState
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: Spacing.xl),
+              const SizedBox(height: Spacing.lg),
 
               // Email Service Status
               emailAvailable.when(
@@ -217,6 +231,51 @@ class _NotificationSettingsScreenState
                 child: const Text('Save'),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Theme appearance section for the settings screen.
+class _ThemeSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final themeMode = ref.watch(themeModeProvider);
+
+    return NotificationSection(
+      title: 'Appearance',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Theme',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          SegmentedButton<ThemeMode>(
+            segments: const [
+              ButtonSegment(
+                value: ThemeMode.light,
+                icon: Icon(Icons.light_mode, size: 18),
+                label: Text('Light'),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                icon: Icon(Icons.dark_mode, size: 18),
+                label: Text('Dark'),
+              ),
+            ],
+            selected: {themeMode},
+            onSelectionChanged: (selected) {
+              ref
+                  .read(themeModeProvider.notifier)
+                  .setThemeMode(selected.first);
+            },
           ),
         ],
       ),

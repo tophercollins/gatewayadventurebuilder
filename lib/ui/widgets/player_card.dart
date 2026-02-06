@@ -4,6 +4,7 @@ import '../../data/models/character.dart';
 import '../../data/models/player.dart';
 import '../theme/spacing.dart';
 import 'character_detail_card.dart';
+import 'delete_confirmation_dialog.dart';
 import 'player_edit_form.dart';
 
 /// Card widget displaying a player with their characters.
@@ -15,6 +16,8 @@ class PlayerCard extends StatefulWidget {
     required this.campaignId,
     required this.onPlayerUpdated,
     required this.onCharacterUpdated,
+    this.onPlayerDeleted,
+    this.onCharacterDeleted,
     super.key,
   });
 
@@ -23,6 +26,8 @@ class PlayerCard extends StatefulWidget {
   final String campaignId;
   final ValueChanged<Player> onPlayerUpdated;
   final ValueChanged<Character> onCharacterUpdated;
+  final VoidCallback? onPlayerDeleted;
+  final ValueChanged<String>? onCharacterDeleted;
 
   @override
   State<PlayerCard> createState() => _PlayerCardState();
@@ -108,6 +113,9 @@ class _PlayerCardState extends State<PlayerCard> {
                 child: CharacterDetailCard(
                   character: character,
                   onUpdated: widget.onCharacterUpdated,
+                  onDeleted: widget.onCharacterDeleted != null
+                      ? () => widget.onCharacterDeleted!(character.id)
+                      : null,
                 ),
               );
             }),
@@ -159,7 +167,28 @@ class _PlayerCardState extends State<PlayerCard> {
           onPressed: () => setState(() => _isEditingPlayer = true),
           tooltip: 'Edit player',
         ),
+        if (widget.onPlayerDeleted != null)
+          IconButton(
+            icon: Icon(
+              Icons.delete_outlined,
+              color: theme.colorScheme.error,
+            ),
+            onPressed: () => _confirmDeletePlayer(context),
+            tooltip: 'Delete player',
+          ),
       ],
     );
+  }
+
+  Future<void> _confirmDeletePlayer(BuildContext context) async {
+    final confirmed = await showDeleteConfirmation(
+      context,
+      title: 'Delete Player',
+      message:
+          'Are you sure you want to delete "${widget.player.name}"? '
+          'This cannot be undone.',
+    );
+    if (!mounted) return;
+    if (confirmed) widget.onPlayerDeleted?.call();
   }
 }

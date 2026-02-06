@@ -25,34 +25,24 @@ class AudioPlayerCard extends ConsumerStatefulWidget {
 }
 
 class _AudioPlayerCardState extends ConsumerState<AudioPlayerCard> {
-  bool _loading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAudio());
-  }
-
-  Future<void> _loadAudio() async {
-    if (!mounted || !widget.audioInfo.fileExists || _loading) return;
-    _loading = true;
-    try {
-      final notifier = ref.read(playbackNotifierProvider.notifier);
-      await notifier.loadSession(
-        widget.audioInfo.filePath,
-        widget.sessionId,
-      );
-    } catch (_) {
-      // Error state is handled by the PlaybackNotifier.
-    } finally {
-      _loading = false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final playback = ref.watch(playbackNotifierProvider);
+
+    // Auto-load audio when the notifier is freshly created (idle).
+    // loadSession transitions to PlaybackStatus.loading immediately,
+    // so the idle guard prevents re-triggering on subsequent rebuilds.
+    if (playback.status == PlaybackStatus.idle && widget.audioInfo.fileExists) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(playbackNotifierProvider.notifier).loadSession(
+            widget.audioInfo.filePath,
+            widget.sessionId,
+          );
+        }
+      });
+    }
 
     if (!widget.audioInfo.fileExists) {
       return _buildFileNotFoundCard(theme);

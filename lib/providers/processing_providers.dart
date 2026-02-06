@@ -52,9 +52,6 @@ final sessionContextLoaderProvider = Provider<SessionContextLoader>((ref) {
 
 /// Provider for SessionProcessor.
 final sessionProcessorProvider = Provider<SessionProcessor>((ref) {
-  final emailService = ref.watch(emailServiceProvider);
-  final notificationSettings = ref.watch(notificationSettingsProvider);
-
   return SessionProcessor(
     llmService: ref.watch(llmServiceProvider),
     sessionRepo: ref.watch(sessionRepositoryProvider),
@@ -63,8 +60,6 @@ final sessionProcessorProvider = Provider<SessionProcessor>((ref) {
     actionItemRepo: ref.watch(actionItemRepositoryProvider),
     momentRepo: ref.watch(playerMomentRepositoryProvider),
     contextLoader: ref.watch(sessionContextLoaderProvider),
-    emailService: emailService,
-    notificationSettings: notificationSettings,
   );
 });
 
@@ -126,7 +121,10 @@ class ProcessingState {
 }
 
 /// Callback type for notification after processing.
-typedef OnProcessingComplete = Future<void> Function(String sessionId);
+typedef OnProcessingComplete = Future<void> Function(
+  String sessionId,
+  ProcessingResult result,
+);
 
 /// Notifier for managing processing state.
 class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
@@ -159,7 +157,11 @@ class ProcessingStateNotifier extends StateNotifier<ProcessingState> {
     if (result.success) {
       state = const ProcessingState(isProcessing: false);
       // Trigger notification callback
-      await _onComplete?.call(sessionId);
+      try {
+        await _onComplete?.call(sessionId, result);
+      } catch (_) {
+        // Notification failures should not affect processing result.
+      }
     } else {
       state = ProcessingState(isProcessing: false, error: result.error);
     }
@@ -186,7 +188,7 @@ final processingStateProvider =
 
       return ProcessingStateNotifier(
         processor: processor,
-        onComplete: (sessionId) async {
+        onComplete: (sessionId, result) async {
           // Show in-app notification
           final session = await sessionRepo.getSessionById(sessionId);
           if (session != null) {
@@ -204,12 +206,23 @@ final processingStateProvider =
                 final campaign = await campaignRepo.getCampaignById(
                   session.campaignId,
                 );
+                final transcript = await sessionRepo.getLatestTranscript(
+                  sessionId,
+                );
                 if (campaign != null) {
                   await notificationService.notifySessionProcessed(
                     settings: settings,
                     campaign: campaign,
                     session: session,
                     summary: summary,
+                    durationSeconds: session.durationSeconds,
+                    sceneCount: result.sceneCount,
+                    npcCount: result.npcCount,
+                    locationCount: result.locationCount,
+                    itemCount: result.itemCount,
+                    actionItemCount: result.actionItemCount,
+                    momentCount: result.momentCount,
+                    transcript: transcript?.displayText,
                   );
                 }
               }

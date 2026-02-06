@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/spacing.dart';
 
 /// Number of pages in the onboarding flow.
-const int totalOnboardingPages = 4;
+const int totalOnboardingPages = 5;
 
 /// Skip button that appears at top right of onboarding.
 class OnboardingSkipButton extends StatelessWidget {

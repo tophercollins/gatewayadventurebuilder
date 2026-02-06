@@ -20,7 +20,6 @@ class PlayersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playersAsync = ref.watch(playersWithCharactersProvider(campaignId));
-    final theme = Theme.of(context);
 
     return playersAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -28,8 +27,6 @@ class PlayersScreen extends ConsumerWidget {
       data: (playersWithChars) => _PlayersContent(
         campaignId: campaignId,
         playersWithCharacters: playersWithChars,
-        theme: theme,
-        ref: ref,
       ),
     );
   }
@@ -69,21 +66,19 @@ class _ErrorContent extends StatelessWidget {
   }
 }
 
-class _PlayersContent extends StatelessWidget {
+class _PlayersContent extends ConsumerWidget {
   const _PlayersContent({
     required this.campaignId,
     required this.playersWithCharacters,
-    required this.theme,
-    required this.ref,
   });
 
   final String campaignId;
   final List<PlayerWithCharacters> playersWithCharacters;
-  final ThemeData theme;
-  final WidgetRef ref;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(Spacing.lg),
       child: Center(
@@ -92,12 +87,12 @@ class _PlayersContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context),
+              _buildHeader(context, theme),
               const SizedBox(height: Spacing.lg),
               if (playersWithCharacters.isEmpty)
                 _EmptyState(campaignId: campaignId)
               else
-                _buildPlayersList(context),
+                _buildPlayersList(context, ref),
             ],
           ),
         ),
@@ -105,7 +100,7 @@ class _PlayersContent extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -129,7 +124,7 @@ class _PlayersContent extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayersList(BuildContext context) {
+  Widget _buildPlayersList(BuildContext context, WidgetRef ref) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -142,24 +137,94 @@ class _PlayersContent extends StatelessWidget {
             player: pwc.player,
             characters: pwc.characters,
             campaignId: campaignId,
-            onPlayerUpdated: (player) => _updatePlayer(player),
-            onCharacterUpdated: (character) => _updateCharacter(character),
+            onPlayerUpdated: (player) =>
+                _updatePlayer(context, ref, player),
+            onCharacterUpdated: (character) =>
+                _updateCharacter(context, ref, character),
+            onPlayerDeleted: () =>
+                _deletePlayer(context, ref, pwc.player),
+            onCharacterDeleted: (characterId) =>
+                _deleteCharacter(context, ref, characterId),
           ),
         );
       },
     );
   }
 
-  Future<void> _updatePlayer(Player player) async {
-    final playerRepo = ref.read(playerRepositoryProvider);
-    await playerRepo.updatePlayer(player);
-    ref.invalidate(playersWithCharactersProvider(campaignId));
+  Future<void> _updatePlayer(
+    BuildContext context,
+    WidgetRef ref,
+    Player player,
+  ) async {
+    try {
+      final playerRepo = ref.read(playerRepositoryProvider);
+      await playerRepo.updatePlayer(player);
+      ref.invalidate(playersWithCharactersProvider(campaignId));
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update player: $e')),
+        );
+      }
+    }
   }
 
-  Future<void> _updateCharacter(Character character) async {
-    final playerRepo = ref.read(playerRepositoryProvider);
-    await playerRepo.updateCharacter(character);
-    ref.invalidate(playersWithCharactersProvider(campaignId));
+  Future<void> _updateCharacter(
+    BuildContext context,
+    WidgetRef ref,
+    Character character,
+  ) async {
+    try {
+      final playerRepo = ref.read(playerRepositoryProvider);
+      await playerRepo.updateCharacter(character);
+      ref.invalidate(playersWithCharactersProvider(campaignId));
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update character: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _deletePlayer(
+    BuildContext context,
+    WidgetRef ref,
+    Player player,
+  ) async {
+    try {
+      final playerRepo = ref.read(playerRepositoryProvider);
+      await playerRepo.removePlayerFromCampaign(
+        playerId: player.id,
+        campaignId: campaignId,
+      );
+      await playerRepo.deletePlayer(player.id);
+      ref.invalidate(playersWithCharactersProvider(campaignId));
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete player: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteCharacter(
+    BuildContext context,
+    WidgetRef ref,
+    String characterId,
+  ) async {
+    try {
+      final playerRepo = ref.read(playerRepositoryProvider);
+      await playerRepo.deleteCharacter(characterId);
+      ref.invalidate(playersWithCharactersProvider(campaignId));
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete character: $e')),
+        );
+      }
+    }
   }
 }
 

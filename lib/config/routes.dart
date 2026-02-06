@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../ui/screens/add_character_screen.dart';
 import '../ui/screens/add_session_screen.dart';
 import '../ui/screens/add_player_screen.dart';
+import '../ui/screens/all_players_screen.dart';
 import '../ui/screens/campaign_home_screen.dart';
 import '../ui/screens/campaigns_list_screen.dart';
 import '../ui/screens/home_screen.dart';
@@ -26,6 +27,7 @@ import '../ui/screens/session_summary_screen.dart';
 import '../ui/screens/session_transcript_screen.dart';
 import '../ui/screens/stats_screen.dart';
 import '../ui/screens/world_database_screen.dart';
+import '../ui/screens/worlds_screen.dart';
 import '../ui/widgets/app_shell.dart';
 
 /// Route paths for TTRPG Session Tracker.
@@ -38,6 +40,8 @@ abstract final class Routes {
   static const String settings = '/settings';
   static const String notificationSettings = '/settings/notifications';
   static const String stats = '/stats';
+  static const String worlds = '/worlds';
+  static const String allPlayers = '/players';
 
   // Campaigns
   static const String campaigns = '/campaigns';
@@ -216,6 +220,32 @@ final GoRouter appRouter = GoRouter(
             title: 'Stats',
             showBack: true,
             child: const StatsScreen(),
+          ),
+        ),
+
+        // Global Worlds
+        GoRoute(
+          path: Routes.worlds,
+          name: 'worlds',
+          pageBuilder: (context, state) => _buildPage(
+            context: context,
+            state: state,
+            title: 'Worlds',
+            showBack: true,
+            child: const WorldsScreen(),
+          ),
+        ),
+
+        // Global Players
+        GoRoute(
+          path: Routes.allPlayers,
+          name: 'allPlayers',
+          pageBuilder: (context, state) => _buildPage(
+            context: context,
+            state: state,
+            title: 'All Players',
+            showBack: true,
+            child: const AllPlayersScreen(),
           ),
         ),
 

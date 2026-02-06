@@ -124,7 +124,7 @@ class _WelcomeHeader extends StatelessWidget {
         ),
         const SizedBox(height: Spacing.md),
         Text(
-          'TTRPG Session Tracker',
+          'History Check',
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),

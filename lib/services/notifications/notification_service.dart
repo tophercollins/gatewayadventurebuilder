@@ -29,6 +29,14 @@ class NotificationService {
     required Session session,
     required SessionSummary summary,
     String? deepLink,
+    int? durationSeconds,
+    int sceneCount = 0,
+    int npcCount = 0,
+    int locationCount = 0,
+    int itemCount = 0,
+    int actionItemCount = 0,
+    int momentCount = 0,
+    String? transcript,
   }) async {
     // Skip if notifications not configured
     if (!settings.isConfigured || !settings.notifyOnProcessingComplete) {
@@ -57,6 +65,14 @@ class NotificationService {
       sessionNumber: session.sessionNumber ?? 1,
       sessionTitle: session.title,
       deepLink: deepLink,
+      durationSeconds: durationSeconds,
+      sceneCount: sceneCount,
+      npcCount: npcCount,
+      locationCount: locationCount,
+      itemCount: itemCount,
+      actionItemCount: actionItemCount,
+      momentCount: momentCount,
+      transcript: transcript,
     );
 
     // Send email

@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/export/export_service.dart';
 import '../services/export/file_saver.dart';
+import 'processing_providers.dart';
+import 'repository_providers.dart';
 
 /// Provider for ExportService.
 final exportServiceProvider = Provider<ExportService>((ref) {
@@ -26,20 +28,71 @@ class ExportState {
   final String? error;
 }
 
-/// Notifier for managing export state.
+/// Notifier for managing export operations.
+/// Orchestrates repo access, export formatting, and file saving.
 class ExportStateNotifier extends StateNotifier<ExportState> {
-  ExportStateNotifier() : super(const ExportState());
+  ExportStateNotifier(this._exportService, this._fileSaver, this._ref)
+      : super(const ExportState());
 
-  void setExporting() {
+  final ExportService _exportService;
+  final FileSaver _fileSaver;
+  final Ref _ref;
+
+  /// Exports a session in the given format and saves to disk.
+  Future<void> exportSession({
+    required String sessionId,
+    required String format,
+  }) async {
     state = const ExportState(isExporting: true);
-  }
 
-  void setComplete(String filePath) {
-    state = ExportState(exportedFilePath: filePath);
-  }
+    try {
+      final sessionRepo = _ref.read(sessionRepositoryProvider);
+      final summaryRepo = _ref.read(summaryRepositoryProvider);
+      final actionItemRepo = _ref.read(actionItemRepositoryProvider);
+      final entityRepo = _ref.read(entityRepositoryProvider);
+      final campaignRepo = _ref.read(campaignRepositoryProvider);
 
-  void setError(String error) {
-    state = ExportState(error: error);
+      final String content;
+      final String extension;
+
+      if (format == 'markdown') {
+        content = await _exportService.exportSessionMarkdown(
+          sessionId: sessionId,
+          sessionRepo: sessionRepo,
+          summaryRepo: summaryRepo,
+          actionItemRepo: actionItemRepo,
+          entityRepo: entityRepo,
+          campaignRepo: campaignRepo,
+        );
+        extension = 'md';
+      } else {
+        content = await _exportService.exportSessionJson(
+          sessionId: sessionId,
+          sessionRepo: sessionRepo,
+          summaryRepo: summaryRepo,
+          actionItemRepo: actionItemRepo,
+          entityRepo: entityRepo,
+          campaignRepo: campaignRepo,
+        );
+        extension = 'json';
+      }
+
+      final filePath = await _fileSaver.saveExportFile(
+        content: content,
+        suggestedFileName: 'session_$sessionId',
+        fileExtension: extension,
+      );
+
+      if (!mounted) return;
+
+      if (filePath != null) {
+        state = ExportState(exportedFilePath: filePath);
+      } else {
+        state = const ExportState(error: 'Failed to save export file');
+      }
+    } catch (e) {
+      if (mounted) state = ExportState(error: 'Export failed: $e');
+    }
   }
 
   void reset() {
@@ -50,5 +103,7 @@ class ExportStateNotifier extends StateNotifier<ExportState> {
 /// Provider for export state management.
 final exportStateProvider =
     StateNotifierProvider.autoDispose<ExportStateNotifier, ExportState>((ref) {
-  return ExportStateNotifier();
+  final exportService = ref.watch(exportServiceProvider);
+  final fileSaver = ref.watch(fileSaverProvider);
+  return ExportStateNotifier(exportService, fileSaver, ref);
 });

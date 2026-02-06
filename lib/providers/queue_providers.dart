@@ -5,6 +5,9 @@ import '../services/connectivity/connectivity_service.dart';
 import '../services/processing/queue_manager.dart';
 import 'processing_providers.dart';
 
+export '../services/connectivity/connectivity_service.dart'
+    show ConnectivityStatus;
+
 /// Provider for ConnectivityService.
 final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
   final service = ConnectivityService();

@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/session.dart';
@@ -125,15 +126,18 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
     );
 
     try {
+      debugPrint('[TranscriptionNotifier] Starting transcription for $sessionId');
       await _manager.transcribeSession(
         sessionId: sessionId,
         audioFilePath: audioFilePath,
         language: language,
         onProgress: _handleProgress,
       );
+      debugPrint('[TranscriptionNotifier] Transcription manager returned, updating status to queued');
 
       // Update session status to queued (ready for AI processing)
       await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.queued);
+      debugPrint('[TranscriptionNotifier] Status updated, setting state to complete');
 
       state = state.copyWith(
         phase: TranscriptionPhase.complete,
@@ -141,7 +145,9 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
         message: 'Transcription complete',
         isActive: false,
       );
+      debugPrint('[TranscriptionNotifier] Done');
     } on TranscriptionException catch (e) {
+      debugPrint('[TranscriptionNotifier] TranscriptionException: ${e.message}');
       state = state.copyWith(
         phase: TranscriptionPhase.error,
         message: e.userMessage,
@@ -152,6 +158,7 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
       // Update session status to error
       await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.error);
     } catch (e) {
+      debugPrint('[TranscriptionNotifier] Generic error: $e');
       final error = TranscriptionException(
         TranscriptionErrorType.unknown,
         message: e.toString(),

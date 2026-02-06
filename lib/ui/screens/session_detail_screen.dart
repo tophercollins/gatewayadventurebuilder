@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/session.dart';
+import '../../providers/campaign_providers.dart';
 import '../../providers/editing_providers.dart';
 import '../../providers/export_providers.dart';
 import '../../providers/playback_providers.dart';
@@ -86,6 +87,8 @@ class _SessionDetailContent extends ConsumerWidget {
             SessionHeader(
               detail: detail,
               onResync: () => _handleResync(context, ref),
+              onTitleUpdated: (newTitle) =>
+                  _handleTitleUpdate(context, ref, newTitle),
             ),
             // Audio player card — shown only when audio exists for this session.
             ...audioAsync.when(
@@ -204,6 +207,33 @@ class _SessionDetailContent extends ConsumerWidget {
     }
     if (counts.isEmpty) return 'No entities extracted';
     return counts.join(', ');
+  }
+
+  Future<void> _handleTitleUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    String newTitle,
+  ) async {
+    try {
+      final sessionRepo = ref.read(sessionRepositoryProvider);
+      final updated = detail.session.copyWith(
+        title: newTitle,
+        updatedAt: DateTime.now(),
+      );
+      await sessionRepo.updateSession(updated);
+      ref.invalidate(
+        sessionDetailProvider(
+          (campaignId: campaignId, sessionId: sessionId),
+        ),
+      );
+      ref.read(sessionsRevisionProvider.notifier).state++;
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update title: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _handleResync(BuildContext context, WidgetRef ref) async {

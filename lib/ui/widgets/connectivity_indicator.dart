@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/queue_providers.dart';
-import '../../services/connectivity/connectivity_service.dart';
 import '../theme/colors.dart';
 import '../theme/spacing.dart';
 

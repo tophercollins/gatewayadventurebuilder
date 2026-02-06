@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../data/models/transcript_segment.dart';
@@ -7,6 +9,7 @@ import '../../data/repositories/session_repository.dart';
 import 'audio_chunker.dart';
 import 'transcript_result.dart';
 import 'transcription_service.dart';
+import 'wav_resampler.dart';
 
 /// Callback for transcription manager progress updates.
 typedef TranscriptionManagerCallback =
@@ -89,6 +92,7 @@ class TranscriptionManager {
   }) async {
     _isCancelled = false;
     _currentSessionId = sessionId;
+    String? resampledTempPath;
 
     try {
       // Phase: Preparing
@@ -98,6 +102,22 @@ class TranscriptionManager {
         TranscriptionPhase.preparing,
         message: 'Preparing audio for transcription...',
       );
+
+      // Resample audio to 16 kHz mono if needed
+      _reportProgress(
+        onProgress,
+        sessionId,
+        TranscriptionPhase.chunking,
+        message: 'Preparing audio format...',
+      );
+
+      final resampleResult = await WavResampler.ensureWhisperFormat(
+        audioFilePath,
+      );
+      if (resampleResult.isTemporary) {
+        resampledTempPath = resampleResult.filePath;
+      }
+      final processedAudioPath = resampleResult.filePath;
 
       // Split audio into chunks if needed
       _reportProgress(
@@ -112,7 +132,7 @@ class TranscriptionManager {
       final chunker = preferredDuration != null
           ? AudioChunker(chunkDurationMs: preferredDuration)
           : audioChunker;
-      final chunks = await chunker.splitIfNeeded(audioFilePath);
+      final chunks = await chunker.splitIfNeeded(processedAudioPath);
 
       if (_isCancelled) {
         throw const TranscriptionException(TranscriptionErrorType.cancelled);
@@ -170,6 +190,7 @@ class TranscriptionManager {
       }
 
       // Merge results
+      debugPrint('[TranscriptionManager] Merging ${chunkResults.length} chunk results');
       _reportProgress(
         onProgress,
         sessionId,
@@ -182,8 +203,10 @@ class TranscriptionManager {
         modelName: transcriptionService.modelName,
         language: language,
       );
+      debugPrint('[TranscriptionManager] Merged: ${mergedResult.segments.length} segments, ${mergedResult.fullText.length} chars');
 
       // Save to database
+      debugPrint('[TranscriptionManager] Saving to database...');
       _reportProgress(
         onProgress,
         sessionId,
@@ -192,9 +215,12 @@ class TranscriptionManager {
       );
 
       await _saveToDatabase(sessionId, mergedResult);
+      debugPrint('[TranscriptionManager] Database save complete');
 
-      // Cleanup temporary chunk files
+      // Cleanup temporary files
       await audioChunker.cleanup();
+      await _cleanupTempFile(resampledTempPath);
+      debugPrint('[TranscriptionManager] Cleanup complete');
 
       // Complete
       _reportProgress(
@@ -204,10 +230,15 @@ class TranscriptionManager {
         message: 'Transcription complete',
       );
 
+      debugPrint('[TranscriptionManager] Transcription fully complete');
       return mergedResult;
-    } catch (e) {
+    } catch (e, stack) {
       // Cleanup on error
       await audioChunker.cleanup();
+      await _cleanupTempFile(resampledTempPath);
+
+      debugPrint('[TranscriptionManager] ERROR: $e');
+      debugPrint('[TranscriptionManager] Stack: $stack');
 
       if (e is TranscriptionException) {
         _reportProgress(
@@ -271,6 +302,14 @@ class TranscriptionManager {
     }).toList();
 
     await sessionRepository.createSegments(segments);
+  }
+
+  Future<void> _cleanupTempFile(String? path) async {
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+    } catch (_) {}
   }
 
   void _reportProgress(

@@ -1,6 +1,5 @@
 import 'package:uuid/uuid.dart';
 
-import '../../data/models/notification_settings.dart';
 import '../../data/models/scene.dart';
 import '../../data/models/session.dart';
 import '../../data/repositories/action_item_repository.dart';
@@ -8,8 +7,6 @@ import '../../data/repositories/entity_repository.dart';
 import '../../data/repositories/player_moment_repository.dart';
 import '../../data/repositories/session_repository.dart';
 import '../../data/repositories/summary_repository.dart';
-import '../notifications/email_service.dart';
-import '../notifications/email_templates.dart';
 import 'entity_matcher.dart';
 import 'llm_service.dart';
 import 'processing_types.dart';
@@ -26,8 +23,6 @@ class SessionProcessor {
     required ActionItemRepository actionItemRepo,
     required PlayerMomentRepository momentRepo,
     required SessionContextLoader contextLoader,
-    this.emailService,
-    this.notificationSettings,
   }) : _llmService = llmService,
        _sessionRepo = sessionRepo,
        _summaryRepo = summaryRepo,
@@ -43,8 +38,6 @@ class SessionProcessor {
   final ActionItemRepository _actionItemRepo;
   final PlayerMomentRepository _momentRepo;
   final SessionContextLoader _contextLoader;
-  final EmailService? emailService;
-  final NotificationSettings? notificationSettings;
 
   static const _uuid = Uuid();
 
@@ -97,9 +90,6 @@ class SessionProcessor {
 
       onProgress?.call(ProcessingStep.savingResults, 0.95);
       await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.complete);
-
-      // Send email notification if configured
-      await _sendNotificationEmail(context, stats);
 
       onProgress?.call(ProcessingStep.complete, 1.0);
       return ProcessingResult(
@@ -314,29 +304,4 @@ class SessionProcessor {
     return count;
   }
 
-  Future<void> _sendNotificationEmail(
-    SessionContext ctx,
-    ProcessingStats stats,
-  ) async {
-    final settings = notificationSettings;
-    final email = emailService;
-    if (settings == null || email == null) return;
-    if (!settings.isConfigured || !settings.notifyOnProcessingComplete) return;
-
-    final summary = await _summaryRepo.getSummaryBySession(ctx.session.id);
-    final summaryPreview = summary?.overallSummary ?? 'Processing complete';
-
-    final content = EmailTemplates.sessionProcessed(
-      recipientEmail: settings.emailAddress!,
-      campaignName: ctx.campaign.name,
-      sessionDate: ctx.session.date,
-      summaryPreview: summaryPreview.length > 200
-          ? '${summaryPreview.substring(0, 197)}...'
-          : summaryPreview,
-      sessionNumber: ctx.session.sessionNumber ?? 0,
-      sessionTitle: ctx.session.title,
-    );
-
-    await email.send(content);
-  }
 }

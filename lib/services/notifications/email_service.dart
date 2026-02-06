@@ -52,7 +52,7 @@ class ResendEmailService implements EmailService {
   ResendEmailService({http.Client? httpClient, String? fromEmail})
     : _httpClient = httpClient ?? http.Client(),
       _fromEmail =
-          fromEmail ?? 'TTRPG Tracker <notifications@ttrpg-tracker.app>';
+          fromEmail ?? 'History Check <notifications@historycheck.app>';
 
   final http.Client _httpClient;
   final String _fromEmail;

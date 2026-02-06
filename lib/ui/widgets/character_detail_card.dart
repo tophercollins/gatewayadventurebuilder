@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import '../../data/models/character.dart';
 import '../theme/spacing.dart';
 import 'character_edit_form.dart';
+import 'delete_confirmation_dialog.dart';
 
 /// Card widget displaying character details with inline editing support.
 class CharacterDetailCard extends StatefulWidget {
   const CharacterDetailCard({
     required this.character,
     required this.onUpdated,
+    this.onDeleted,
     super.key,
   });
 
   final Character character;
   final ValueChanged<Character> onUpdated;
+  final VoidCallback? onDeleted;
 
   @override
   State<CharacterDetailCard> createState() => _CharacterDetailCardState();
@@ -133,18 +136,38 @@ class _CharacterDetailCardState extends State<CharacterDetailCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Character Details', style: theme.textTheme.labelMedium),
-              IconButton(
-                icon: const Icon(
-                  Icons.edit_outlined,
-                  size: Spacing.iconSizeCompact,
-                ),
-                onPressed: () => setState(() => _isEditing = true),
-                tooltip: 'Edit character',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: Spacing.buttonHeight,
-                  minHeight: Spacing.buttonHeight,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      size: Spacing.iconSizeCompact,
+                    ),
+                    onPressed: () => setState(() => _isEditing = true),
+                    tooltip: 'Edit character',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: Spacing.buttonHeight,
+                      minHeight: Spacing.buttonHeight,
+                    ),
+                  ),
+                  if (widget.onDeleted != null)
+                    IconButton(
+                      icon: Icon(
+                        Icons.delete_outlined,
+                        size: Spacing.iconSizeCompact,
+                        color: theme.colorScheme.error,
+                      ),
+                      onPressed: () => _confirmDelete(context),
+                      tooltip: 'Delete character',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: Spacing.buttonHeight,
+                        minHeight: Spacing.buttonHeight,
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
@@ -193,6 +216,18 @@ class _CharacterDetailCardState extends State<CharacterDetailCard> {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDeleteConfirmation(
+      context,
+      title: 'Delete Character',
+      message:
+          'Are you sure you want to delete "${widget.character.name}"? '
+          'This cannot be undone.',
+    );
+    if (!mounted) return;
+    if (confirmed) widget.onDeleted?.call();
   }
 
   String _formatStatus(CharacterStatus status) {

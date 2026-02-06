@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 /// Utility for saving export content to a file on the local filesystem.
 ///
-/// Files are written to `Documents/TTRPGTracker/exports/` by default.
+/// Files are written to `Documents/HistoryCheck/exports/` by default.
 class FileSaver {
   /// Saves [content] to a file with the given [suggestedFileName] and
   /// [fileExtension].
@@ -33,7 +33,7 @@ class FileSaver {
   Future<Directory> _getExportDirectory() async {
     final documentsDir = await getApplicationDocumentsDirectory();
     final exportDir = Directory(
-      '${documentsDir.path}/TTRPGTracker/exports',
+      '${documentsDir.path}/HistoryCheck/exports',
     );
     if (!exportDir.existsSync()) {
       await exportDir.create(recursive: true);

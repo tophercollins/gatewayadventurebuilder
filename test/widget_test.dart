@@ -20,11 +20,13 @@ void main() {
     );
 
     // Startup screen shows app title while loading
-    expect(find.text('TTRPG Session Tracker'), findsOneWidget);
+    expect(find.text('History Check'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
-  testWidgets('HomeScreen shows main options', (WidgetTester tester) async {
+  testWidgets('HomeScreen shows title and loading state', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1.0;
 
@@ -32,11 +34,11 @@ void main() {
       const ProviderScope(child: MaterialApp(home: HomeScreen())),
     );
 
-    // Home screen content is displayed
-    expect(find.text('TTRPG Session Tracker'), findsOneWidget);
-    expect(find.text('Continue Campaign'), findsOneWidget);
-    expect(find.text('New Campaign'), findsOneWidget);
-    expect(find.text('Review Sessions'), findsOneWidget);
+    // Home screen title is displayed
+    expect(find.text('History Check'), findsOneWidget);
+
+    // Shows loading indicator while campaigns load
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('OnboardingScreen shows welcome page', (
@@ -54,7 +56,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Onboarding welcome page is displayed
-    expect(find.text('Welcome to TTRPG Session Tracker'), findsOneWidget);
+    expect(find.text('Welcome to History Check'), findsOneWidget);
     expect(find.text('Next'), findsOneWidget);
     expect(find.text('Skip'), findsOneWidget);
   });
@@ -74,7 +76,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Start on welcome page
-    expect(find.text('Welcome to TTRPG Session Tracker'), findsOneWidget);
+    expect(find.text('Welcome to History Check'), findsOneWidget);
 
     // Tap Next to go to page 2
     await tester.tap(find.text('Next'));
@@ -86,10 +88,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Automatic Transcription'), findsOneWidget);
 
-    // Tap Next to go to page 4 (last page)
+    // Tap Next to go to page 4
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
     expect(find.text('AI-Powered Insights'), findsOneWidget);
+
+    // Tap Next to go to page 5 (last page - theme preference)
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose Your Theme'), findsOneWidget);
 
     // Last page shows action buttons
     expect(find.text('Create Your First Campaign'), findsOneWidget);

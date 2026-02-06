@@ -12,7 +12,7 @@ final themeModeProvider =
 
 /// Notifier that persists theme mode to SharedPreferences.
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(ThemeMode.system) {
+  ThemeModeNotifier() : super(ThemeMode.light) {
     _load();
   }
 
@@ -22,7 +22,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     if (value != null) {
       state = ThemeMode.values.firstWhere(
         (m) => m.name == value,
-        orElse: () => ThemeMode.system,
+        orElse: () => ThemeMode.light,
       );
     }
   }

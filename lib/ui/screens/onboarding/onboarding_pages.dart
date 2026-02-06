@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../providers/theme_provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
 
@@ -80,7 +82,7 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const OnboardingPageContent(
       icon: Icons.auto_stories_outlined,
-      title: 'Welcome to TTRPG Session Tracker',
+      title: 'Welcome to History Check',
       description:
           'The easiest way to capture and remember everything that happens '
           'in your tabletop RPG sessions. Never lose track of NPCs, '
@@ -145,6 +147,81 @@ class InsightsPage extends StatelessWidget {
           'Get automatic summaries, scene breakdowns, and entity extraction. '
           'The AI identifies NPCs, locations, items, and action items from your '
           'sessions, building a searchable database of your campaign world.',
+    );
+  }
+}
+
+/// Theme preference page - lets user pick light/dark/system on first launch.
+class ThemePreferencePage extends ConsumerWidget {
+  const ThemePreferencePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final themeMode = ref.watch(themeModeProvider);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final contentWidth = screenWidth > Spacing.maxContentWidth
+        ? Spacing.maxContentWidth
+        : screenWidth;
+
+    return Center(
+      child: Container(
+        width: contentWidth,
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.palette_outlined,
+                size: 56,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: Spacing.xl),
+            Text(
+              'Choose Your Theme',
+              style: theme.textTheme.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: Spacing.md),
+            Text(
+              'Pick a look that suits you. You can change this anytime in Settings.',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: Spacing.xl),
+            SegmentedButton<ThemeMode>(
+              segments: const [
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  icon: Icon(Icons.light_mode, size: 18),
+                  label: Text('Light'),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  icon: Icon(Icons.dark_mode, size: 18),
+                  label: Text('Dark'),
+                ),
+              ],
+              selected: {themeMode},
+              onSelectionChanged: (selected) {
+                ref
+                    .read(themeModeProvider.notifier)
+                    .setThemeMode(selected.first);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

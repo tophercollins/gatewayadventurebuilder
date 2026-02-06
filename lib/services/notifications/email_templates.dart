@@ -13,10 +13,19 @@ abstract final class EmailTemplates {
     required int sessionNumber,
     String? sessionTitle,
     String? deepLink,
+    int? durationSeconds,
+    int sceneCount = 0,
+    int npcCount = 0,
+    int locationCount = 0,
+    int itemCount = 0,
+    int actionItemCount = 0,
+    int momentCount = 0,
+    String? transcript,
   }) {
     final dateFormatter = DateFormat('EEEE, MMMM d, yyyy');
     final formattedDate = dateFormatter.format(sessionDate);
     final displayTitle = sessionTitle ?? 'Session $sessionNumber';
+    final formattedDuration = _formatDuration(durationSeconds);
 
     return EmailContent(
       to: recipientEmail,
@@ -27,6 +36,14 @@ abstract final class EmailTemplates {
         formattedDate: formattedDate,
         summaryPreview: summaryPreview,
         deepLink: deepLink,
+        formattedDuration: formattedDuration,
+        sceneCount: sceneCount,
+        npcCount: npcCount,
+        locationCount: locationCount,
+        itemCount: itemCount,
+        actionItemCount: actionItemCount,
+        momentCount: momentCount,
+        transcript: transcript,
       ),
       textBody: _buildText(
         campaignName: campaignName,
@@ -34,8 +51,81 @@ abstract final class EmailTemplates {
         formattedDate: formattedDate,
         summaryPreview: summaryPreview,
         deepLink: deepLink,
+        formattedDuration: formattedDuration,
+        sceneCount: sceneCount,
+        npcCount: npcCount,
+        locationCount: locationCount,
+        itemCount: itemCount,
+        actionItemCount: actionItemCount,
+        momentCount: momentCount,
+        transcript: transcript,
       ),
     );
+  }
+
+  static String? _formatDuration(int? seconds) {
+    if (seconds == null || seconds <= 0) return null;
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    if (hours > 0) return '${hours}h ${minutes}m';
+    return '${minutes}m';
+  }
+
+  static String _buildStatsHtml({
+    String? formattedDuration,
+    required int sceneCount,
+    required int npcCount,
+    required int locationCount,
+    required int itemCount,
+    required int actionItemCount,
+    required int momentCount,
+  }) {
+    final rows = <String>[];
+    if (formattedDuration != null) {
+      rows.add(_statRow('Duration', formattedDuration));
+    }
+    if (sceneCount > 0) rows.add(_statRow('Scenes', '$sceneCount'));
+    if (npcCount > 0) rows.add(_statRow('NPCs', '$npcCount'));
+    if (locationCount > 0) rows.add(_statRow('Locations', '$locationCount'));
+    if (itemCount > 0) rows.add(_statRow('Items', '$itemCount'));
+    if (actionItemCount > 0) {
+      rows.add(_statRow('Action Items', '$actionItemCount'));
+    }
+    if (momentCount > 0) {
+      rows.add(_statRow('Player Moments', '$momentCount'));
+    }
+
+    if (rows.isEmpty) return '';
+
+    return '''
+              <p style="margin: 24px 0 8px; color: #666666; font-size: 14px;">
+                Session Stats
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0"
+                     style="background-color: #f7f7f7; border-radius: 6px;
+                            margin: 0 0 16px;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      ${rows.join('\n                      ')}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+    ''';
+  }
+
+  static String _statRow(String label, String value) {
+    return '''<tr>
+                        <td style="padding: 4px 0; color: #666666;
+                                   font-size: 14px; width: 140px;">
+                          $label
+                        </td>
+                        <td style="padding: 4px 0; color: #1a1a1a;
+                                   font-size: 14px; font-weight: 600;">
+                          $value
+                        </td>
+                      </tr>''';
   }
 
   static String _buildHtml({
@@ -44,6 +134,14 @@ abstract final class EmailTemplates {
     required String formattedDate,
     required String summaryPreview,
     String? deepLink,
+    String? formattedDuration,
+    required int sceneCount,
+    required int npcCount,
+    required int locationCount,
+    required int itemCount,
+    required int actionItemCount,
+    required int momentCount,
+    String? transcript,
   }) {
     final escapedCampaign = _escapeHtml(campaignName);
     final escapedTitle = _escapeHtml(displayTitle);
@@ -63,6 +161,31 @@ abstract final class EmailTemplates {
         </td>
       </tr>
       '''
+        : '';
+
+    final statsSection = _buildStatsHtml(
+      formattedDuration: formattedDuration,
+      sceneCount: sceneCount,
+      npcCount: npcCount,
+      locationCount: locationCount,
+      itemCount: itemCount,
+      actionItemCount: actionItemCount,
+      momentCount: momentCount,
+    );
+
+    final transcriptSection = transcript != null && transcript.isNotEmpty
+        ? '''
+              <p style="margin: 24px 0 8px; color: #666666; font-size: 14px;">
+                Full Transcript
+              </p>
+              <div style="background-color: #f7f7f7; border-radius: 6px;
+                          padding: 20px; margin: 0 0 16px;
+                          white-space: pre-wrap; word-wrap: break-word;
+                          font-family: -apple-system, BlinkMacSystemFont,
+                          'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                          font-size: 14px; line-height: 1.6; color: #333333;">
+${_escapeHtml(transcript)}</div>
+        '''
         : '';
 
     return '''
@@ -131,14 +254,20 @@ abstract final class EmailTemplates {
                 </tr>
               </table>
 
+              <!-- Stats -->
+              $statsSection
+
               <!-- Summary Preview -->
               <p style="margin: 24px 0 8px; color: #666666; font-size: 14px;">
-                Summary Preview
+                Summary
               </p>
               <p style="margin: 0; color: #333333; font-size: 16px;
                         line-height: 1.6; font-style: italic;">
                 "$escapedSummary"
               </p>
+
+              <!-- Transcript -->
+              $transcriptSection
 
               $viewButton
             </td>
@@ -150,7 +279,7 @@ abstract final class EmailTemplates {
                        background-color: #f7f7f7; border-radius: 0 0 8px 8px;">
               <p style="margin: 0; color: #666666; font-size: 14px;
                         text-align: center;">
-                TTRPG Session Tracker
+                History Check
               </p>
             </td>
           </tr>
@@ -169,20 +298,64 @@ abstract final class EmailTemplates {
     required String formattedDate,
     required String summaryPreview,
     String? deepLink,
+    String? formattedDuration,
+    required int sceneCount,
+    required int npcCount,
+    required int locationCount,
+    required int itemCount,
+    required int actionItemCount,
+    required int momentCount,
+    String? transcript,
   }) {
     final buffer = StringBuffer();
 
     buffer.writeln('SESSION READY FOR REVIEW');
     buffer.writeln('========================');
     buffer.writeln();
-    buffer.writeln('Your session has been processed and is ready for review.');
+    buffer.writeln(
+      'Your session has been processed and is ready for review.',
+    );
     buffer.writeln();
     buffer.writeln('Campaign: $campaignName');
     buffer.writeln('Session: $displayTitle');
     buffer.writeln('Date: $formattedDate');
+
+    // Stats
+    final hasStats = formattedDuration != null ||
+        sceneCount > 0 ||
+        npcCount > 0 ||
+        locationCount > 0 ||
+        itemCount > 0 ||
+        actionItemCount > 0 ||
+        momentCount > 0;
+
+    if (hasStats) {
+      buffer.writeln();
+      buffer.writeln('Stats:');
+      if (formattedDuration != null) {
+        buffer.writeln('  Duration: $formattedDuration');
+      }
+      if (sceneCount > 0) buffer.writeln('  Scenes: $sceneCount');
+      if (npcCount > 0) buffer.writeln('  NPCs: $npcCount');
+      if (locationCount > 0) buffer.writeln('  Locations: $locationCount');
+      if (itemCount > 0) buffer.writeln('  Items: $itemCount');
+      if (actionItemCount > 0) {
+        buffer.writeln('  Action Items: $actionItemCount');
+      }
+      if (momentCount > 0) buffer.writeln('  Player Moments: $momentCount');
+    }
+
     buffer.writeln();
-    buffer.writeln('Summary Preview:');
+    buffer.writeln('Summary:');
     buffer.writeln('"$summaryPreview"');
+
+    if (transcript != null && transcript.isNotEmpty) {
+      buffer.writeln();
+      buffer.writeln('Full Transcript:');
+      buffer.writeln('------------------------');
+      buffer.writeln(transcript);
+      buffer.writeln('------------------------');
+    }
 
     if (deepLink != null) {
       buffer.writeln();
@@ -191,7 +364,7 @@ abstract final class EmailTemplates {
 
     buffer.writeln();
     buffer.writeln('---');
-    buffer.writeln('TTRPG Session Tracker');
+    buffer.writeln('History Check');
 
     return buffer.toString();
   }

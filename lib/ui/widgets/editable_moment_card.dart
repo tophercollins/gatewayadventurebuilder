@@ -73,14 +73,15 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
     final description = _descriptionController.text.trim();
     if (description.isEmpty) return;
 
-    final notifier = ref.read(playerMomentEditingProvider.notifier);
-    final result = await notifier.updateMoment(
-      widget.moment.id,
-      description: description,
-      quoteText: _quoteController.text.trim().isNotEmpty
-          ? _quoteController.text.trim()
-          : null,
-    );
+    final result = await ref
+        .read(playerMomentEditingProvider.notifier)
+        .updateMoment(
+          widget.moment.id,
+          description: description,
+          quoteText: _quoteController.text.trim().isNotEmpty
+              ? _quoteController.text.trim()
+              : null,
+        );
 
     if (!mounted) return;
 
@@ -94,10 +95,9 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
         ),
       );
     } else {
-      final error = ref.read(playerMomentEditingProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to save: ${error ?? "Unknown error"}'),
+          content: const Text('Failed to save moment'),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -107,6 +107,7 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final editingState = ref.watch(playerMomentEditingProvider);
     final typeInfo = _getMomentTypeInfo(widget.moment.momentType, theme);
 
     return Container(
@@ -117,7 +118,7 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
       ),
       child: _isEditing
-          ? _buildEditMode(theme)
+          ? _buildEditMode(theme, isSaving: editingState.isLoading)
           : _buildDisplayMode(theme, typeInfo),
     );
   }
@@ -165,7 +166,7 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
     );
   }
 
-  Widget _buildEditMode(ThemeData theme) {
+  Widget _buildEditMode(ThemeData theme, {required bool isSaving}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,6 +174,7 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
           controller: _descriptionController,
           autofocus: true,
           maxLines: 3,
+          enabled: !isSaving,
           decoration: InputDecoration(
             labelText: 'Description',
             isDense: true,
@@ -189,6 +191,7 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
         TextField(
           controller: _quoteController,
           maxLines: 2,
+          enabled: !isSaving,
           decoration: InputDecoration(
             labelText: 'Quote (optional)',
             hintText: 'Enter a memorable quote...',
@@ -207,7 +210,7 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             TextButton(
-              onPressed: _cancelEditing,
+              onPressed: isSaving ? null : _cancelEditing,
               child: Text(
                 'Cancel',
                 style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
@@ -215,9 +218,18 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
             ),
             const SizedBox(width: Spacing.sm),
             FilledButton.icon(
-              onPressed: _saveEditing,
-              icon: const Icon(Icons.check, size: 18),
-              label: const Text('Save'),
+              onPressed: isSaving ? null : _saveEditing,
+              icon: isSaving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.check, size: 18),
+              label: Text(isSaving ? 'Saving...' : 'Save'),
             ),
           ],
         ),

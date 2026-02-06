@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:whisper_flutter_new/whisper_flutter_new.dart';
 
 import 'model_manager.dart';
@@ -113,6 +114,9 @@ class WhisperTranscriptionService implements TranscriptionService {
         ),
       );
 
+      final fileSize = await file.length();
+      debugPrint('[WhisperService] Starting transcription: $audioFilePath ($fileSize bytes)');
+
       // Run transcription in isolate
       final result = await _whisper!.transcribe(
         transcribeRequest: TranscribeRequest(
@@ -123,6 +127,8 @@ class WhisperTranscriptionService implements TranscriptionService {
           threads: 4,
         ),
       );
+
+      debugPrint('[WhisperService] Whisper returned result, parsing segments...');
 
       if (_isCancelled) {
         throw const TranscriptionException(TranscriptionErrorType.cancelled);
@@ -149,6 +155,8 @@ class WhisperTranscriptionService implements TranscriptionService {
           ? segments.map((s) => s.text).join(' ')
           : result.text.trim();
 
+      debugPrint('[WhisperService] Parsed ${segments.length} segments, fullText length: ${fullText.length}');
+
       onProgress?.call(
         const TranscriptionProgress(
           currentChunk: 1,
@@ -158,14 +166,17 @@ class WhisperTranscriptionService implements TranscriptionService {
         ),
       );
 
+      debugPrint('[WhisperService] Returning TranscriptResult');
       return TranscriptResult(
         fullText: fullText,
         segments: segments,
         modelName: modelName,
         language: language,
       );
-    } catch (e) {
+    } catch (e, stack) {
       if (e is TranscriptionException) rethrow;
+      debugPrint('[WhisperService] ERROR: $e');
+      debugPrint('[WhisperService] Stack: $stack');
       throw TranscriptionException(
         TranscriptionErrorType.processingFailed,
         message: 'Whisper transcription failed: $e',

@@ -61,7 +61,7 @@ class _LoadingView extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 24),
-            Text('TTRPG Session Tracker', style: theme.textTheme.headlineSmall),
+            Text('History Check', style: theme.textTheme.headlineSmall),
             const SizedBox(height: 32),
             const CircularProgressIndicator(),
           ],

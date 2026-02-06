@@ -36,8 +36,12 @@ Future<NotificationSettings> _loadSettings() async {
 
 /// Saves notification settings to secure storage.
 Future<void> _saveSettings(NotificationSettings settings) async {
-  final json = jsonEncode(settings.toMap());
-  await _storage.write(key: _settingsKey, value: json);
+  try {
+    final json = jsonEncode(settings.toMap());
+    await _storage.write(key: _settingsKey, value: json);
+  } catch (_) {
+    // Secure storage may not be available (e.g. missing entitlements).
+  }
 }
 
 /// Notifier for managing notification settings.

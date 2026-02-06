@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/repositories/summary_repository.dart';
 import '../services/processing/podcast_generator.dart';
 import 'processing_providers.dart';
+import 'session_detail_providers.dart';
+import 'transcription_providers.dart';
 
 /// Provider for PodcastGenerator service.
 final podcastGeneratorProvider = Provider<PodcastGenerator>((ref) {
@@ -44,21 +47,67 @@ class PodcastGenerationState {
 
 /// StateNotifier for managing podcast generation state.
 class PodcastGenerationNotifier extends StateNotifier<PodcastGenerationState> {
-  PodcastGenerationNotifier() : super(const PodcastGenerationState());
+  PodcastGenerationNotifier(
+    this._generator,
+    this._summaryRepo,
+    this._ref,
+  ) : super(const PodcastGenerationState());
 
-  /// Set generating state.
-  void setGenerating() {
+  final PodcastGenerator _generator;
+  final SummaryRepository _summaryRepo;
+  final Ref _ref;
+
+  /// Generate a podcast script for the given session.
+  Future<void> generate({
+    required String sessionId,
+    required String campaignId,
+  }) async {
+    // Load session summary
+    final summary = await _summaryRepo.getSummaryBySession(sessionId);
+    if (summary == null || summary.overallSummary == null) {
+      state = const PodcastGenerationState(
+        error: 'No session summary available. Process the session first.',
+      );
+      return;
+    }
+
+    // Load transcript text
+    final transcriptAsync = _ref.read(
+      sessionTranscriptProvider(sessionId),
+    );
+    final transcriptText = transcriptAsync.valueOrNull?.displayText ?? '';
+
+    // Load campaign name and attendees from session detail
+    final detailAsync = _ref.read(
+      sessionDetailProvider(
+        (campaignId: campaignId, sessionId: sessionId),
+      ),
+    );
+    final detail = detailAsync.valueOrNull;
+    final campaignName = detail?.session.title ?? 'Campaign Session';
+    final attendeeNames =
+        detail?.players.values.map((p) => p.name).toList();
+
     state = const PodcastGenerationState(isGenerating: true);
-  }
 
-  /// Set complete state.
-  void setComplete() {
-    state = const PodcastGenerationState(isGenerating: false);
-  }
+    final result = await _generator.generateScript(
+      summary: summary.overallSummary!,
+      transcript: transcriptText,
+      campaignName: campaignName,
+      attendeeNames: attendeeNames,
+    );
 
-  /// Set error state.
-  void setError(String error) {
-    state = PodcastGenerationState(isGenerating: false, error: error);
+    if (!mounted) return;
+
+    if (result.isSuccess && result.data != null) {
+      await _summaryRepo.updatePodcastScript(summary.id, result.data!);
+      state = const PodcastGenerationState();
+      _ref.invalidate(podcastScriptProvider(sessionId));
+    } else {
+      state = PodcastGenerationState(
+        error: result.error ?? 'Failed to generate podcast script',
+      );
+    }
   }
 
   /// Clear error state.
@@ -72,5 +121,7 @@ final podcastGenerationStateProvider = StateNotifierProvider.autoDispose<
   PodcastGenerationNotifier,
   PodcastGenerationState
 >((ref) {
-  return PodcastGenerationNotifier();
+  final generator = ref.watch(podcastGeneratorProvider);
+  final summaryRepo = ref.watch(summaryRepositoryProvider);
+  return PodcastGenerationNotifier(generator, summaryRepo, ref);
 });

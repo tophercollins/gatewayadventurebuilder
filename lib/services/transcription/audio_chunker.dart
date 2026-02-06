@@ -123,62 +123,99 @@ class AudioChunker {
     _temporaryFiles.clear();
   }
 
-  /// Read WAV file header information.
+  /// Read WAV file header by scanning RIFF chunks properly.
+  /// Handles WAV files with extra chunks (LIST, fact, etc.).
   Future<WavInfo> _readWavInfo(File file) async {
-    final bytes = await file.openRead(0, 44).toList();
-    if (bytes.isEmpty) {
-      throw const AudioChunkerException(
-        AudioChunkerError.invalidFormat,
-        message: 'Could not read WAV header',
+    final raf = await file.open(mode: FileMode.read);
+    try {
+      final riffHeader = await raf.read(12);
+      if (riffHeader.length < 12) {
+        throw const AudioChunkerException(
+          AudioChunkerError.invalidFormat,
+          message: 'WAV header too short',
+        );
+      }
+
+      final riff = String.fromCharCodes(riffHeader.sublist(0, 4));
+      if (riff != 'RIFF') {
+        throw const AudioChunkerException(
+          AudioChunkerError.invalidFormat,
+          message: 'Not a valid WAV file (missing RIFF header)',
+        );
+      }
+
+      final wave = String.fromCharCodes(riffHeader.sublist(8, 12));
+      if (wave != 'WAVE') {
+        throw const AudioChunkerException(
+          AudioChunkerError.invalidFormat,
+          message: 'Not a valid WAV file (missing WAVE format)',
+        );
+      }
+
+      // Scan sub-chunks to find fmt and data
+      int? numChannels;
+      int? sampleRate;
+      int? bitsPerSample;
+      int? dataSize;
+      int dataOffset = 44; // fallback
+
+      final fileLength = await raf.length();
+      var pos = 12;
+
+      while (pos < fileLength - 8) {
+        await raf.setPosition(pos);
+        final chunkHeader = await raf.read(8);
+        if (chunkHeader.length < 8) break;
+
+        final chunkId = String.fromCharCodes(chunkHeader.sublist(0, 4));
+        final bd = ByteData.sublistView(chunkHeader);
+        final chunkSize = bd.getUint32(4, Endian.little);
+
+        if (chunkId == 'fmt ') {
+          final fmtSize = chunkSize.clamp(0, 40);
+          final fmtData = await raf.read(fmtSize);
+          if (fmtData.length >= 16) {
+            final fmtBd = ByteData.sublistView(fmtData);
+            numChannels = fmtBd.getUint16(2, Endian.little);
+            sampleRate = fmtBd.getUint32(4, Endian.little);
+            bitsPerSample = fmtBd.getUint16(14, Endian.little);
+          }
+        } else if (chunkId == 'data') {
+          dataSize = chunkSize;
+          dataOffset = pos + 8;
+          break;
+        }
+
+        pos += 8 + chunkSize;
+        if (chunkSize % 2 != 0) pos++;
+      }
+
+      if (numChannels == null ||
+          sampleRate == null ||
+          bitsPerSample == null) {
+        throw const AudioChunkerException(
+          AudioChunkerError.invalidFormat,
+          message: 'WAV file missing fmt chunk',
+        );
+      }
+
+      dataSize ??= fileLength - dataOffset;
+
+      final bytesPerSample = (bitsPerSample / 8).ceil();
+      final totalSamples = dataSize ~/ (bytesPerSample * numChannels);
+      final durationMs = ((totalSamples / sampleRate) * 1000).round();
+
+      return WavInfo(
+        numChannels: numChannels,
+        sampleRate: sampleRate,
+        bitsPerSample: bitsPerSample,
+        dataSize: dataSize,
+        durationMs: durationMs,
+        headerSize: dataOffset,
       );
+    } finally {
+      await raf.close();
     }
-
-    final header = bytes.expand((e) => e).toList();
-    if (header.length < 44) {
-      throw const AudioChunkerException(
-        AudioChunkerError.invalidFormat,
-        message: 'WAV header too short',
-      );
-    }
-
-    // Verify RIFF header
-    final riff = String.fromCharCodes(header.sublist(0, 4));
-    if (riff != 'RIFF') {
-      throw const AudioChunkerException(
-        AudioChunkerError.invalidFormat,
-        message: 'Not a valid WAV file (missing RIFF header)',
-      );
-    }
-
-    // Verify WAVE format
-    final wave = String.fromCharCodes(header.sublist(8, 12));
-    if (wave != 'WAVE') {
-      throw const AudioChunkerException(
-        AudioChunkerError.invalidFormat,
-        message: 'Not a valid WAV file (missing WAVE format)',
-      );
-    }
-
-    // Parse format chunk
-    final numChannels = _readInt16LE(header, 22);
-    final sampleRate = _readInt32LE(header, 24);
-    final bitsPerSample = _readInt16LE(header, 34);
-
-    // Calculate data size and duration
-    final fileSize = await file.length();
-    final dataSize = fileSize - 44; // Approximate, assumes simple WAV
-    final bytesPerSample = (bitsPerSample / 8).ceil();
-    final totalSamples = dataSize ~/ (bytesPerSample * numChannels);
-    final durationMs = ((totalSamples / sampleRate) * 1000).round();
-
-    return WavInfo(
-      numChannels: numChannels,
-      sampleRate: sampleRate,
-      bitsPerSample: bitsPerSample,
-      dataSize: dataSize,
-      durationMs: durationMs,
-      headerSize: 44,
-    );
   }
 
   /// Create a chunk file from the source audio.
@@ -275,14 +312,4 @@ class AudioChunker {
     return header.buffer.asUint8List();
   }
 
-  int _readInt16LE(List<int> bytes, int offset) {
-    return bytes[offset] | (bytes[offset + 1] << 8);
-  }
-
-  int _readInt32LE(List<int> bytes, int offset) {
-    return bytes[offset] |
-        (bytes[offset + 1] << 8) |
-        (bytes[offset + 2] << 16) |
-        (bytes[offset + 3] << 24);
-  }
 }

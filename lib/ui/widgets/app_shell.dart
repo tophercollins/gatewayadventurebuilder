@@ -33,32 +33,27 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   bool _isSidebarCollapsed = false;
+  bool _userToggledSidebar = false;
 
   void _toggleSidebar() {
     setState(() {
       _isSidebarCollapsed = !_isSidebarCollapsed;
+      _userToggledSidebar = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final isDesktop = screenWidth > Spacing.breakpointTablet;
 
-    // On smaller screens, don't show sidebar
-    if (!isDesktop) {
-      return _ContentArea(
-        title: widget.title,
-        breadcrumbs: widget.breadcrumbs,
-        showBackButton: widget.showBackButton,
-        child: widget.child,
-      );
-    }
+    // Auto-collapse when window is narrow, unless user explicitly expanded
+    final autoCollapse = screenWidth < Spacing.breakpointTablet;
+    final collapsed = _userToggledSidebar ? _isSidebarCollapsed : autoCollapse;
 
     return Row(
       children: [
         AppSidebar(
-          isCollapsed: _isSidebarCollapsed,
+          isCollapsed: collapsed,
           onToggleCollapse: _toggleSidebar,
           currentPath: widget.currentPath,
           campaignId: widget.campaignId,
