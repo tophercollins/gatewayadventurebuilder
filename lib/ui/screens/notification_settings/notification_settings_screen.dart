@@ -25,8 +25,15 @@ class _NotificationSettingsScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Sync controller with current value.
       final settings = ref.read(notificationSettingsProvider);
       _emailController.text = settings.emailAddress ?? '';
+      // Keep controller in sync when settings load or change externally.
+      ref.listenManual(notificationSettingsProvider, (prev, next) {
+        if (!_isEditing && next.emailAddress != prev?.emailAddress) {
+          _emailController.text = next.emailAddress ?? '';
+        }
+      });
     });
   }
 

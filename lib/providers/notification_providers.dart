@@ -44,15 +44,14 @@ Future<void> _saveSettings(NotificationSettings settings) async {
   }
 }
 
+/// Provider that loads notification settings from storage once at startup.
+final _initialSettingsProvider = FutureProvider<NotificationSettings>((ref) {
+  return _loadSettings();
+});
+
 /// Notifier for managing notification settings.
 class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
-  NotificationSettingsNotifier() : super(const NotificationSettings()) {
-    _load();
-  }
-
-  Future<void> _load() async {
-    state = await _loadSettings();
-  }
+  NotificationSettingsNotifier(super.initial);
 
   /// Update email enabled status.
   Future<void> setEmailEnabled(bool enabled) async {
@@ -80,9 +79,16 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 }
 
 /// Provider for notification settings state.
+/// Waits for settings to load from secure storage before creating the notifier,
+/// so consumers always see persisted values instead of defaults.
 final notificationSettingsProvider =
     StateNotifierProvider<NotificationSettingsNotifier, NotificationSettings>(
-      (ref) => NotificationSettingsNotifier(),
+      (ref) {
+        final initial = ref.watch(_initialSettingsProvider);
+        return NotificationSettingsNotifier(
+          initial.valueOrNull ?? const NotificationSettings(),
+        );
+      },
     );
 
 /// In-app notification state for showing snackbars/toasts.
