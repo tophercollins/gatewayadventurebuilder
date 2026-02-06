@@ -40,3 +40,6 @@ coverage/
 
 # Flutter crash logs
 flutter_*.log
+
+# Local reference docs
+GIT_CREDENTIALS.md
