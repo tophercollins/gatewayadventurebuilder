@@ -7,11 +7,13 @@ import '../../data/repositories/entity_repository.dart';
 import '../../data/repositories/player_moment_repository.dart';
 import '../../data/repositories/session_repository.dart';
 import '../../data/repositories/summary_repository.dart';
+import 'entity_extractor.dart';
 import 'entity_matcher.dart';
 import 'llm_service.dart';
 import 'processing_types.dart';
 import 'prompts/prompts.dart';
 import 'session_context.dart';
+import 'transcript_chunker.dart';
 
 /// Processes session transcripts through the AI pipeline.
 class SessionProcessor {
@@ -62,31 +64,62 @@ class SessionProcessor {
       }
 
       final transcript = context.transcript.rawText;
+      final chunks = TranscriptChunker.chunkIfNeeded(transcript);
       var stats = const ProcessingStats();
 
+      // Summary: process each chunk, consolidate if multiple
       onProgress?.call(ProcessingStep.generatingSummary, 0.1);
-      final summaryResult = await _generateSummary(context, transcript);
+      final summaryResult = await _generateSummaryChunked(context, chunks);
       stats = stats.copyWith(summaryId: summaryResult);
 
+      // Scenes: process each chunk, concatenate results
       onProgress?.call(ProcessingStep.extractingScenes, 0.25);
-      final sceneCount = await _extractScenes(context, transcript);
-      stats = stats.copyWith(sceneCount: sceneCount);
+      var totalScenes = 0;
+      for (final chunk in chunks) {
+        totalScenes += await _extractScenes(context, chunk);
+      }
+      stats = stats.copyWith(sceneCount: totalScenes);
 
+      // Entities: 3 dedicated calls per chunk, EntityMatcher deduplicates
       onProgress?.call(ProcessingStep.extractingEntities, 0.4);
-      final entityCounts = await _extractEntities(context, transcript);
+      final entityExtractor = EntityExtractor(
+        llmService: _llmService,
+        entityMatcher: EntityMatcher(_entityRepo),
+      );
+      var totalNpcs = 0;
+      var totalLocations = 0;
+      var totalItems = 0;
+      for (final chunk in chunks) {
+        final counts = await entityExtractor.extract(
+          ctx: context,
+          transcript: chunk,
+          onProgress: onProgress,
+        );
+        totalNpcs += counts.npcs;
+        totalLocations += counts.locations;
+        totalItems += counts.items;
+      }
       stats = stats.copyWith(
-        npcCount: entityCounts.npcs,
-        locationCount: entityCounts.locations,
-        itemCount: entityCounts.items,
+        npcCount: totalNpcs,
+        locationCount: totalLocations,
+        itemCount: totalItems,
       );
 
+      // Action items: process each chunk
       onProgress?.call(ProcessingStep.extractingActionItems, 0.6);
-      final actionCount = await _extractActionItems(context, transcript);
-      stats = stats.copyWith(actionItemCount: actionCount);
+      var totalActions = 0;
+      for (final chunk in chunks) {
+        totalActions += await _extractActionItems(context, chunk);
+      }
+      stats = stats.copyWith(actionItemCount: totalActions);
 
+      // Player moments: process each chunk
       onProgress?.call(ProcessingStep.extractingPlayerMoments, 0.8);
-      final momentCount = await _extractPlayerMoments(context, transcript);
-      stats = stats.copyWith(momentCount: momentCount);
+      var totalMoments = 0;
+      for (final chunk in chunks) {
+        totalMoments += await _extractPlayerMoments(context, chunk);
+      }
+      stats = stats.copyWith(momentCount: totalMoments);
 
       onProgress?.call(ProcessingStep.savingResults, 0.95);
       await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.complete);
@@ -108,9 +141,10 @@ class SessionProcessor {
     }
   }
 
-  Future<String?> _generateSummary(
+  /// Generates summary, consolidating if transcript was split into chunks.
+  Future<String?> _generateSummaryChunked(
     SessionContext ctx,
-    String transcript,
+    List<String> chunks,
   ) async {
     final prompt = SummaryPrompt.build(
       gameSystem: ctx.gameSystem,
@@ -118,17 +152,52 @@ class SessionProcessor {
       attendeeNames: ctx.attendeeNames,
     );
 
-    final result = await _llmService.generateSummary(
-      transcript: transcript,
-      prompt: prompt,
+    if (chunks.length == 1) {
+      final result = await _llmService.generateSummary(
+        transcript: chunks.first,
+        prompt: prompt,
+      );
+      if (!result.isSuccess || result.data == null) return null;
+      final summary = await _summaryRepo.createSummary(
+        sessionId: ctx.session.id,
+        transcriptId: ctx.transcript.id,
+        overallSummary: result.data!.overallSummary,
+      );
+      return summary.id;
+    }
+
+    // Multiple chunks: summarize each, then consolidate
+    final chunkSummaries = <String>[];
+    for (final chunk in chunks) {
+      final result = await _llmService.generateSummary(
+        transcript: chunk,
+        prompt: prompt,
+      );
+      if (result.isSuccess && result.data != null) {
+        chunkSummaries.add(result.data!.overallSummary);
+      }
+    }
+
+    if (chunkSummaries.isEmpty) return null;
+
+    // Consolidate chunk summaries into one
+    final consolidationPrompt =
+        'Combine these partial session summaries into one cohesive '
+        '2-4 paragraph summary. Remove redundancy from overlapping '
+        'sections. Write in past tense, third person.\n\n'
+        '${chunkSummaries.join('\n\n---\n\n')}';
+    final consolidated = await _llmService.generateText(
+      prompt: consolidationPrompt,
     );
 
-    if (!result.isSuccess || result.data == null) return null;
+    final overallSummary = consolidated.isSuccess && consolidated.data != null
+        ? consolidated.data!
+        : chunkSummaries.join('\n\n');
 
     final summary = await _summaryRepo.createSummary(
       sessionId: ctx.session.id,
       transcriptId: ctx.transcript.id,
-      overallSummary: result.data!.overallSummary,
+      overallSummary: overallSummary,
     );
     return summary.id;
   }
@@ -167,62 +236,6 @@ class SessionProcessor {
 
     await _summaryRepo.createScenes(scenes);
     return scenes.length;
-  }
-
-  Future<EntityCounts> _extractEntities(
-    SessionContext ctx,
-    String transcript,
-  ) async {
-    final prompt = EntityPrompt.build(
-      gameSystem: ctx.gameSystem,
-      campaignName: ctx.campaign.name,
-      attendeeNames: ctx.attendeeNames,
-      existingNpcNames: ctx.existingNpcNames,
-      existingLocationNames: ctx.existingLocationNames,
-      existingItemNames: ctx.existingItemNames,
-    );
-
-    final result = await _llmService.extractEntities(
-      transcript: transcript,
-      prompt: prompt,
-    );
-
-    if (!result.isSuccess || result.data == null) {
-      return const EntityCounts(npcs: 0, locations: 0, items: 0);
-    }
-
-    final matcher = EntityMatcher(_entityRepo);
-
-    final npcResults = await matcher.matchNpcs(
-      worldId: ctx.world.id,
-      extractedNpcs: result.data!.npcs,
-    );
-
-    final locationResults = await matcher.matchLocations(
-      worldId: ctx.world.id,
-      extractedLocations: result.data!.locations,
-    );
-
-    final itemResults = await matcher.matchItems(
-      worldId: ctx.world.id,
-      extractedItems: result.data!.items,
-    );
-
-    await matcher.createAppearances(
-      sessionId: ctx.session.id,
-      npcs: npcResults,
-      locations: locationResults,
-      items: itemResults,
-      npcData: result.data!.npcs,
-      locationData: result.data!.locations,
-      itemData: result.data!.items,
-    );
-
-    return EntityCounts(
-      npcs: npcResults.length,
-      locations: locationResults.length,
-      items: itemResults.length,
-    );
   }
 
   Future<int> _extractActionItems(SessionContext ctx, String transcript) async {

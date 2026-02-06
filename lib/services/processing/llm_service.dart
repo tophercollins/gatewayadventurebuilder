@@ -1,6 +1,7 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 import '../../config/env_config.dart';
+import 'entity_response_models.dart';
 import 'llm_response_models.dart';
 
 /// Result of an LLM generation request.
@@ -46,6 +47,24 @@ abstract class LLMService {
     required String prompt,
   });
 
+  /// Extracts NPCs from transcript (dedicated call).
+  Future<LLMResult<NpcsResponse>> extractNpcs({
+    required String transcript,
+    required String prompt,
+  });
+
+  /// Extracts locations from transcript (dedicated call).
+  Future<LLMResult<LocationsResponse>> extractLocations({
+    required String transcript,
+    required String prompt,
+  });
+
+  /// Extracts items from transcript (dedicated call).
+  Future<LLMResult<ItemsResponse>> extractItems({
+    required String transcript,
+    required String prompt,
+  });
+
   /// Raw text generation for custom prompts.
   Future<LLMResult<String>> generateText({required String prompt});
 
@@ -53,7 +72,7 @@ abstract class LLMService {
   Future<bool> isAvailable();
 }
 
-/// Google Gemini 1.5 Flash implementation of LLMService.
+/// Google Gemini 2.5 Flash implementation of LLMService.
 class GeminiService implements LLMService {
   GeminiService();
 
@@ -71,7 +90,7 @@ class GeminiService implements LLMService {
     if (_model == null || _cachedApiKey != apiKey) {
       _cachedApiKey = apiKey;
       _model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: apiKey,
         generationConfig: GenerationConfig(
           temperature: 0.7,
@@ -200,6 +219,63 @@ class GeminiService implements LLMService {
     final parsed = PlayerMomentsResponse.tryParse(result.data!);
     if (parsed == null) {
       return const LLMResult.failure('Failed to parse player moments response');
+    }
+    return LLMResult.success(parsed);
+  }
+
+  @override
+  Future<LLMResult<NpcsResponse>> extractNpcs({
+    required String transcript,
+    required String prompt,
+  }) async {
+    final fullPrompt = '$prompt\n\n$transcript';
+    final result = await generateText(prompt: fullPrompt);
+
+    if (!result.isSuccess) {
+      return LLMResult.failure(result.error!);
+    }
+
+    final parsed = NpcsResponse.tryParse(result.data!);
+    if (parsed == null) {
+      return const LLMResult.failure('Failed to parse NPCs response');
+    }
+    return LLMResult.success(parsed);
+  }
+
+  @override
+  Future<LLMResult<LocationsResponse>> extractLocations({
+    required String transcript,
+    required String prompt,
+  }) async {
+    final fullPrompt = '$prompt\n\n$transcript';
+    final result = await generateText(prompt: fullPrompt);
+
+    if (!result.isSuccess) {
+      return LLMResult.failure(result.error!);
+    }
+
+    final parsed = LocationsResponse.tryParse(result.data!);
+    if (parsed == null) {
+      return const LLMResult.failure('Failed to parse locations response');
+    }
+    return LLMResult.success(parsed);
+  }
+
+  @override
+  Future<LLMResult<ItemsResponse>> extractItems({
+    required String transcript,
+    required String prompt,
+  }) async {
+    final fullPrompt = '$prompt\n\n$transcript';
+    final result = await generateText(prompt: fullPrompt);
+
+    if (!result.isSuccess) {
+      return LLMResult.failure(result.error!);
+    }
+
+    final parsed = ItemsResponse.tryParse(result.data!);
+    if (parsed == null) {
+      return const LLMResult.failure('Failed to parse items response');
     }
     return LLMResult.success(parsed);
   }

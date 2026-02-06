@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'json_utils.dart';
+
 /// Response model for session summary extraction.
 class SummaryResponse {
   const SummaryResponse({required this.overallSummary});
@@ -14,7 +16,7 @@ class SummaryResponse {
 
   static SummaryResponse? tryParse(String text) {
     try {
-      final json = jsonDecode(_extractJson(text)) as Map<String, dynamic>;
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
       return SummaryResponse.fromJson(json);
     } catch (_) {
       return null;
@@ -39,7 +41,7 @@ class ScenesResponse {
 
   static ScenesResponse? tryParse(String text) {
     try {
-      final json = jsonDecode(_extractJson(text)) as Map<String, dynamic>;
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
       return ScenesResponse.fromJson(json);
     } catch (_) {
       return null;
@@ -101,7 +103,7 @@ class EntitiesResponse {
 
   static EntitiesResponse? tryParse(String text) {
     try {
-      final json = jsonDecode(_extractJson(text)) as Map<String, dynamic>;
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
       return EntitiesResponse.fromJson(json);
     } catch (_) {
       return null;
@@ -207,7 +209,7 @@ class ActionItemsResponse {
 
   static ActionItemsResponse? tryParse(String text) {
     try {
-      final json = jsonDecode(_extractJson(text)) as Map<String, dynamic>;
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
       return ActionItemsResponse.fromJson(json);
     } catch (_) {
       return null;
@@ -252,7 +254,7 @@ class PlayerMomentsResponse {
 
   static PlayerMomentsResponse? tryParse(String text) {
     try {
-      final json = jsonDecode(_extractJson(text)) as Map<String, dynamic>;
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
       return PlayerMomentsResponse.fromJson(json);
     } catch (_) {
       return null;
@@ -287,16 +289,4 @@ class PlayerMomentData {
       timestampMs: json['timestamp_ms'] as int?,
     );
   }
-}
-
-/// Extracts JSON from LLM response text (handles markdown code blocks).
-String _extractJson(String text) {
-  // Try to extract JSON from markdown code blocks
-  final codeBlockPattern = RegExp(r'```(?:json)?\s*([\s\S]*?)\s*```');
-  final match = codeBlockPattern.firstMatch(text);
-  if (match != null) {
-    return match.group(1)!.trim();
-  }
-  // Otherwise assume the entire text is JSON
-  return text.trim();
 }

@@ -1,3 +1,4 @@
+import 'entity_response_models.dart';
 import 'llm_response_models.dart';
 import 'llm_service.dart';
 
@@ -272,6 +273,115 @@ class MockLLMService implements LLMService {
             description:
                 'Made the difficult choice to spare the surrendering goblins.',
             momentType: 'decision',
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Future<LLMResult<NpcsResponse>> extractNpcs({
+    required String transcript,
+    required String prompt,
+  }) async {
+    await _delay();
+    if (shouldFail) {
+      return LLMResult.failure(failureMessage);
+    }
+    return const LLMResult.success(
+      NpcsResponse(
+        npcs: [
+          NpcData(
+            name: 'Barkeep Mira',
+            description:
+                'A cheerful halfling woman who runs the Rusty Tankard.',
+            role: 'merchant',
+            context: 'Served the party drinks and shared local rumors.',
+          ),
+          NpcData(
+            name: 'Merchant Theron',
+            description:
+                'An elderly human with a weathered face and keen eyes.',
+            role: 'quest_giver',
+            context: 'Provided the map and quest to find the lost temple.',
+          ),
+          NpcData(
+            name: 'Grubnash the Goblin Chief',
+            description: 'A scarred goblin with a crude iron crown.',
+            role: 'enemy',
+            context: 'Led the ambush at the Old Mill, defeated in combat.',
+          ),
+          NpcData(
+            name: 'Marcus the Merchant',
+            description: 'A middle-aged trader from the southern cities.',
+            role: 'ally',
+            context: 'Rescued from the goblins, grateful to the party.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Future<LLMResult<LocationsResponse>> extractLocations({
+    required String transcript,
+    required String prompt,
+  }) async {
+    await _delay();
+    if (shouldFail) {
+      return LLMResult.failure(failureMessage);
+    }
+    return const LLMResult.success(
+      LocationsResponse(
+        locations: [
+          LocationData(
+            name: 'The Rusty Tankard',
+            description:
+                'A cozy tavern known for its warm hearth and cold ale.',
+            locationType: 'tavern',
+            context: 'Starting location where the party planned their journey.',
+          ),
+          LocationData(
+            name: 'Shadowfen Marshes',
+            description: 'A dangerous swamp rumored to hide an ancient temple.',
+            locationType: 'wilderness',
+            context: 'Destination of the party\'s quest.',
+          ),
+          LocationData(
+            name: 'The Old Mill',
+            description: 'An abandoned mill on the road, now a goblin hideout.',
+            locationType: 'dungeon',
+            context: 'Site of the goblin ambush and merchant rescue.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Future<LLMResult<ItemsResponse>> extractItems({
+    required String transcript,
+    required String prompt,
+  }) async {
+    await _delay();
+    if (shouldFail) {
+      return LLMResult.failure(failureMessage);
+    }
+    return const LLMResult.success(
+      ItemsResponse(
+        items: [
+          ItemData(
+            name: 'Theron\'s Map',
+            description:
+                'A weathered parchment showing the route to the temple.',
+            itemType: 'quest_item',
+            context: 'Given by Merchant Theron at the start of the quest.',
+          ),
+          ItemData(
+            name: 'Chieftain\'s Crown',
+            description: 'A crude iron crown worn by the goblin chief.',
+            itemType: 'treasure',
+            context: 'Looted from Grubnash after the battle.',
           ),
         ],
       ),

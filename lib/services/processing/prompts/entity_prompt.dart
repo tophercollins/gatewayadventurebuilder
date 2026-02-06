@@ -1,4 +1,5 @@
 /// Prompt template for entity extraction (NPCs, locations, items).
+/// Used as fallback when dedicated per-entity prompts are not available.
 class EntityPrompt {
   const EntityPrompt._();
 
@@ -28,74 +29,98 @@ class EntityPrompt {
         : existingItemNames.join(', ');
 
     return '''
-You are an expert at analyzing TTRPG sessions. Extract all NPCs, locations, and items mentioned in this session transcript.
+You are an expert at analyzing TTRPG sessions. Extract all NPCs, locations, and items mentioned in this session transcript into a precise JSON format.
 
 ## Context
 - Game System: $gameSystem
 - Campaign: $campaignName
-- Session Attendees (Player Characters): $attendeeList
+- Session Attendees (Player Characters — do NOT extract these as NPCs): $attendeeList
 
 ## Known Entities from Previous Sessions
-These entities already exist in our database. If you encounter them again, use the EXACT same name:
+Use the EXACT same name when referring to returning entities:
 - NPCs: $existingNpcs
 - Locations: $existingLocations
 - Items: $existingItems
 
-## Instructions
-1. Identify all NON-PLAYER CHARACTERS (NPCs) mentioned
-   - Include their name, description if available, and role
-   - Do NOT include player characters ($attendeeList)
-   - Role options: ally, enemy, merchant, quest_giver, neutral, unknown
+## Extraction Rules
+1. **NPCs**: All non-player characters mentioned by name or clearly identifiable title. Do NOT include player characters ($attendeeList). Provide role if apparent.
+2. **Locations**: Named places where events occur. Include type if apparent.
+3. **Items**: Significant named or unique items, magic items, quest items. Skip mundane equipment (regular weapons, basic supplies, rations).
 
-2. Identify all LOCATIONS mentioned
-   - Include name, description if available, and type
-   - Type options: city, town, village, dungeon, wilderness, tavern, temple, castle, ship, plane, unknown
-
-3. Identify all significant ITEMS mentioned
-   - Focus on named/unique items, magic items, quest items
-   - Skip mundane items (regular weapons, basic supplies)
-   - Type options: weapon, armor, consumable, quest_item, treasure, artifact, unknown
+## Guidelines
+- Use exact names from the known entities list for returning characters/places
+- Only extract entities that are actually named or clearly identifiable
+- Provide context showing how the entity appeared in this session
+- Be conservative: only extract what is clearly in the transcript
+- Use null for any field where information is not available
 
 ## Output Format
-Respond ONLY with valid JSON in this exact format:
-```json
+Return strictly valid JSON with no markdown formatting (no ```json blocks). Use the exact keys below. Use null for missing values, not empty strings.
+
 {
   "npcs": [
     {
-      "name": "NPC Name",
-      "description": "Brief physical or personality description",
-      "role": "ally|enemy|merchant|quest_giver|neutral|unknown",
-      "context": "What they did or said in this session",
+      "name": "String — NPC name",
+      "description": "String or null — Brief physical or personality description",
+      "role": "String or null — e.g. ally, enemy, merchant, quest_giver, neutral",
+      "context": "String or null — What they did or said in this session",
+      "timestamp_ms": "int or null — When they first appeared"
+    }
+  ],
+  "locations": [
+    {
+      "name": "String — Location name",
+      "description": "String or null — Brief description of the place",
+      "location_type": "String or null — e.g. city, town, village, dungeon, wilderness, tavern, temple, castle, ship, plane",
+      "context": "String or null — What happened at this location",
+      "timestamp_ms": "int or null — When first mentioned"
+    }
+  ],
+  "items": [
+    {
+      "name": "String — Item name",
+      "description": "String or null — Brief description",
+      "item_type": "String or null — e.g. weapon, armor, consumable, quest_item, treasure, artifact",
+      "properties": "String or null — Magical or special properties if mentioned",
+      "context": "String or null — How the item was encountered or used",
+      "timestamp_ms": "int or null — When first mentioned"
+    }
+  ]
+}
+
+## Example Output
+{
+  "npcs": [
+    {
+      "name": "Captain Voss",
+      "description": "Scarred half-orc woman in battered plate armor",
+      "role": "quest_giver",
+      "context": "Hired the party to investigate disappearances in the mining district",
       "timestamp_ms": null
     }
   ],
   "locations": [
     {
-      "name": "Location Name",
-      "description": "Brief description of the place",
-      "location_type": "city|town|village|dungeon|wilderness|tavern|temple|castle|ship|plane|unknown",
-      "context": "What happened at this location",
+      "name": "The Blind Basilisk",
+      "description": "A dimly lit tavern in the dock ward, known for shady dealings",
+      "location_type": "tavern",
+      "context": "Where the party met Captain Voss and accepted the job",
       "timestamp_ms": null
     }
   ],
   "items": [
     {
-      "name": "Item Name",
-      "description": "Brief description of the item",
-      "item_type": "weapon|armor|consumable|quest_item|treasure|artifact|unknown",
-      "properties": "Magical or special properties if mentioned",
-      "context": "How the item was encountered or used",
+      "name": "Voss's Signet Ring",
+      "description": "An iron ring bearing the city watch emblem",
+      "item_type": "quest_item",
+      "properties": null,
+      "context": "Given to the party as proof of authority for their investigation",
       "timestamp_ms": null
     }
   ]
 }
-```
 
-## Guidelines
-- Use exact names from the known entities list when referring to returning characters/places
-- Only extract entities that are actually named or clearly identifiable
-- Provide context showing how the entity appeared in this session
-- Be conservative: only extract what's clearly in the transcript
+Transcript:
 ''';
   }
 }
