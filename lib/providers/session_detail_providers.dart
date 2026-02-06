@@ -10,6 +10,7 @@ import '../data/models/player_moment.dart';
 import '../data/models/scene.dart';
 import '../data/models/session.dart';
 import '../data/models/session_summary.dart';
+import '../data/repositories/session_repository.dart';
 import 'campaign_providers.dart';
 import 'processing_providers.dart';
 import 'repository_providers.dart';
@@ -255,3 +256,43 @@ final campaignSessionsProvider = FutureProvider.autoDispose
       final sessionRepo = ref.watch(sessionRepositoryProvider);
       return await sessionRepo.getSessionsByCampaign(campaignId);
     });
+
+/// Service for session mutations (title updates, world lookup).
+class SessionEditor {
+  SessionEditor(this._sessionRepo, this._ref);
+
+  final SessionRepository _sessionRepo;
+  final Ref _ref;
+
+  /// Updates a session's title.
+  Future<void> updateTitle({
+    required Session session,
+    required String newTitle,
+    required String campaignId,
+  }) async {
+    final updated = session.copyWith(
+      title: newTitle,
+      updatedAt: DateTime.now(),
+    );
+    await _sessionRepo.updateSession(updated);
+    _ref.invalidate(
+      sessionDetailProvider(
+        (campaignId: campaignId, sessionId: session.id),
+      ),
+    );
+    _ref.read(sessionsRevisionProvider.notifier).state++;
+  }
+
+  /// Gets the world ID for a campaign.
+  Future<String?> getWorldId(String campaignId) async {
+    final campaignRepo = _ref.read(campaignRepositoryProvider);
+    final result = await campaignRepo.getCampaignWithWorld(campaignId);
+    return result?.world.id;
+  }
+}
+
+/// Provider for session mutations.
+final sessionEditorProvider = Provider<SessionEditor>((ref) {
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  return SessionEditor(sessionRepo, ref);
+});

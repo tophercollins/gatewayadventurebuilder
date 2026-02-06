@@ -4,12 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/session.dart';
-import '../../providers/campaign_providers.dart';
 import '../../providers/editing_providers.dart';
 import '../../providers/export_providers.dart';
 import '../../providers/playback_providers.dart';
-import '../../providers/processing_providers.dart';
-import '../../providers/repository_providers.dart';
 import '../../providers/session_detail_providers.dart';
 import '../../providers/transcription_providers.dart';
 import '../theme/spacing.dart';
@@ -215,18 +212,11 @@ class _SessionDetailContent extends ConsumerWidget {
     String newTitle,
   ) async {
     try {
-      final sessionRepo = ref.read(sessionRepositoryProvider);
-      final updated = detail.session.copyWith(
-        title: newTitle,
-        updatedAt: DateTime.now(),
+      await ref.read(sessionEditorProvider).updateTitle(
+        session: detail.session,
+        newTitle: newTitle,
+        campaignId: campaignId,
       );
-      await sessionRepo.updateSession(updated);
-      ref.invalidate(
-        sessionDetailProvider(
-          (campaignId: campaignId, sessionId: sessionId),
-        ),
-      );
-      ref.read(sessionsRevisionProvider.notifier).state++;
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -237,11 +227,10 @@ class _SessionDetailContent extends ConsumerWidget {
   }
 
   Future<void> _handleResync(BuildContext context, WidgetRef ref) async {
-    final campaignRepo = ref.read(campaignRepositoryProvider);
-    final campaignWithWorld = await campaignRepo.getCampaignWithWorld(
+    final worldId = await ref.read(sessionEditorProvider).getWorldId(
       campaignId,
     );
-    if (campaignWithWorld == null) {
+    if (worldId == null) {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -253,7 +242,7 @@ class _SessionDetailContent extends ConsumerWidget {
     final notifier = ref.read(resyncProvider.notifier);
     final result = await notifier.resyncSession(
       sessionId: sessionId,
-      worldId: campaignWithWorld.world.id,
+      worldId: worldId,
     );
 
     if (!context.mounted) return;
@@ -560,61 +549,17 @@ class _ExportSection extends ConsumerWidget {
     WidgetRef ref,
     String format,
   ) async {
-    final exportService = ref.read(exportServiceProvider);
-    final fileSaver = ref.read(fileSaverProvider);
-    final notifier = ref.read(exportStateProvider.notifier);
-    final sessionRepo = ref.read(sessionRepositoryProvider);
-    final summaryRepo = ref.read(summaryRepositoryProvider);
-    final actionItemRepo = ref.read(actionItemRepositoryProvider);
-    final entityRepo = ref.read(entityRepositoryProvider);
-    final campaignRepo = ref.read(campaignRepositoryProvider);
+    await ref.read(exportStateProvider.notifier).exportSession(
+      sessionId: sessionId,
+      format: format,
+    );
 
-    notifier.setExporting();
-
-    try {
-      final String content;
-      final String extension;
-
-      if (format == 'markdown') {
-        content = await exportService.exportSessionMarkdown(
-          sessionId: sessionId,
-          sessionRepo: sessionRepo,
-          summaryRepo: summaryRepo,
-          actionItemRepo: actionItemRepo,
-          entityRepo: entityRepo,
-          campaignRepo: campaignRepo,
-        );
-        extension = 'md';
-      } else {
-        content = await exportService.exportSessionJson(
-          sessionId: sessionId,
-          sessionRepo: sessionRepo,
-          summaryRepo: summaryRepo,
-          actionItemRepo: actionItemRepo,
-          entityRepo: entityRepo,
-          campaignRepo: campaignRepo,
-        );
-        extension = 'json';
-      }
-
-      final filePath = await fileSaver.saveExportFile(
-        content: content,
-        suggestedFileName: 'session_$sessionId',
-        fileExtension: extension,
+    if (!context.mounted) return;
+    final result = ref.read(exportStateProvider);
+    if (result.exportedFilePath != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Exported to ${result.exportedFilePath}')),
       );
-
-      if (filePath != null) {
-        notifier.setComplete(filePath);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Exported to $filePath')),
-          );
-        }
-      } else {
-        notifier.setError('Failed to save export file');
-      }
-    } catch (e) {
-      notifier.setError('Export failed: $e');
     }
   }
 }
