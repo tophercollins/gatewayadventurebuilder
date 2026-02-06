@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../providers/player_providers.dart';
-import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
 
 /// Screen for adding a new player to a campaign.
@@ -36,27 +35,13 @@ class _AddPlayerScreenState extends ConsumerState<AddPlayerScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final playerRepo = ref.read(playerRepositoryProvider);
-      final currentUser = await ref.read(currentUserProvider.future);
-
-      // Create the player
-      final player = await playerRepo.createPlayer(
-        userId: currentUser.id,
+      await ref.read(playerEditorProvider).createPlayer(
+        campaignId: widget.campaignId,
         name: _nameController.text.trim(),
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
       );
-
-      // Link player to campaign
-      await playerRepo.addPlayerToCampaign(
-        campaignId: widget.campaignId,
-        playerId: player.id,
-      );
-
-      // Invalidate the players provider to refresh the list
-      ref.invalidate(playersWithCharactersProvider(widget.campaignId));
-      ref.invalidate(campaignPlayersProvider(widget.campaignId));
 
       if (mounted) {
         context.go(Routes.playersPath(widget.campaignId));

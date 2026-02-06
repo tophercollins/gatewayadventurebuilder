@@ -6,7 +6,6 @@ import '../../config/routes.dart';
 import '../../data/models/entity_appearance.dart';
 import '../../data/models/item.dart';
 import '../../data/models/session.dart';
-import '../../providers/repository_providers.dart';
 import '../../utils/formatters.dart';
 import '../../providers/world_providers.dart';
 import '../theme/spacing.dart';
@@ -57,9 +56,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _handleSave(Item updatedItem) async {
-    final entityRepo = ref.read(entityRepositoryProvider);
-    await entityRepo.updateItem(updatedItem, markEdited: true);
-    ref.invalidate(itemByIdProvider(widget.itemId));
+    await ref.read(entityEditorProvider).updateItem(updatedItem);
     setState(() => _isEditing = false);
     if (mounted) {
       ScaffoldMessenger.of(

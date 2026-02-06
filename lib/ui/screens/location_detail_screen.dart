@@ -6,7 +6,6 @@ import '../../config/routes.dart';
 import '../../data/models/entity_appearance.dart';
 import '../../data/models/location.dart';
 import '../../data/models/session.dart';
-import '../../providers/repository_providers.dart';
 import '../../utils/formatters.dart';
 import '../../providers/world_providers.dart';
 import '../theme/spacing.dart';
@@ -61,9 +60,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   }
 
   Future<void> _handleSave(Location updatedLocation) async {
-    final entityRepo = ref.read(entityRepositoryProvider);
-    await entityRepo.updateLocation(updatedLocation, markEdited: true);
-    ref.invalidate(locationByIdProvider(widget.locationId));
+    await ref.read(entityEditorProvider).updateLocation(updatedLocation);
     setState(() => _isEditing = false);
     if (mounted) {
       ScaffoldMessenger.of(

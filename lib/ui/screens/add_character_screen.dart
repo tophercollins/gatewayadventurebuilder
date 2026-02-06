@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../config/routes.dart';
 import '../../data/models/player.dart';
 import '../../providers/player_providers.dart';
-import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
 
 /// Screen for adding a new character to a campaign.
@@ -53,9 +52,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final playerRepo = ref.read(playerRepositoryProvider);
-
-      await playerRepo.createCharacter(
+      await ref.read(playerEditorProvider).createCharacter(
         playerId: _selectedPlayerId!,
         campaignId: widget.campaignId,
         name: _nameController.text.trim(),
@@ -72,10 +69,6 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
             ? null
             : _backstoryController.text.trim(),
       );
-
-      // Invalidate providers to refresh the lists
-      ref.invalidate(playersWithCharactersProvider(widget.campaignId));
-      ref.invalidate(campaignCharactersProvider(widget.campaignId));
 
       if (mounted) {
         context.go(Routes.playersPath(widget.campaignId));

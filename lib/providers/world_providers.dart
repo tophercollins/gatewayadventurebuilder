@@ -8,6 +8,7 @@ import '../data/models/npc.dart';
 import '../data/models/npc_quote.dart';
 import '../data/models/npc_relationship.dart';
 import '../data/models/session.dart';
+import '../data/repositories/entity_repository.dart';
 import 'repository_providers.dart';
 
 /// Revision counter for world entity data.
@@ -256,3 +257,35 @@ final worldDatabaseProvider = FutureProvider.autoDispose
         items: itemsWithCounts,
       );
     });
+
+/// Service for entity mutations (NPC, Location, Item updates).
+class EntityEditor {
+  EntityEditor(this._entityRepo, this._ref);
+
+  final EntityRepository _entityRepo;
+  final Ref _ref;
+
+  /// Updates an NPC and refreshes data.
+  Future<void> updateNpc(Npc npc) async {
+    await _entityRepo.updateNpc(npc, markEdited: true);
+    _ref.invalidate(npcByIdProvider(npc.id));
+  }
+
+  /// Updates a location and refreshes data.
+  Future<void> updateLocation(Location location) async {
+    await _entityRepo.updateLocation(location, markEdited: true);
+    _ref.invalidate(locationByIdProvider(location.id));
+  }
+
+  /// Updates an item and refreshes data.
+  Future<void> updateItem(Item item) async {
+    await _entityRepo.updateItem(item, markEdited: true);
+    _ref.invalidate(itemByIdProvider(item.id));
+  }
+}
+
+/// Provider for entity mutations.
+final entityEditorProvider = Provider<EntityEditor>((ref) {
+  final entityRepo = ref.watch(entityRepositoryProvider);
+  return EntityEditor(entityRepo, ref);
+});

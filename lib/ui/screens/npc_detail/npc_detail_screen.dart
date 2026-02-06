@@ -6,7 +6,6 @@ import '../../../data/models/npc.dart';
 import '../../../data/models/npc_quote.dart';
 import '../../../data/models/npc_relationship.dart';
 import '../../../data/models/session.dart';
-import '../../../providers/repository_providers.dart';
 import '../../../providers/world_providers.dart';
 import '../../theme/spacing.dart';
 import '../../widgets/empty_state.dart';
@@ -67,9 +66,7 @@ class _NpcDetailScreenState extends ConsumerState<NpcDetailScreen> {
   }
 
   Future<void> _handleSave(Npc updatedNpc) async {
-    final entityRepo = ref.read(entityRepositoryProvider);
-    await entityRepo.updateNpc(updatedNpc, markEdited: true);
-    ref.invalidate(npcByIdProvider(widget.npcId));
+    await ref.read(entityEditorProvider).updateNpc(updatedNpc);
     setState(() => _isEditing = false);
     if (mounted) {
       ScaffoldMessenger.of(

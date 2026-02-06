@@ -237,3 +237,36 @@ final transcriptSegmentsProvider = FutureProvider.family((
   final sessionRepo = ref.watch(sessionRepositoryProvider);
   return sessionRepo.getSegmentsByTranscript(transcriptId);
 });
+
+/// Service for transcript mutations (save edits, revert).
+class TranscriptEditor {
+  TranscriptEditor(this._sessionRepo, this._ref);
+
+  final SessionRepository _sessionRepo;
+  final Ref _ref;
+
+  /// Saves edited transcript text and refreshes data.
+  Future<void> saveTranscript({
+    required String transcriptId,
+    required String sessionId,
+    required String newText,
+  }) async {
+    await _sessionRepo.updateTranscriptText(transcriptId, newText);
+    _ref.invalidate(sessionTranscriptProvider(sessionId));
+  }
+
+  /// Reverts transcript to original text and refreshes data.
+  Future<void> revertTranscript({
+    required String transcriptId,
+    required String sessionId,
+  }) async {
+    await _sessionRepo.revertTranscriptText(transcriptId);
+    _ref.invalidate(sessionTranscriptProvider(sessionId));
+  }
+}
+
+/// Provider for transcript mutations.
+final transcriptEditorProvider = Provider<TranscriptEditor>((ref) {
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  return TranscriptEditor(sessionRepo, ref);
+});

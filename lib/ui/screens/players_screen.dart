@@ -6,7 +6,6 @@ import '../../config/routes.dart';
 import '../../data/models/character.dart';
 import '../../data/models/player.dart';
 import '../../providers/player_providers.dart';
-import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/player_card.dart';
 
@@ -157,9 +156,7 @@ class _PlayersContent extends ConsumerWidget {
     Player player,
   ) async {
     try {
-      final playerRepo = ref.read(playerRepositoryProvider);
-      await playerRepo.updatePlayer(player);
-      ref.invalidate(playersWithCharactersProvider(campaignId));
+      await ref.read(playerEditorProvider).updatePlayer(player, campaignId);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -175,9 +172,10 @@ class _PlayersContent extends ConsumerWidget {
     Character character,
   ) async {
     try {
-      final playerRepo = ref.read(playerRepositoryProvider);
-      await playerRepo.updateCharacter(character);
-      ref.invalidate(playersWithCharactersProvider(campaignId));
+      await ref.read(playerEditorProvider).updateCharacter(
+        character,
+        campaignId,
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -193,13 +191,7 @@ class _PlayersContent extends ConsumerWidget {
     Player player,
   ) async {
     try {
-      final playerRepo = ref.read(playerRepositoryProvider);
-      await playerRepo.removePlayerFromCampaign(
-        playerId: player.id,
-        campaignId: campaignId,
-      );
-      await playerRepo.deletePlayer(player.id);
-      ref.invalidate(playersWithCharactersProvider(campaignId));
+      await ref.read(playerEditorProvider).deletePlayer(player, campaignId);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -215,9 +207,10 @@ class _PlayersContent extends ConsumerWidget {
     String characterId,
   ) async {
     try {
-      final playerRepo = ref.read(playerRepositoryProvider);
-      await playerRepo.deleteCharacter(characterId);
-      ref.invalidate(playersWithCharactersProvider(campaignId));
+      await ref.read(playerEditorProvider).deleteCharacter(
+        characterId,
+        campaignId,
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

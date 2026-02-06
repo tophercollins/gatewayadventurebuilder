@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/session_transcript.dart';
 import '../../data/models/transcript_segment.dart';
-import '../../providers/repository_providers.dart';
 import '../../providers/transcription_providers.dart';
 import '../../utils/formatters.dart';
 import '../theme/spacing.dart';
@@ -256,12 +255,14 @@ class _TranscriptViewState extends ConsumerState<_TranscriptView> {
       return;
     }
 
-    final sessionRepo = ref.read(sessionRepositoryProvider);
-    await sessionRepo.updateTranscriptText(widget.transcript.id, newText);
+    await ref.read(transcriptEditorProvider).saveTranscript(
+      transcriptId: widget.transcript.id,
+      sessionId: widget.sessionId,
+      newText: newText,
+    );
 
     if (!mounted) return;
 
-    ref.invalidate(sessionTranscriptProvider(widget.sessionId));
     setState(() => _isEditing = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -296,10 +297,10 @@ class _TranscriptViewState extends ConsumerState<_TranscriptView> {
 
     if (confirmed != true || !mounted) return;
 
-    final sessionRepo = ref.read(sessionRepositoryProvider);
-    await sessionRepo.revertTranscriptText(widget.transcript.id);
-
-    ref.invalidate(sessionTranscriptProvider(widget.sessionId));
+    await ref.read(transcriptEditorProvider).revertTranscript(
+      transcriptId: widget.transcript.id,
+      sessionId: widget.sessionId,
+    );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
