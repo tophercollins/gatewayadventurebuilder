@@ -163,6 +163,7 @@ abstract final class DatabaseSchema {
       session_id TEXT NOT NULL REFERENCES sessions(id),
       version INTEGER DEFAULT 1,
       raw_text TEXT NOT NULL,
+      edited_text TEXT,
       whisper_model TEXT,
       language TEXT DEFAULT 'en',
       created_at TEXT NOT NULL
@@ -186,6 +187,7 @@ abstract final class DatabaseSchema {
       session_id TEXT NOT NULL REFERENCES sessions(id),
       transcript_id TEXT REFERENCES session_transcripts(id),
       overall_summary TEXT,
+      podcast_script TEXT,
       is_edited INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL

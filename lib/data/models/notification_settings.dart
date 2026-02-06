@@ -1,3 +1,11 @@
+/// How session recaps are shared with players.
+enum PlayerSharingMode {
+  /// GM reviews first, then manually sends to players.
+  reviewFirst,
+  /// Automatically sent to players after processing.
+  autoSend,
+}
+
 /// Notification settings for the user.
 /// Stored in secure storage.
 class NotificationSettings {
@@ -5,6 +13,7 @@ class NotificationSettings {
     this.emailEnabled = false,
     this.emailAddress,
     this.notifyOnProcessingComplete = true,
+    this.playerSharingMode = PlayerSharingMode.reviewFirst,
   });
 
   /// Whether email notifications are enabled.
@@ -15,6 +24,9 @@ class NotificationSettings {
 
   /// Whether to notify when session processing completes.
   final bool notifyOnProcessingComplete;
+
+  /// How session recaps are shared with players.
+  final PlayerSharingMode playerSharingMode;
 
   /// Whether notifications are effectively enabled.
   bool get isConfigured =>
@@ -29,6 +41,10 @@ class NotificationSettings {
       emailAddress: map['email_address'] as String?,
       notifyOnProcessingComplete:
           map['notify_on_processing_complete'] as bool? ?? true,
+      playerSharingMode: PlayerSharingMode.values.firstWhere(
+        (m) => m.name == (map['player_sharing_mode'] as String?),
+        orElse: () => PlayerSharingMode.reviewFirst,
+      ),
     );
   }
 
@@ -37,6 +53,7 @@ class NotificationSettings {
       'email_enabled': emailEnabled,
       'email_address': emailAddress,
       'notify_on_processing_complete': notifyOnProcessingComplete,
+      'player_sharing_mode': playerSharingMode.name,
     };
   }
 
@@ -44,12 +61,14 @@ class NotificationSettings {
     bool? emailEnabled,
     String? emailAddress,
     bool? notifyOnProcessingComplete,
+    PlayerSharingMode? playerSharingMode,
   }) {
     return NotificationSettings(
       emailEnabled: emailEnabled ?? this.emailEnabled,
       emailAddress: emailAddress ?? this.emailAddress,
       notifyOnProcessingComplete:
           notifyOnProcessingComplete ?? this.notifyOnProcessingComplete,
+      playerSharingMode: playerSharingMode ?? this.playerSharingMode,
     );
   }
 
@@ -64,11 +83,17 @@ class NotificationSettings {
     return other is NotificationSettings &&
         other.emailEnabled == emailEnabled &&
         other.emailAddress == emailAddress &&
-        other.notifyOnProcessingComplete == notifyOnProcessingComplete;
+        other.notifyOnProcessingComplete == notifyOnProcessingComplete &&
+        other.playerSharingMode == playerSharingMode;
   }
 
   @override
   int get hashCode {
-    return Object.hash(emailEnabled, emailAddress, notifyOnProcessingComplete);
+    return Object.hash(
+      emailEnabled,
+      emailAddress,
+      notifyOnProcessingComplete,
+      playerSharingMode,
+    );
   }
 }

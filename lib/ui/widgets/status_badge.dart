@@ -58,6 +58,11 @@ class StatusBadge extends StatelessWidget {
         SessionStatus.processing => ('Processing', theme.brightness.processing),
         SessionStatus.queued => ('Queued', theme.brightness.queued),
         SessionStatus.complete => ('Complete', theme.brightness.complete),
+        SessionStatus.logged => ('Logged', theme.colorScheme.onSurfaceVariant),
+        SessionStatus.interrupted => (
+          'Interrupted',
+          theme.brightness.recording,
+        ),
         SessionStatus.error => ('Failed', theme.colorScheme.error),
       };
     }

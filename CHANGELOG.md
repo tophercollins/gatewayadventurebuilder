@@ -4,6 +4,120 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.2.0] — 2026-02-06 — Feature Backlog (Post-MVP Enhancements)
+
+Major feature expansion across 10 backlog items: crash recovery, reactive state, new screens, export, podcast generation, stats, email integration, and UI polish.
+
+### Added
+
+#### Audio Crash Recovery (P1)
+- **Streaming audio save** — audio is flushed to disk periodically during recording, not just on Stop
+- **Crash detection** — if the app is force-quit mid-recording, reopening recovers all audio up to the last flush point
+- **`SessionStatus.interrupted`** — new session status for recovered recordings with resume/finalize options
+- Modified: `lib/services/audio/audio_recording_service.dart` — periodic flush logic
+- Modified: `lib/ui/screens/recording_screen.dart` — crash recovery UX
+
+#### Reactive State (P1)
+- **Revision counter pattern** — `StateProvider<int>` revision providers that increment on data mutations
+- All list/detail providers now properly invalidate when underlying data changes
+- Session list refreshes immediately after recording completes
+- Campaign list refreshes after create/edit/delete
+- Entity lists (NPCs, locations, items) refresh on creation/edit
+- Modified: all providers in `lib/providers/`, all list screens in `lib/ui/screens/`
+
+#### Manual Session Add (P2)
+- **New screen: `lib/ui/screens/add_session_screen.dart`** — add sessions without recording
+- **Two modes:**
+  - "Log session" — minimal form (title, date, session number, attendees, notes) for stat-tracking only
+  - "Add from transcript" — paste pre-existing transcript text that can trigger AI processing
+- **`SessionStatus.logged`** — new session status for log-only sessions
+- **New route:** `/campaigns/:id/sessions/add` with helper `Routes.addSessionPath()`
+- Modified: `lib/ui/screens/campaign_home_screen.dart` — added `_AddSessionButton` widget
+- Modified: `lib/config/routes.dart` — new `addSession` route
+- Modified: `lib/ui/screens/screens.dart` — added export
+
+#### Home Page Redesign (P2)
+- **Two clear primary actions:** "Continue Campaign" (smart — goes to last-used campaign) and "New Campaign"
+- Removed redundant "Review Sessions" card
+- Smart campaign navigation via campaigns list provider
+- Modified: `lib/ui/screens/home_screen.dart`
+
+#### Stats Dashboard (P2)
+- **New screen: `lib/ui/screens/stats_screen.dart`** — three-tab stats page
+- **Three tabs:**
+  - Overview — total campaigns, sessions, hours recorded, entities count
+  - Campaigns — per-campaign stats (sessions, hours, entity counts, frequency)
+  - Players — attendance rates, characters played, moments count
+- **New providers: `lib/providers/stats_providers.dart`** — `GlobalStats`, `CampaignStats`, `PlayerStats` data classes with `FutureProvider.autoDispose` providers
+- **New route:** `/stats` accessible from sidebar
+- Modified: `lib/ui/widgets/app_sidebar.dart` — added Stats nav item
+- Modified: `lib/config/routes.dart` — new `stats` route
+
+#### Email API — Resend Integration (P3)
+- **GM notification (automatic):** email sent when transcript/AI processing completes
+- **Player sharing modes:** `PlayerSharingMode.reviewFirst` (default) and `autoSend`
+- **Email trigger in processing pipeline:** `SessionProcessor._sendNotificationEmail()` fires after successful processing
+- Modified: `lib/data/models/notification_settings.dart` — added `PlayerSharingMode` enum
+- Modified: `lib/services/processing/session_processor.dart` — email trigger integration
+- Modified: `lib/providers/processing_providers.dart` — wired email service
+
+#### AI Podcast Summary (P3)
+- **New service: `lib/services/processing/podcast_generator.dart`** — generates 2-3 minute podcast-style recap scripts via LLM
+- **New widget: `lib/ui/widgets/podcast_card.dart`** — generate, view, regenerate, and copy podcast scripts on session detail
+- **New providers: `lib/providers/podcast_providers.dart`** — `podcastGeneratorProvider`, `podcastScriptProvider`, `PodcastGenerationNotifier`
+- **DB migration v2→v3:** added `podcast_script TEXT` column to `session_summaries` table
+- Modified: `lib/data/models/session_summary.dart` — added `podcastScript` field
+- Modified: `lib/data/database/schema.dart` — added column
+- Modified: `lib/data/database/database_helper.dart` — version bump to 3, migration
+- Modified: `lib/data/repositories/summary_repository.dart` — added `updatePodcastScript()`
+- Modified: `lib/ui/screens/session_detail_screen.dart` — integrated PodcastCard
+
+#### Export — Markdown, JSON, CSV (P4)
+- **New service: `lib/services/export/export_service.dart`** — session Markdown, session JSON, campaign JSON, entity CSV exports
+- **New utility: `lib/services/export/file_saver.dart`** — saves to `Documents/TTRPGTracker/exports/` with timestamped filenames
+- **New providers: `lib/providers/export_providers.dart`** — `exportServiceProvider`, `fileSaverProvider`, `ExportStateNotifier`
+- **Export UI on session detail:** Markdown and JSON export buttons with progress indicator and file path display
+- Modified: `lib/ui/screens/session_detail_screen.dart` — added `_ExportSection` widget
+
+#### Light/Dark Mode Toggle (P5)
+- **In-app theme toggle** in sidebar: Light / Dark / System (default)
+- Preference persisted via SharedPreferences
+- New: `lib/providers/theme_provider.dart`
+- Modified: `lib/ui/widgets/app_sidebar.dart` — toggle button
+
+#### Sidebar App Name Bug Fix (P5)
+- Fixed text clipping/truncation of "TTRPG Tracker" in sidebar header
+- Fixed RenderFlex overflow in `_SidebarNavItem` (Row overflowed by 17px)
+- Modified: `lib/ui/widgets/app_sidebar.dart`
+
+### Changed
+
+#### Status Badge — Exhaustive Switch
+- Added `SessionStatus.logged` and `SessionStatus.interrupted` to the switch expression in `status_badge.dart`
+- `logged` displays as grey "Logged" pill badge
+- `interrupted` displays as amber "Interrupted" pill badge (same color as recording)
+
+#### Providers Barrel File
+- `lib/providers/providers.dart` — added exports for `export_providers.dart`, `podcast_providers.dart`, sorted alphabetically
+
+#### Home Screen Lint Fix
+- Fixed `unnecessary_underscores` warning in `home_screen.dart` error callback
+
+### Database Changes
+
+| Version | Migration |
+|---------|-----------|
+| v2→v3 | `ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT` |
+
+### Verification
+
+- `flutter analyze` — 0 issues
+- All 19 provider files compile cleanly
+- All 60 screen files compile cleanly
+- All 40 service files compile cleanly
+
+---
+
 ## [0.1.0] — 2026-02-06 — Real Transcription (Dual-Strategy)
 
 Replaces `MockTranscriptionService` with real transcription using a platform-based dual strategy:

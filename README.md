@@ -4,14 +4,22 @@ A desktop application for Game Masters to record, transcribe, and analyze tablet
 
 ## Features
 
-- **Audio Recording** - Record your TTRPG sessions with one click
-- **Automatic Transcription** - Converts audio to text (mock implementation for MVP)
-- **AI-Powered Analysis** - Extracts NPCs, locations, items, and action items from sessions
-- **Campaign Management** - Organize multiple campaigns and worlds
-- **Player Tracking** - Manage players and their characters
+- **Audio Recording** - Record sessions with crash recovery (streaming save to disk)
+- **Real Transcription** - Dual-strategy: local Whisper on macOS, Gemini Flash-Lite on Windows/Linux
+- **AI-Powered Analysis** - Extracts NPCs, locations, items, action items, and player moments via Gemini
+- **Campaign Management** - Create, edit, and organize multiple campaigns and worlds
+- **Player Tracking** - Manage players and their characters with attendance stats
 - **World Database** - Browse all NPCs, locations, and items across your campaign
+- **Session Review** - Summaries, scene breakdowns, entity extraction, action items, player moments
+- **Audio Playback** - Play session recordings with speed controls (0.5x-2x) and seek bar
+- **AI Podcast Recap** - Generate podcast-style narrative scripts from session data
+- **Stats Dashboard** - Campaign, player, and global statistics across all sessions
+- **Export** - Export sessions as Markdown or JSON, entities as CSV
+- **Manual Session Add** - Log sessions or paste transcripts without recording
+- **Email Notifications** - GM notified when processing completes, share recaps with players via Resend
+- **Dark/Light Mode** - In-app theme toggle (Light / Dark / System)
 - **Offline-First** - Recording and transcription work without internet
-- **Session History** - Review past sessions with summaries and scene breakdowns
+- **Onboarding** - First-time guided walkthrough
 
 ## Tech Stack
 
@@ -130,20 +138,23 @@ lib/
 ├── main.dart                 # App entry point
 ├── app.dart                  # App configuration
 ├── config/
-│   └── routes.dart           # Navigation routes
+│   ├── routes.dart           # GoRouter navigation (30+ routes)
+│   └── env_config.dart       # API key management
 ├── data/
-│   ├── models/               # Data classes
-│   ├── repositories/         # Database operations
-│   └── database/             # SQLite setup
+│   ├── models/               # 17 Dart data classes
+│   ├── repositories/         # 8 repository classes (CRUD)
+│   └── database/             # SQLite setup, schema, migrations
 ├── services/
-│   ├── audio/                # Audio recording
-│   ├── transcription/        # Speech-to-text
-│   ├── processing/           # AI analysis
+│   ├── audio/                # Recording + playback
+│   ├── transcription/        # Whisper (macOS) + Gemini (Win/Linux)
+│   ├── processing/           # AI pipeline, podcast generator
+│   ├── export/               # Markdown, JSON, CSV export
 │   ├── connectivity/         # Network monitoring
-│   └── notifications/        # Email notifications
-├── providers/                # Riverpod state management
+│   └── notifications/        # Email via Resend
+├── providers/                # 19 Riverpod provider files
+├── utils/                    # Formatters, helpers
 └── ui/
-    ├── screens/              # Full-page screens
+    ├── screens/              # 60 screen files (some in subdirectories)
     ├── widgets/              # Reusable components
     └── theme/                # Colors, spacing, typography
 ```
@@ -159,12 +170,12 @@ For full AI processing and email notifications, you'll need:
 
 Store these securely using the app's settings (they're saved in flutter_secure_storage).
 
-## Current Limitations (MVP)
+## Current Limitations
 
-- **Transcription** - Uses mock data; real whisper.cpp integration planned
+- **Desktop Only** - No mobile support (Windows, macOS, Linux only)
+- **Single User** - Multi-user support planned for future (user_id fields are in place)
 - **AI Processing** - Requires internet connection and Gemini API key
-- **Desktop Only** - No mobile support in MVP
-- **Single User** - Multi-user support planned for future
+- **Cloud Sync** - Supabase integration scaffolded but not yet active
 
 ## App Flow
 

@@ -4,6 +4,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import 'recording_recovery_service.dart';
+
 /// Error types for audio recording.
 enum AudioRecordingError {
   permissionDenied,
@@ -52,9 +54,11 @@ enum RecordingState { idle, recording, paused, stopped }
 /// Audio recording service wrapping the record package.
 /// Supports long recordings (10+ hours) via streaming to disk.
 class AudioRecordingService {
-  AudioRecordingService();
+  AudioRecordingService({RecordingRecoveryService? recoveryService})
+      : _recoveryService = recoveryService ?? RecordingRecoveryService();
 
   final AudioRecorder _recorder = AudioRecorder();
+  final RecordingRecoveryService _recoveryService;
   String? _currentFilePath;
   DateTime? _recordingStartTime;
   Duration _pausedDuration = Duration.zero;
@@ -116,7 +120,7 @@ class AudioRecordingService {
 
   /// Start recording to the specified file path.
   /// If filePath is null, generates one using sessionId.
-  Future<void> start({required String sessionId, String? filePath}) async {
+  Future<void> start({required String sessionId, String? campaignId, String? filePath}) async {
     // Check permissions first
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
@@ -152,7 +156,7 @@ class AudioRecordingService {
     const config = RecordConfig(
       encoder: AudioEncoder.wav,
       numChannels: 1, // Mono is sufficient for voice
-      sampleRate: 44100, // CD quality
+      sampleRate: 16000, // 16 kHz required by Whisper
       bitRate: 128000,
     );
 
@@ -162,6 +166,11 @@ class AudioRecordingService {
       _pausedDuration = Duration.zero;
       _lastPauseTime = null;
       _state = RecordingState.recording;
+      await _recoveryService.markRecordingActive(
+        sessionId: sessionId,
+        campaignId: campaignId ?? '',
+        filePath: _currentFilePath!,
+      );
     } on Exception catch (e) {
       throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }
@@ -176,6 +185,7 @@ class AudioRecordingService {
     try {
       final path = await _recorder.stop();
       _state = RecordingState.stopped;
+      await _recoveryService.clearActiveRecording();
       return path ?? _currentFilePath;
     } on Exception catch (e) {
       throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
@@ -228,6 +238,7 @@ class AudioRecordingService {
       }
 
       _reset();
+      await _recoveryService.clearActiveRecording();
     } on Exception catch (e) {
       throw AudioRecordingException(AudioRecordingError.unknown, e.toString());
     }

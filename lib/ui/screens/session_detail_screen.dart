@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
+import '../../data/models/session.dart';
 import '../../providers/editing_providers.dart';
+import '../../providers/export_providers.dart';
 import '../../providers/playback_providers.dart';
+import '../../providers/processing_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/session_detail_providers.dart';
+import '../../providers/transcription_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/audio_player_card.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/podcast_card.dart';
 import '../widgets/section_card.dart';
 import '../widgets/session_header.dart';
 
@@ -97,7 +102,32 @@ class _SessionDetailContent extends ConsumerWidget {
                 ];
               },
             ),
+            // Retry transcription banner for failed sessions
+            if (detail.session.status == SessionStatus.error ||
+                detail.session.status == SessionStatus.transcribing)
+              ...audioAsync.when(
+                loading: () => const <Widget>[],
+                error: (_, _) => const <Widget>[],
+                data: (audioInfo) {
+                  if (audioInfo == null || !audioInfo.fileExists) {
+                    return const <Widget>[];
+                  }
+                  return <Widget>[
+                    const SizedBox(height: Spacing.md),
+                    _RetryTranscriptionBanner(
+                      sessionId: sessionId,
+                      audioFilePath: audioInfo.filePath,
+                      campaignId: campaignId,
+                    ),
+                  ];
+                },
+              ),
             const SizedBox(height: Spacing.xl),
+            _TranscriptSectionCard(
+              campaignId: campaignId,
+              sessionId: sessionId,
+            ),
+            const SizedBox(height: Spacing.md),
             SectionCard(
               title: 'Session Summary',
               icon: Icons.description_outlined,
@@ -106,6 +136,11 @@ class _SessionDetailContent extends ConsumerWidget {
                   context.go(Routes.sessionSummaryPath(campaignId, sessionId)),
               onEdit: () =>
                   context.go(Routes.sessionSummaryPath(campaignId, sessionId)),
+            ),
+            const SizedBox(height: Spacing.md),
+            PodcastCard(
+              sessionId: sessionId,
+              campaignId: campaignId,
             ),
             const SizedBox(height: Spacing.md),
             SectionCard(
@@ -138,6 +173,11 @@ class _SessionDetailContent extends ConsumerWidget {
                   context.go(Routes.sessionPlayersPath(campaignId, sessionId)),
               onEdit: () =>
                   context.go(Routes.sessionPlayersPath(campaignId, sessionId)),
+            ),
+            const SizedBox(height: Spacing.xl),
+            _ExportSection(
+              sessionId: sessionId,
+              campaignId: campaignId,
             ),
           ],
         ),
@@ -218,6 +258,333 @@ class _SessionDetailContent extends ConsumerWidget {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+    }
+  }
+}
+
+/// Transcript section card that loads transcript data asynchronously.
+class _TranscriptSectionCard extends ConsumerWidget {
+  const _TranscriptSectionCard({
+    required this.campaignId,
+    required this.sessionId,
+  });
+
+  final String campaignId;
+  final String sessionId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transcriptAsync = ref.watch(sessionTranscriptProvider(sessionId));
+
+    void navigateToTranscript() => context.go(
+          Routes.sessionTranscriptPath(campaignId, sessionId),
+        );
+
+    return transcriptAsync.when(
+      loading: () => SectionCard(
+        title: 'Transcript',
+        icon: Icons.text_snippet_outlined,
+        preview: 'Loading...',
+        onViewMore: navigateToTranscript,
+        onEdit: navigateToTranscript,
+      ),
+      error: (_, _) => SectionCard(
+        title: 'Transcript',
+        icon: Icons.text_snippet_outlined,
+        preview: 'Error loading transcript',
+        onViewMore: navigateToTranscript,
+        onEdit: navigateToTranscript,
+      ),
+      data: (transcript) {
+        final preview = transcript != null
+            ? _truncate(transcript.displayText, 150)
+            : 'No transcript available';
+        return SectionCard(
+          title: 'Transcript',
+          icon: Icons.text_snippet_outlined,
+          preview: preview,
+          onViewMore: navigateToTranscript,
+          onEdit: navigateToTranscript,
+        );
+      },
+    );
+  }
+
+  String _truncate(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
+  }
+}
+
+/// Banner shown on session detail when transcription failed or is pending.
+/// Allows retrying transcription directly from the session detail screen.
+class _RetryTranscriptionBanner extends ConsumerWidget {
+  const _RetryTranscriptionBanner({
+    required this.sessionId,
+    required this.audioFilePath,
+    required this.campaignId,
+  });
+
+  final String sessionId;
+  final String audioFilePath;
+  final String campaignId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final transcriptionState = ref.watch(transcriptionNotifierProvider);
+    final isTranscribing =
+        transcriptionState.isActive &&
+        transcriptionState.sessionId == sessionId;
+
+    return Container(
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: isTranscribing
+            ? theme.colorScheme.primaryContainer
+            : theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(Spacing.cardRadius),
+        border: Border.all(
+          color: isTranscribing
+              ? theme.colorScheme.primary.withValues(alpha: 0.3)
+              : theme.colorScheme.error.withValues(alpha: 0.3),
+        ),
+      ),
+      child: isTranscribing
+          ? _buildTranscribingState(theme, transcriptionState)
+          : _buildRetryState(context, ref, theme),
+    );
+  }
+
+  Widget _buildRetryState(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeData theme,
+  ) {
+    return Row(
+      children: [
+        Icon(
+          Icons.warning_amber_rounded,
+          color: theme.colorScheme.onErrorContainer,
+        ),
+        const SizedBox(width: Spacing.sm),
+        Expanded(
+          child: Text(
+            'Transcription failed. Audio is saved — you can retry.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onErrorContainer,
+            ),
+          ),
+        ),
+        const SizedBox(width: Spacing.sm),
+        FilledButton(
+          onPressed: () => _startTranscription(context, ref),
+          child: const Text('Retry'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTranscribingState(
+    ThemeData theme,
+    TranscriptionState state,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: state.progress > 0 ? state.progress : null,
+              ),
+            ),
+            const SizedBox(width: Spacing.sm),
+            Expanded(
+              child: Text(
+                state.message ?? 'Transcribing...',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (state.progress > 0) ...[
+          const SizedBox(height: Spacing.xs),
+          LinearProgressIndicator(value: state.progress),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _startTranscription(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final notifier = ref.read(transcriptionNotifierProvider.notifier);
+    await notifier.transcribe(
+      sessionId: sessionId,
+      audioFilePath: audioFilePath,
+    );
+
+    if (!context.mounted) return;
+
+    final state = ref.read(transcriptionNotifierProvider);
+    if (state.isComplete) {
+      // Refresh session detail and transcript to show new data
+      ref.invalidate(
+        sessionDetailProvider(
+          (campaignId: campaignId, sessionId: sessionId),
+        ),
+      );
+      ref.invalidate(sessionTranscriptProvider(sessionId));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transcription complete')),
+      );
+    }
+  }
+}
+
+/// Export section with buttons for Markdown and JSON export.
+class _ExportSection extends ConsumerWidget {
+  const _ExportSection({
+    required this.sessionId,
+    required this.campaignId,
+  });
+
+  final String sessionId;
+  final String campaignId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final exportState = ref.watch(exportStateProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Export',
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: Spacing.sm),
+        Row(
+          children: [
+            OutlinedButton.icon(
+              onPressed: exportState.isExporting
+                  ? null
+                  : () => _export(context, ref, 'markdown'),
+              icon: const Icon(Icons.description_outlined, size: 18),
+              label: const Text('Markdown'),
+            ),
+            const SizedBox(width: Spacing.sm),
+            OutlinedButton.icon(
+              onPressed: exportState.isExporting
+                  ? null
+                  : () => _export(context, ref, 'json'),
+              icon: const Icon(Icons.data_object, size: 18),
+              label: const Text('JSON'),
+            ),
+            if (exportState.isExporting) ...[
+              const SizedBox(width: Spacing.sm),
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ],
+        ),
+        if (exportState.exportedFilePath != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Spacing.sm),
+            child: Text(
+              'Saved to: ${exportState.exportedFilePath}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        if (exportState.error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Spacing.sm),
+            child: Text(
+              exportState.error!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _export(
+    BuildContext context,
+    WidgetRef ref,
+    String format,
+  ) async {
+    final exportService = ref.read(exportServiceProvider);
+    final fileSaver = ref.read(fileSaverProvider);
+    final notifier = ref.read(exportStateProvider.notifier);
+    final sessionRepo = ref.read(sessionRepositoryProvider);
+    final summaryRepo = ref.read(summaryRepositoryProvider);
+    final actionItemRepo = ref.read(actionItemRepositoryProvider);
+    final entityRepo = ref.read(entityRepositoryProvider);
+    final campaignRepo = ref.read(campaignRepositoryProvider);
+
+    notifier.setExporting();
+
+    try {
+      final String content;
+      final String extension;
+
+      if (format == 'markdown') {
+        content = await exportService.exportSessionMarkdown(
+          sessionId: sessionId,
+          sessionRepo: sessionRepo,
+          summaryRepo: summaryRepo,
+          actionItemRepo: actionItemRepo,
+          entityRepo: entityRepo,
+          campaignRepo: campaignRepo,
+        );
+        extension = 'md';
+      } else {
+        content = await exportService.exportSessionJson(
+          sessionId: sessionId,
+          sessionRepo: sessionRepo,
+          summaryRepo: summaryRepo,
+          actionItemRepo: actionItemRepo,
+          entityRepo: entityRepo,
+          campaignRepo: campaignRepo,
+        );
+        extension = 'json';
+      }
+
+      final filePath = await fileSaver.saveExportFile(
+        content: content,
+        suggestedFileName: 'session_$sessionId',
+        fileExtension: extension,
+      );
+
+      if (filePath != null) {
+        notifier.setComplete(filePath);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Exported to $filePath')),
+          );
+        }
+      } else {
+        notifier.setError('Failed to save export file');
+      }
+    } catch (e) {
+      notifier.setError('Export failed: $e');
     }
   }
 }

@@ -43,10 +43,11 @@ class AudioChunker {
     } catch (e) {
       // Fallback: estimate based on file size (assume 44.1kHz, 16-bit, mono WAV)
       final fileSize = await file.length();
-      final estimatedDurationMs = ((fileSize - 44) / 88200 * 1000).round();
+      // Assume 16kHz, 16-bit, mono WAV (32000 bytes/sec)
+      final estimatedDurationMs = ((fileSize - 44) / 32000 * 1000).round();
       wavInfo = WavInfo(
         numChannels: 1,
-        sampleRate: 44100,
+        sampleRate: 16000,
         bitsPerSample: 16,
         dataSize: fileSize - 44,
         durationMs: estimatedDurationMs > 0 ? estimatedDurationMs : 60000,

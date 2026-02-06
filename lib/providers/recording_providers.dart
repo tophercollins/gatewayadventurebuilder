@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/audio/audio_recording_service.dart';
+import '../services/audio/recording_recovery_service.dart';
 
 /// Provider for the audio recording service (singleton).
 final audioRecordingServiceProvider = Provider<AudioRecordingService>((ref) {
@@ -78,7 +79,10 @@ class RecordingNotifier extends StateNotifier<RecordingScreenState> {
     if (state.sessionId == null) return;
 
     try {
-      await _audioService.start(sessionId: state.sessionId!);
+      await _audioService.start(
+        sessionId: state.sessionId!,
+        campaignId: state.campaignId,
+      );
       state = state.copyWith(state: RecordingState.recording, clearError: true);
       _startTimer();
     } on AudioRecordingException catch (e) {
@@ -266,3 +270,15 @@ final attendeeSelectionProvider =
     StateNotifierProvider<AttendeeSelectionNotifier, AttendeeSelectionState>(
       (ref) => AttendeeSelectionNotifier(),
     );
+
+/// Provider for the recording recovery service.
+final recordingRecoveryProvider = Provider<RecordingRecoveryService>((ref) {
+  return RecordingRecoveryService();
+});
+
+/// Provider that checks for interrupted recordings on startup.
+final interruptedRecordingProvider =
+    FutureProvider<InterruptedRecording?>((ref) async {
+  final recoveryService = ref.watch(recordingRecoveryProvider);
+  return await recoveryService.checkForInterruptedRecording();
+});

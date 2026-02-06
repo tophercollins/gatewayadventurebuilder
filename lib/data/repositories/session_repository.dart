@@ -237,6 +237,29 @@ class SessionRepository {
     return results.map((m) => SessionTranscript.fromMap(m)).toList();
   }
 
+  /// Save user's edited version of the transcript.
+  /// The original rawText remains untouched.
+  Future<void> updateTranscriptText(String transcriptId, String newText) async {
+    final db = await _db.database;
+    await db.update(
+      'session_transcripts',
+      {'edited_text': newText},
+      where: 'id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
+
+  /// Revert to the original transcript by clearing editedText.
+  Future<void> revertTranscriptText(String transcriptId) async {
+    final db = await _db.database;
+    await db.update(
+      'session_transcripts',
+      {'edited_text': null},
+      where: 'id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
+
   // ============================================
   // TRANSCRIPT SEGMENTS (IMMUTABLE - INSERT ONLY)
   // ============================================

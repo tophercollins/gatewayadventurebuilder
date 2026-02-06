@@ -49,6 +49,8 @@ class _CampaignContent extends StatelessWidget {
             _CampaignHeader(detail: detail),
             const SizedBox(height: Spacing.xl),
             _RecordButton(campaignId: detail.campaign.id),
+            const SizedBox(height: Spacing.sm),
+            _AddSessionButton(campaignId: detail.campaign.id),
             const SizedBox(height: Spacing.xl),
             _QuickLinksSection(detail: detail),
             const SizedBox(height: Spacing.xl),
@@ -139,6 +141,24 @@ class _RecordButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AddSessionButton extends StatelessWidget {
+  const _AddSessionButton({required this.campaignId});
+
+  final String campaignId;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () => context.go(Routes.addSessionPath(campaignId)),
+      icon: const Icon(Icons.post_add),
+      label: const Text('Add Session Manually'),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.all(Spacing.md),
       ),
     );
   }

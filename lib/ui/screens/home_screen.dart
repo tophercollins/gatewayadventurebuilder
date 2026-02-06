@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
+import '../../providers/campaign_providers.dart';
 import '../theme/spacing.dart';
 
-/// Home screen - main landing page with three primary options.
-/// Per APP_FLOW.md Flow 2: Continue Campaign, New Campaign, Review/Stats/Edit.
+/// Home screen - main landing page with two primary actions.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final campaignsAsync = ref.watch(campaignsListProvider);
+
     return Center(
       child: SingleChildScrollView(
         child: ConstrainedBox(
@@ -24,31 +26,84 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 const _WelcomeHeader(),
                 const SizedBox(height: Spacing.xxl),
-                _HomeOption(
-                  icon: Icons.play_arrow_rounded,
-                  title: 'Continue Campaign',
-                  description: 'Pick up where you left off',
-                  onTap: () => context.go(Routes.campaigns),
-                ),
-                const SizedBox(height: Spacing.md),
-                _HomeOption(
-                  icon: Icons.add_rounded,
-                  title: 'New Campaign',
-                  description: 'Start a fresh adventure',
-                  onTap: () => context.go(Routes.newCampaign),
-                ),
-                const SizedBox(height: Spacing.md),
-                _HomeOption(
-                  icon: Icons.history_rounded,
-                  title: 'Review Sessions',
-                  description: 'Browse past sessions and world data',
-                  onTap: () => context.go(Routes.campaigns),
+                campaignsAsync.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  error: (_, _) => _buildDefaultActions(context),
+                  data: (campaigns) {
+                    if (campaigns.isEmpty) {
+                      return _buildEmptyState(context);
+                    }
+                    return _buildActions(context, campaigns.first);
+                  },
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _HomeOption(
+          icon: Icons.add_rounded,
+          title: 'Start Your First Campaign',
+          description: 'Create a campaign to begin tracking sessions',
+          onTap: () => context.go(Routes.newCampaign),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActions(
+    BuildContext context,
+    CampaignWithSessionCount lastCampaign,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _HomeOption(
+          icon: Icons.play_arrow_rounded,
+          title: 'Continue Campaign',
+          description: lastCampaign.campaign.name,
+          onTap: () => context.go(
+            Routes.campaignPath(lastCampaign.campaign.id),
+          ),
+        ),
+        const SizedBox(height: Spacing.md),
+        _HomeOption(
+          icon: Icons.add_rounded,
+          title: 'New Campaign',
+          description: 'Start a fresh adventure',
+          onTap: () => context.go(Routes.newCampaign),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDefaultActions(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _HomeOption(
+          icon: Icons.play_arrow_rounded,
+          title: 'Continue Campaign',
+          description: 'Pick up where you left off',
+          onTap: () => context.go(Routes.campaigns),
+        ),
+        const SizedBox(height: Spacing.md),
+        _HomeOption(
+          icon: Icons.add_rounded,
+          title: 'New Campaign',
+          description: 'Start a fresh adventure',
+          onTap: () => context.go(Routes.newCampaign),
+        ),
+      ],
     );
   }
 }

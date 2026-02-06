@@ -5,9 +5,16 @@ import '../data/models/session.dart';
 import '../data/models/world.dart';
 import 'repository_providers.dart';
 
+/// Revision counter to force campaign list refresh.
+final campaignsRevisionProvider = StateProvider<int>((ref) => 0);
+
+/// Revision counter to force session list refresh.
+final sessionsRevisionProvider = StateProvider<int>((ref) => 0);
+
 /// Provider for campaigns list with session counts.
 final campaignsListProvider =
     FutureProvider.autoDispose<List<CampaignWithSessionCount>>((ref) async {
+      ref.watch(campaignsRevisionProvider);
       final user = await ref.watch(currentUserProvider.future);
       final campaignRepo = ref.watch(campaignRepositoryProvider);
       final sessionRepo = ref.watch(sessionRepositoryProvider);
@@ -41,6 +48,8 @@ class CampaignWithSessionCount {
 /// Provider for campaign details.
 final campaignDetailProvider = FutureProvider.autoDispose
     .family<CampaignDetail?, String>((ref, campaignId) async {
+      ref.watch(campaignsRevisionProvider);
+      ref.watch(sessionsRevisionProvider);
       final campaignRepo = ref.watch(campaignRepositoryProvider);
       final sessionRepo = ref.watch(sessionRepositoryProvider);
       final playerRepo = ref.watch(playerRepositoryProvider);

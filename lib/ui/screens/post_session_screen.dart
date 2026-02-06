@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/session.dart';
+import '../../providers/campaign_providers.dart';
 import '../../providers/recording_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/transcription_providers.dart';
@@ -99,6 +100,7 @@ class _PostSessionScreenState extends ConsumerState<PostSessionScreen> {
           _audioFilePath = filePath;
           _phase = _ProcessingPhase.transcribing;
         });
+        ref.read(sessionsRevisionProvider.notifier).state++;
         await _startTranscription(filePath);
       }
     } catch (e) {
@@ -212,18 +214,30 @@ class _PostSessionScreenState extends ConsumerState<PostSessionScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: Spacing.xl),
+        Text(
+          'Your audio is saved and you can retry transcription later.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: Spacing.xl),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             OutlinedButton(
-              onPressed: () =>
-                  context.go(Routes.campaignPath(widget.campaignId)),
-              child: const Text('Back to Campaign'),
+              onPressed: () => context.go(
+                Routes.sessionDetailPath(
+                  widget.campaignId,
+                  widget.sessionId,
+                ),
+              ),
+              child: const Text('View Session'),
             ),
             const SizedBox(width: Spacing.md),
             FilledButton(
               onPressed: _retryProcessing,
-              child: const Text('Retry'),
+              child: const Text('Retry Now'),
             ),
           ],
         ),

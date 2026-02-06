@@ -52,6 +52,9 @@ final sessionContextLoaderProvider = Provider<SessionContextLoader>((ref) {
 
 /// Provider for SessionProcessor.
 final sessionProcessorProvider = Provider<SessionProcessor>((ref) {
+  final emailService = ref.watch(emailServiceProvider);
+  final notificationSettings = ref.watch(notificationSettingsProvider);
+
   return SessionProcessor(
     llmService: ref.watch(llmServiceProvider),
     sessionRepo: ref.watch(sessionRepositoryProvider),
@@ -60,6 +63,8 @@ final sessionProcessorProvider = Provider<SessionProcessor>((ref) {
     actionItemRepo: ref.watch(actionItemRepositoryProvider),
     momentRepo: ref.watch(playerMomentRepositoryProvider),
     contextLoader: ref.watch(sessionContextLoaderProvider),
+    emailService: emailService,
+    notificationSettings: notificationSettings,
   );
 });
 

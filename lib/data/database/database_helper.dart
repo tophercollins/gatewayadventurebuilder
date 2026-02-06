@@ -21,7 +21,7 @@ class DatabaseHelper {
   }
 
   /// Database version for migrations.
-  static const int _version = 1;
+  static const int _version = 3;
 
   /// Database filename.
   static const String _dbName = 'ttrpg_tracker.db';
@@ -77,7 +77,16 @@ class DatabaseHelper {
 
   /// Handle database upgrades.
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Add migrations here as schema evolves.
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE session_transcripts ADD COLUMN edited_text TEXT',
+      );
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT',
+      );
+    }
   }
 
   /// Called when database is opened.

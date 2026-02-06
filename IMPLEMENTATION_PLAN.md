@@ -646,21 +646,35 @@ Phase 15 (Polish & Testing)
 
 ## MVP Completion Checklist
 
-- [ ] Can create a campaign with name and game system
-- [ ] Can add players and characters to campaign
-- [ ] Can select attendees and start recording
-- [ ] Recording works offline for 10+ hours
-- [ ] Transcription runs locally after recording stops
-- [ ] AI processes transcript when online (< 1 minute)
-- [ ] Session detail shows: summary, scenes, entities, actions, player moments
-- [ ] All outputs are editable inline
-- [ ] Resync propagates edits to related content
-- [ ] Entities stored at world level, viewable in World Database
-- [ ] Processing queue handles offline → online transition
-- [ ] Email notification sent when processing complete
-- [ ] Onboarding guides first-time user
-- [ ] Dark mode and light mode work
-- [ ] Works on Windows, Mac, and Linux
+- [x] Can create a campaign with name and game system
+- [x] Can add players and characters to campaign
+- [x] Can select attendees and start recording
+- [x] Recording works offline for 10+ hours (with crash recovery)
+- [x] Transcription runs locally after recording stops (Whisper on macOS, Gemini on Win/Linux)
+- [x] AI processes transcript when online (< 1 minute)
+- [x] Session detail shows: summary, scenes, entities, actions, player moments
+- [x] All outputs are editable inline
+- [x] Resync propagates edits to related content
+- [x] Entities stored at world level, viewable in World Database
+- [x] Processing queue handles offline → online transition
+- [x] Email notification sent when processing complete
+- [x] Onboarding guides first-time user
+- [x] Dark mode and light mode work (with in-app toggle)
+- [x] Works on Windows, Mac, and Linux
+
+## Post-MVP Features (v0.2.0)
+
+- [x] Audio crash recovery (streaming save)
+- [x] Reactive state (dynamic page refresh)
+- [x] Manual session add (paste transcript / log-only)
+- [x] Home page redesign (smart campaign navigation)
+- [x] Stats dashboard (campaign, player, global)
+- [x] Email API (Resend integration with sharing modes)
+- [x] AI podcast summary (script generation)
+- [x] Export (Markdown, JSON, CSV)
+- [x] Light/dark mode toggle
+- [x] Audio playback with speed controls
+- [x] Sidebar layout bug fix
 
 ---
 

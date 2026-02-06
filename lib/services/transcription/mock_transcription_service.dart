@@ -62,7 +62,8 @@ class MockTranscriptionService implements TranscriptionService {
       // Get audio duration from file size (estimate for WAV)
       // WAV at 44.1kHz, 16-bit, mono = ~88KB per second
       final fileSize = await file.length();
-      final estimatedDurationSec = (fileSize / 88000).round();
+      // 16kHz, 16-bit, mono WAV = ~32KB per second
+      final estimatedDurationSec = (fileSize / 32000).round();
       final durationMs = estimatedDurationSec * 1000;
 
       // Report preparing phase

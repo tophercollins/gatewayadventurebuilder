@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
+import '../../providers/campaign_providers.dart';
 import '../../providers/processing_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
@@ -83,6 +84,8 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
       if (importText.isNotEmpty) {
         await _storeImportForProcessing(campaign.id, importText);
       }
+
+      ref.read(campaignsRevisionProvider.notifier).state++;
 
       if (mounted) {
         context.go(Routes.campaignPath(campaign.id));

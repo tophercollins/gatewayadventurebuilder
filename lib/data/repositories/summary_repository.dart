@@ -75,6 +75,19 @@ class SummaryRepository {
     );
   }
 
+  Future<void> updatePodcastScript(String summaryId, String script) async {
+    final db = await _db.database;
+    await db.update(
+      'session_summaries',
+      {
+        'podcast_script': script,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [summaryId],
+    );
+  }
+
   Future<void> deleteSummary(String id) async {
     final db = await _db.database;
     await db.delete('session_summaries', where: 'id = ?', whereArgs: [id]);

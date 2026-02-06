@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
+import '../../providers/theme_provider.dart';
 import '../theme/spacing.dart';
 
 /// Navigation item for the sidebar.
@@ -19,7 +21,7 @@ class SidebarItem {
 
 /// Collapsible sidebar navigation for desktop.
 /// Shows on screens > 1024px width.
-class AppSidebar extends StatelessWidget {
+class AppSidebar extends ConsumerWidget {
   const AppSidebar({
     required this.isCollapsed,
     required this.onToggleCollapse,
@@ -46,6 +48,11 @@ class AppSidebar extends StatelessWidget {
       icon: Icons.folder_outlined,
       label: 'Campaigns',
       path: Routes.campaigns,
+    ),
+    const SidebarItem(
+      icon: Icons.bar_chart_outlined,
+      label: 'Stats',
+      path: Routes.stats,
     ),
   ];
 
@@ -78,7 +85,7 @@ class AppSidebar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -143,6 +150,15 @@ class AppSidebar extends StatelessWidget {
             ),
           ),
 
+          // Theme toggle
+          if (!isCollapsed)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.md,
+                vertical: Spacing.xs,
+              ),
+              child: _ThemeToggle(),
+            ),
           // Settings at bottom
           const Divider(height: 1),
           Padding(
@@ -191,7 +207,6 @@ class _SidebarHeader extends StatelessWidget {
               ),
             ),
           ],
-          const Spacer(),
           IconButton(
             icon: Icon(isCollapsed ? Icons.chevron_right : Icons.chevron_left),
             onPressed: onToggleCollapse,
@@ -272,5 +287,63 @@ class _SidebarNavItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ThemeToggle extends ConsumerWidget {
+  const _ThemeToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Icon(
+          _iconForMode(themeMode),
+          size: Spacing.iconSize,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: Spacing.sm),
+        Expanded(
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<ThemeMode>(
+              value: themeMode,
+              isExpanded: true,
+              isDense: true,
+              style: theme.textTheme.bodySmall,
+              items: const [
+                DropdownMenuItem(
+                  value: ThemeMode.system,
+                  child: Text('System'),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.light,
+                  child: Text('Light'),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.dark,
+                  child: Text('Dark'),
+                ),
+              ],
+              onChanged: (mode) {
+                if (mode != null) {
+                  ref.read(themeModeProvider.notifier).setThemeMode(mode);
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _iconForMode(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => Icons.brightness_auto,
+      ThemeMode.light => Icons.light_mode,
+      ThemeMode.dark => Icons.dark_mode,
+    };
   }
 }

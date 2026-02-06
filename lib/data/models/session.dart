@@ -81,7 +81,9 @@ enum SessionStatus {
   queued('queued'),
   processing('processing'),
   complete('complete'),
-  error('error');
+  error('error'),
+  logged('logged'),
+  interrupted('interrupted');
 
   const SessionStatus(this.value);
   final String value;

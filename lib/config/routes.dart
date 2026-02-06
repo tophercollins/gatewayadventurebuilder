@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../ui/screens/add_character_screen.dart';
+import '../ui/screens/add_session_screen.dart';
 import '../ui/screens/add_player_screen.dart';
 import '../ui/screens/campaign_home_screen.dart';
 import '../ui/screens/campaigns_list_screen.dart';
@@ -22,6 +23,8 @@ import '../ui/screens/session_entities_screen.dart';
 import '../ui/screens/session_players_screen.dart';
 import '../ui/screens/session_setup_screen.dart';
 import '../ui/screens/session_summary_screen.dart';
+import '../ui/screens/session_transcript_screen.dart';
+import '../ui/screens/stats_screen.dart';
 import '../ui/screens/world_database_screen.dart';
 import '../ui/widgets/app_shell.dart';
 
@@ -34,6 +37,7 @@ abstract final class Routes {
   static const String onboarding = '/onboarding';
   static const String settings = '/settings';
   static const String notificationSettings = '/settings/notifications';
+  static const String stats = '/stats';
 
   // Campaigns
   static const String campaigns = '/campaigns';
@@ -42,6 +46,7 @@ abstract final class Routes {
 
   // Sessions
   static const String newSession = '/campaigns/:id/sessions/new';
+  static const String addSession = '/campaigns/:id/sessions/add';
   static const String recording = '/campaigns/:id/sessions/:sessionId/record';
   static const String postSession =
       '/campaigns/:id/sessions/:sessionId/complete';
@@ -52,6 +57,8 @@ abstract final class Routes {
       '/campaigns/:id/sessions/:sessionId/entities';
   static const String sessionActions =
       '/campaigns/:id/sessions/:sessionId/actions';
+  static const String sessionTranscript =
+      '/campaigns/:id/sessions/:sessionId/transcript';
   static const String sessionPlayers =
       '/campaigns/:id/sessions/:sessionId/players';
 
@@ -69,6 +76,8 @@ abstract final class Routes {
   static String campaignPath(String id) => '/campaigns/$id';
   static String newSessionPath(String campaignId) =>
       '/campaigns/$campaignId/sessions/new';
+  static String addSessionPath(String campaignId) =>
+      '/campaigns/$campaignId/sessions/add';
   static String recordingPath(String campaignId, String sessionId) =>
       '/campaigns/$campaignId/sessions/$sessionId/record';
   static String postSessionPath(String campaignId, String sessionId) =>
@@ -81,6 +90,8 @@ abstract final class Routes {
       '/campaigns/$campaignId/sessions/$sessionId/entities';
   static String sessionActionsPath(String campaignId, String sessionId) =>
       '/campaigns/$campaignId/sessions/$sessionId/actions';
+  static String sessionTranscriptPath(String campaignId, String sessionId) =>
+      '/campaigns/$campaignId/sessions/$sessionId/transcript';
   static String sessionPlayersPath(String campaignId, String sessionId) =>
       '/campaigns/$campaignId/sessions/$sessionId/players';
   static String worldDatabasePath(String campaignId) =>
@@ -192,6 +203,19 @@ final GoRouter appRouter = GoRouter(
             title: 'Notification Settings',
             showBack: true,
             child: const NotificationSettingsScreen(),
+          ),
+        ),
+
+        // Stats
+        GoRoute(
+          path: Routes.stats,
+          name: 'stats',
+          pageBuilder: (context, state) => _buildPage(
+            context: context,
+            state: state,
+            title: 'Stats',
+            showBack: true,
+            child: const StatsScreen(),
           ),
         ),
 
@@ -351,6 +375,22 @@ final List<RouteBase> _campaignRoutes = [
     },
   ),
 
+  // Manual Session Add
+  GoRoute(
+    path: 'sessions/add',
+    name: 'addSession',
+    pageBuilder: (context, state) {
+      final id = state.pathParameters['id']!;
+      return _buildPage(
+        context: context,
+        state: state,
+        title: 'Add Session',
+        showBack: true,
+        child: AddSessionScreen(campaignId: id),
+      );
+    },
+  ),
+
   // Session routes
   GoRoute(
     path: 'sessions/:sessionId',
@@ -453,6 +493,23 @@ final List<RouteBase> _sessionRoutes = [
         title: "What's Next",
         showBack: true,
         child: SessionActionsScreen(campaignId: id, sessionId: sessionId),
+      );
+    },
+  ),
+
+  // Transcript
+  GoRoute(
+    path: 'transcript',
+    name: 'sessionTranscript',
+    pageBuilder: (context, state) {
+      final id = state.pathParameters['id']!;
+      final sessionId = state.pathParameters['sessionId']!;
+      return _buildPage(
+        context: context,
+        state: state,
+        title: 'Transcript',
+        showBack: true,
+        child: SessionTranscriptScreen(campaignId: id, sessionId: sessionId),
       );
     },
   ),

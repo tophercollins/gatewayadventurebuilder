@@ -10,6 +10,7 @@ import '../data/models/player_moment.dart';
 import '../data/models/scene.dart';
 import '../data/models/session.dart';
 import '../data/models/session_summary.dart';
+import 'campaign_providers.dart';
 import 'processing_providers.dart';
 import 'repository_providers.dart';
 
@@ -78,6 +79,7 @@ final sessionDetailProvider = FutureProvider.autoDispose
       ref,
       params,
     ) async {
+      ref.watch(sessionsRevisionProvider);
       final sessionRepo = ref.watch(sessionRepositoryProvider);
       final summaryRepo = ref.watch(summaryRepositoryProvider);
       final entityRepo = ref.watch(entityRepositoryProvider);
@@ -249,6 +251,7 @@ final sessionPlayerMomentsProvider = FutureProvider.autoDispose
 /// Provider for all sessions in a campaign (for past sessions list).
 final campaignSessionsProvider = FutureProvider.autoDispose
     .family<List<Session>, String>((ref, campaignId) async {
+      ref.watch(sessionsRevisionProvider);
       final sessionRepo = ref.watch(sessionRepositoryProvider);
       return await sessionRepo.getSessionsByCampaign(campaignId);
     });

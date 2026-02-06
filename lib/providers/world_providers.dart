@@ -10,6 +10,9 @@ import '../data/models/npc_relationship.dart';
 import '../data/models/session.dart';
 import 'repository_providers.dart';
 
+/// Revision counter for world entity data.
+final worldEntitiesRevisionProvider = StateProvider<int>((ref) => 0);
+
 /// Data class for an NPC with its appearance count.
 class NpcWithCount {
   const NpcWithCount({required this.npc, required this.appearanceCount});
@@ -37,6 +40,7 @@ class ItemWithCount {
 /// Provider for all NPCs in a world with appearance counts.
 final worldNpcsProvider = FutureProvider.autoDispose
     .family<List<NpcWithCount>, String>((ref, worldId) async {
+      ref.watch(worldEntitiesRevisionProvider);
       final entityRepo = ref.watch(entityRepositoryProvider);
 
       final npcs = await entityRepo.getNpcsByWorld(worldId);
@@ -56,6 +60,7 @@ final worldNpcsProvider = FutureProvider.autoDispose
 /// Provider for all locations in a world with appearance counts.
 final worldLocationsProvider = FutureProvider.autoDispose
     .family<List<LocationWithCount>, String>((ref, worldId) async {
+      ref.watch(worldEntitiesRevisionProvider);
       final entityRepo = ref.watch(entityRepositoryProvider);
 
       final locations = await entityRepo.getLocationsByWorld(worldId);
@@ -77,6 +82,7 @@ final worldLocationsProvider = FutureProvider.autoDispose
 /// Provider for all items in a world with appearance counts.
 final worldItemsProvider = FutureProvider.autoDispose
     .family<List<ItemWithCount>, String>((ref, worldId) async {
+      ref.watch(worldEntitiesRevisionProvider);
       final entityRepo = ref.watch(entityRepositoryProvider);
 
       final items = await entityRepo.getItemsByWorld(worldId);
@@ -198,6 +204,7 @@ class WorldDatabaseData {
 /// Provider for all world database data.
 final worldDatabaseProvider = FutureProvider.autoDispose
     .family<WorldDatabaseData?, String>((ref, campaignId) async {
+      ref.watch(worldEntitiesRevisionProvider);
       final campaignRepo = ref.watch(campaignRepositoryProvider);
       final entityRepo = ref.watch(entityRepositoryProvider);
 
