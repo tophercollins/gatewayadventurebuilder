@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/character.dart';
 import '../../../data/models/player.dart';
 import '../../theme/spacing.dart';
+import '../../widgets/entity_image.dart';
 
 /// Header widget for character detail screen with name, subtitle, and actions.
 class CharacterHeader extends StatelessWidget {
@@ -25,18 +26,9 @@ class CharacterHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(Spacing.sm),
-          ),
-          child: Icon(
-            Icons.shield_outlined,
-            color: theme.colorScheme.primary,
-            size: 32,
-          ),
+        EntityImage.avatar(
+          imagePath: character.imagePath,
+          fallbackIcon: Icons.shield_outlined,
         ),
         const SizedBox(width: Spacing.md),
         Expanded(
