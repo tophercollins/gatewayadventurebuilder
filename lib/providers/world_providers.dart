@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/character.dart';
 import '../data/models/entity_appearance.dart';
+import '../data/models/world.dart';
 import '../data/models/item.dart';
 import '../data/models/location.dart';
 import '../data/models/monster.dart';
@@ -270,6 +271,7 @@ final characterByIdProvider = FutureProvider.autoDispose
 /// Aggregated world data for the world database screen.
 class WorldDatabaseData {
   const WorldDatabaseData({
+    required this.world,
     required this.npcs,
     required this.locations,
     required this.items,
@@ -277,6 +279,7 @@ class WorldDatabaseData {
     required this.organisations,
   });
 
+  final World world;
   final List<NpcWithCount> npcs;
   final List<LocationWithCount> locations;
   final List<ItemWithCount> items;
@@ -365,6 +368,7 @@ final worldDatabaseProvider = FutureProvider.autoDispose
       }
 
       return WorldDatabaseData(
+        world: campaignWithWorld.world,
         npcs: npcsWithCounts,
         locations: locationsWithCounts,
         items: itemsWithCounts,

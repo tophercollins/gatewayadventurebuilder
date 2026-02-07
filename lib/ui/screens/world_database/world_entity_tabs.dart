@@ -1,54 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../config/routes.dart';
-import '../../providers/world_providers.dart';
-import '../theme/spacing.dart';
-import '../widgets/empty_state.dart';
+import '../../../config/routes.dart';
+import '../../../providers/world_providers.dart';
+import '../../theme/spacing.dart';
+import '../../widgets/empty_state.dart';
 
-/// World Database screen showing all entities across the campaign's world.
-class WorldDatabaseScreen extends ConsumerStatefulWidget {
-  const WorldDatabaseScreen({required this.campaignId, super.key});
-
-  final String campaignId;
-
-  @override
-  ConsumerState<WorldDatabaseScreen> createState() =>
-      _WorldDatabaseScreenState();
-}
-
-class _WorldDatabaseScreenState extends ConsumerState<WorldDatabaseScreen> {
-  String _searchQuery = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final dataAsync = ref.watch(worldDatabaseProvider(widget.campaignId));
-
-    return dataAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => ErrorState(error: error.toString()),
-      data: (data) {
-        if (data == null) {
-          return const NotFoundState(message: 'Campaign not found');
-        }
-        return _WorldDatabaseContent(
-          data: data,
-          campaignId: widget.campaignId,
-          searchQuery: _searchQuery,
-          onSearchChanged: (query) => setState(() => _searchQuery = query),
-        );
-      },
-    );
-  }
-}
-
-class _WorldDatabaseContent extends StatelessWidget {
-  const _WorldDatabaseContent({
+/// Search bar + tab bar + entity lists for the world database.
+class WorldEntityTabs extends StatelessWidget {
+  const WorldEntityTabs({
     required this.data,
     required this.campaignId,
     required this.searchQuery,
     required this.onSearchChanged,
+    super.key,
   });
 
   final WorldDatabaseData data;
@@ -58,68 +23,53 @@ class _WorldDatabaseContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasContent = data.totalEntities > 0;
-
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
-        child: hasContent
-            ? DefaultTabController(
-                length: 5,
-                child: Column(
-                  children: [
-                    _SearchBar(
-                      searchQuery: searchQuery,
-                      onChanged: onSearchChanged,
-                    ),
-                    _EntityTabBar(
-                      npcCount: data.npcs.length,
-                      locationCount: data.locations.length,
-                      itemCount: data.items.length,
-                      monsterCount: data.monsters.length,
-                      organisationCount: data.organisations.length,
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          _NpcsList(
-                            npcs: data.npcs,
-                            campaignId: campaignId,
-                            searchQuery: searchQuery,
-                          ),
-                          _LocationsList(
-                            locations: data.locations,
-                            campaignId: campaignId,
-                            searchQuery: searchQuery,
-                          ),
-                          _ItemsList(
-                            items: data.items,
-                            campaignId: campaignId,
-                            searchQuery: searchQuery,
-                          ),
-                          _MonstersList(
-                            monsters: data.monsters,
-                            campaignId: campaignId,
-                            searchQuery: searchQuery,
-                          ),
-                          _OrganisationsList(
-                            organisations: data.organisations,
-                            campaignId: campaignId,
-                            searchQuery: searchQuery,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+    return DefaultTabController(
+      length: 5,
+      child: Column(
+        children: [
+          _SearchBar(
+            searchQuery: searchQuery,
+            onChanged: onSearchChanged,
+          ),
+          _EntityTabBar(
+            npcCount: data.npcs.length,
+            locationCount: data.locations.length,
+            itemCount: data.items.length,
+            monsterCount: data.monsters.length,
+            organisationCount: data.organisations.length,
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _NpcsList(
+                  npcs: data.npcs,
+                  campaignId: campaignId,
+                  searchQuery: searchQuery,
                 ),
-              )
-            : const EmptyState(
-                icon: Icons.public_outlined,
-                title: 'No entities yet',
-                message:
-                    'NPCs, locations, items, monsters, and organisations will appear here '
-                    'as they are discovered in your sessions.',
-              ),
+                _LocationsList(
+                  locations: data.locations,
+                  campaignId: campaignId,
+                  searchQuery: searchQuery,
+                ),
+                _ItemsList(
+                  items: data.items,
+                  campaignId: campaignId,
+                  searchQuery: searchQuery,
+                ),
+                _MonstersList(
+                  monsters: data.monsters,
+                  campaignId: campaignId,
+                  searchQuery: searchQuery,
+                ),
+                _OrganisationsList(
+                  organisations: data.organisations,
+                  campaignId: campaignId,
+                  searchQuery: searchQuery,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -465,7 +415,10 @@ class _OrganisationsList extends StatelessWidget {
             description: item.organisation.description,
             appearanceCount: item.appearanceCount,
             onTap: () => context.push(
-              Routes.organisationDetailPath(campaignId, item.organisation.id),
+              Routes.organisationDetailPath(
+                campaignId,
+                item.organisation.id,
+              ),
             ),
           ),
         );

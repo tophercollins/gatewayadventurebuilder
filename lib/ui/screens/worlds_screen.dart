@@ -1,16 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/constants.dart';
 import '../../config/routes.dart';
-import '../../data/models/world.dart';
 import '../../providers/campaign_providers.dart';
 import '../../providers/global_providers.dart';
 import '../../providers/image_providers.dart';
 import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
-import '../widgets/entity_image.dart';
 import '../widgets/image_picker_field.dart';
 
 /// Global screen listing all worlds with entity counts.
@@ -90,13 +90,13 @@ class _WorldsContent extends ConsumerWidget {
   }
 }
 
-class _WorldCard extends ConsumerWidget {
+class _WorldCard extends StatelessWidget {
   const _WorldCard({required this.summary});
 
   final WorldSummary summary;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final world = summary.world;
     final totalEntities =
@@ -108,6 +108,8 @@ class _WorldCard extends ConsumerWidget {
           context.push(Routes.worldDatabasePath(summary.campaigns.first.id));
     }
 
+    final hasImage = world.imagePath != null && world.imagePath!.isNotEmpty;
+
     return Material(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(Spacing.cardRadius),
@@ -115,25 +117,82 @@ class _WorldCard extends ConsumerWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(
-          padding: const EdgeInsets.all(Spacing.cardPadding),
           decoration: BoxDecoration(
             border: Border.all(color: theme.colorScheme.outline),
             borderRadius: BorderRadius.circular(Spacing.cardRadius),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              EntityImage.avatar(
-                imagePath: world.imagePath,
-                fallbackIcon: Icons.public_outlined,
-                size: 40,
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(child: _WorldCardDetails(summary: summary)),
-              _WorldCardActions(
-                world: world,
-                hasChildren: totalEntities > 0 || summary.campaigns.isNotEmpty,
-                onTap: onTap,
-                ref: ref,
+              if (hasImage)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(Spacing.cardRadius),
+                    topRight: Radius.circular(Spacing.cardRadius),
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 6,
+                    child: Image.file(
+                      File(world.imagePath!),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(Spacing.cardPadding),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            world.name,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (world.gameSystem != null) ...[
+                            const SizedBox(height: Spacing.xxs),
+                            Text(
+                              world.gameSystem!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                          if (world.description != null &&
+                              world.description!.isNotEmpty) ...[
+                            const SizedBox(height: Spacing.xxs),
+                            Text(
+                              world.description!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          const SizedBox(height: Spacing.xs),
+                          Text(
+                            '$totalEntities entities  '
+                            '${summary.campaigns.length} '
+                            'campaign${summary.campaigns.length == 1 ? '' : 's'}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (onTap != null)
+                      Icon(
+                        Icons.chevron_right,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -143,151 +202,11 @@ class _WorldCard extends ConsumerWidget {
   }
 }
 
-class _WorldCardDetails extends StatelessWidget {
-  const _WorldCardDetails({required this.summary});
-
-  final WorldSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final world = summary.world;
-    final totalEntities =
-        summary.npcCount + summary.locationCount + summary.itemCount;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          world.name,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        if (world.gameSystem != null) ...[
-          const SizedBox(height: Spacing.xxs),
-          Text(
-            world.gameSystem!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-        if (world.description != null && world.description!.isNotEmpty) ...[
-          const SizedBox(height: Spacing.xxs),
-          Text(
-            world.description!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-        const SizedBox(height: Spacing.xs),
-        Text(
-          '$totalEntities entities '
-          '(${summary.npcCount} NPCs, '
-          '${summary.locationCount} locations, '
-          '${summary.itemCount} items)',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        if (summary.campaigns.isNotEmpty) ...[
-          const SizedBox(height: Spacing.xxs),
-          Text(
-            '${summary.campaigns.length} '
-            'campaign${summary.campaigns.length == 1 ? '' : 's'}',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _WorldCardActions extends StatelessWidget {
-  const _WorldCardActions({
-    required this.world,
-    required this.hasChildren,
-    required this.onTap,
-    required this.ref,
-  });
-
-  final World world;
-  final bool hasChildren;
-  final VoidCallback? onTap;
-  final WidgetRef ref;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.edit_outlined, size: Spacing.iconSizeCompact),
-          tooltip: 'Edit world',
-          onPressed: () => showDialog<void>(
-            context: context,
-            builder: (_) => _WorldFormDialog(ref: ref, world: world),
-          ),
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.delete_outline,
-            size: Spacing.iconSizeCompact,
-            color: hasChildren
-                ? Theme.of(context).colorScheme.outline
-                : Theme.of(context).colorScheme.error,
-          ),
-          tooltip: hasChildren ? 'Remove campaigns first' : 'Delete world',
-          onPressed: hasChildren ? null : () => _confirmDelete(context),
-        ),
-        if (onTap != null)
-          Icon(
-            Icons.chevron_right,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-      ],
-    );
-  }
-
-  void _confirmDelete(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete world?'),
-        content: Text('Are you sure you want to delete "${world.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              ref.read(worldEditorProvider).deleteWorld(world.id);
-              Navigator.pop(ctx);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Dialog for creating or editing a world.
+/// Dialog for creating a new world.
 class _WorldFormDialog extends ConsumerStatefulWidget {
-  const _WorldFormDialog({required this.ref, this.world});
+  const _WorldFormDialog({required this.ref});
 
   final WidgetRef ref;
-  final World? world;
 
   @override
   ConsumerState<_WorldFormDialog> createState() => _WorldFormDialogState();
@@ -295,31 +214,12 @@ class _WorldFormDialog extends ConsumerStatefulWidget {
 
 class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
-  late final TextEditingController _descriptionController;
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
   String? _selectedGameSystem;
   String? _customGameSystem;
   String? _pendingImagePath;
-  bool _imageRemoved = false;
   bool _isSaving = false;
-
-  bool get _isEditing => widget.world != null;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.world?.name ?? '');
-    _descriptionController = TextEditingController(
-      text: widget.world?.description ?? '',
-    );
-    final gs = widget.world?.gameSystem;
-    if (gs != null && gameSystems.contains(gs)) {
-      _selectedGameSystem = gs;
-    } else if (gs != null) {
-      _selectedGameSystem = 'Other';
-      _customGameSystem = gs;
-    }
-  }
 
   @override
   void dispose() {
@@ -341,59 +241,30 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
       final editor = widget.ref.read(worldEditorProvider);
       final imageService = ref.read(imageStorageProvider);
 
-      if (_isEditing) {
-        String? imagePath = widget.world!.imagePath;
+      final world = await editor.createWorld(
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        gameSystem: _getGameSystem(),
+      );
 
-        if (_imageRemoved && _pendingImagePath == null) {
-          await imageService.deleteImage(
-            entityType: 'worlds',
-            entityId: widget.world!.id,
-          );
-          imagePath = null;
-        } else if (_pendingImagePath != null) {
-          imagePath = await imageService.storeImage(
-            sourcePath: _pendingImagePath!,
-            entityType: 'worlds',
-            entityId: widget.world!.id,
-            imageType: EntityImageType.avatar,
-          );
-        }
-
-        await editor.updateWorld(
-          widget.world!.copyWith(
-            name: _nameController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-            gameSystem: _getGameSystem(),
-            imagePath: imagePath,
-          ),
+      if (_pendingImagePath != null) {
+        final storedPath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'worlds',
+          entityId: world.id,
+          imageType: EntityImageType.avatar,
         );
-      } else {
-        final world = await editor.createWorld(
-          name: _nameController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          gameSystem: _getGameSystem(),
-        );
-
-        if (_pendingImagePath != null) {
-          final storedPath = await imageService.storeImage(
-            sourcePath: _pendingImagePath!,
-            entityType: 'worlds',
-            entityId: world.id,
-            imageType: EntityImageType.avatar,
-          );
-          await editor.updateWorld(world.copyWith(imagePath: storedPath));
-        }
+        await editor.updateWorld(world.copyWith(imagePath: storedPath));
       }
+
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save world: $e'),
+            content: Text('Failed to create world: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -406,7 +277,7 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_isEditing ? 'Edit World' : 'New World'),
+      title: const Text('New World'),
       content: SizedBox(
         width: 400,
         child: Form(
@@ -415,18 +286,14 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ImagePickerField(
-                currentImagePath: _imageRemoved
-                    ? null
-                    : widget.world?.imagePath,
+                currentImagePath: null,
                 pendingImagePath: _pendingImagePath,
                 fallbackIcon: Icons.public_outlined,
                 isBanner: false,
                 onImageSelected: (path) =>
                     setState(() => _pendingImagePath = path),
-                onImageRemoved: () => setState(() {
-                  _pendingImagePath = null;
-                  _imageRemoved = true;
-                }),
+                onImageRemoved: () =>
+                    setState(() => _pendingImagePath = null),
               ),
               TextFormField(
                 controller: _nameController,
@@ -441,7 +308,6 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
               ),
               const SizedBox(height: Spacing.fieldSpacing),
               DropdownButtonFormField<String>(
-                initialValue: _selectedGameSystem,
                 hint: const Text('Game system (optional)'),
                 items: gameSystems
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
@@ -463,9 +329,9 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
                   onChanged: (v) => _customGameSystem = v,
                   validator: (v) =>
                       _selectedGameSystem == 'Other' &&
-                          (v == null || v.trim().isEmpty)
-                      ? 'Please enter your game system'
-                      : null,
+                              (v == null || v.trim().isEmpty)
+                          ? 'Please enter your game system'
+                          : null,
                 ),
               ],
               const SizedBox(height: Spacing.fieldSpacing),
@@ -494,7 +360,7 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(_isEditing ? 'Save' : 'Create'),
+              : const Text('Create'),
         ),
       ],
     );

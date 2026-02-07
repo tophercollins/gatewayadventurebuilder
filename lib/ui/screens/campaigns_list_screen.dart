@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -95,6 +97,9 @@ class _CampaignCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final hasImage = campaign.imagePath != null &&
+        campaign.imagePath!.isNotEmpty;
+
     return Material(
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(Spacing.cardRadius),
@@ -102,7 +107,6 @@ class _CampaignCard extends StatelessWidget {
         onTap: () => context.go(Routes.campaignPath(campaign.id)),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(
-          padding: const EdgeInsets.all(Spacing.cardPadding),
           decoration: BoxDecoration(
             border: Border.all(color: theme.colorScheme.outline),
             borderRadius: BorderRadius.circular(Spacing.cardRadius),
@@ -110,44 +114,67 @@ class _CampaignCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      campaign.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              if (hasImage)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(Spacing.cardRadius),
+                    topRight: Radius.circular(Spacing.cardRadius),
                   ),
-                  StatusBadge(status: campaign.status),
-                ],
-              ),
-              if (campaign.gameSystem != null) ...[
-                const SizedBox(height: Spacing.xs),
-                Text(
-                  campaign.gameSystem!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 6,
+                    child: Image.file(
+                      File(campaign.imagePath!),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
                   ),
                 ),
-              ],
-              const SizedBox(height: Spacing.sm),
-              Row(
-                children: [
-                  Icon(
-                    Icons.book_outlined,
-                    size: Spacing.iconSizeCompact,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: Spacing.xs),
-                  Text(
-                    '$sessionCount ${sessionCount == 1 ? 'session' : 'sessions'}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+              Padding(
+                padding: const EdgeInsets.all(Spacing.cardPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            campaign.name,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        StatusBadge(status: campaign.status),
+                      ],
                     ),
-                  ),
-                ],
+                    if (campaign.gameSystem != null) ...[
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        campaign.gameSystem!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: Spacing.sm),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.book_outlined,
+                          size: Spacing.iconSizeCompact,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        Text(
+                          '$sessionCount ${sessionCount == 1 ? 'session' : 'sessions'}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
