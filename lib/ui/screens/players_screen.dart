@@ -9,8 +9,8 @@ import '../../providers/player_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/player_card.dart';
 
-/// Screen displaying all players and their characters in a campaign.
-/// Provides buttons to add new players and characters.
+/// Screen displaying all players in a campaign.
+/// Provides a button to add new players.
 class PlayersScreen extends ConsumerWidget {
   const PlayersScreen({required this.campaignId, super.key});
 
@@ -103,21 +103,11 @@ class _PlayersContent extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Players & Characters', style: theme.textTheme.headlineSmall),
-        Wrap(
-          spacing: Spacing.sm,
-          children: [
-            OutlinedButton.icon(
-              onPressed: () => context.go(Routes.newPlayerPath(campaignId)),
-              icon: const Icon(Icons.person_add_outlined),
-              label: const Text('Add Player'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () => context.go(Routes.newCharacterPath(campaignId)),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Character'),
-            ),
-          ],
+        Text('Players', style: theme.textTheme.headlineSmall),
+        OutlinedButton.icon(
+          onPressed: () => context.go(Routes.newPlayerPath(campaignId)),
+          icon: const Icon(Icons.person_add_outlined),
+          label: const Text('Add Player'),
         ),
       ],
     );

@@ -96,12 +96,22 @@ class _CharactersListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (characters.isEmpty) {
-      return const EmptyState(
-        icon: Icons.person_search_outlined,
-        title: 'No characters yet',
-        message:
-            'Characters will appear here when added to players '
-            'in this campaign.',
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
+          child: Column(
+            children: [
+              _Header(campaignId: campaignId),
+              const Expanded(
+                child: EmptyState(
+                  icon: Icons.person_search_outlined,
+                  title: 'No characters yet',
+                  message: 'Add characters to this campaign to get started.',
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -112,6 +122,7 @@ class _CharactersListContent extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: Column(
           children: [
+            _Header(campaignId: campaignId),
             _SearchBar(searchQuery: searchQuery, onChanged: onSearchChanged),
             _StatusFilterChips(
               selected: statusFilter,
@@ -148,6 +159,37 @@ class _CharactersListContent extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.campaignId});
+
+  final String campaignId;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.lg,
+        Spacing.lg,
+        Spacing.lg,
+        Spacing.sm,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Characters', style: theme.textTheme.headlineSmall),
+          ElevatedButton.icon(
+            onPressed: () => context.go(Routes.newCharacterPath(campaignId)),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Character'),
+          ),
+        ],
       ),
     );
   }
