@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/item.dart';
 import '../../data/models/location.dart';
+import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
 import '../../providers/editing_providers.dart';
 import '../../providers/session_detail_providers.dart';
@@ -44,6 +45,7 @@ class SessionEntitiesScreen extends ConsumerWidget {
               npcs: data.npcs,
               locations: data.locations,
               items: data.items,
+              monsters: data.monsters,
             );
           },
         ),
@@ -79,6 +81,7 @@ class _EntitiesContent extends StatelessWidget {
     required this.npcs,
     required this.locations,
     required this.items,
+    required this.monsters,
   });
 
   final String campaignId;
@@ -86,24 +89,28 @@ class _EntitiesContent extends StatelessWidget {
   final List<Npc> npcs;
   final List<Location> locations;
   final List<Item> items;
+  final List<Monster> monsters;
 
   @override
   Widget build(BuildContext context) {
-    final hasContent =
-        npcs.isNotEmpty || locations.isNotEmpty || items.isNotEmpty;
+    final hasContent = npcs.isNotEmpty ||
+        locations.isNotEmpty ||
+        items.isNotEmpty ||
+        monsters.isNotEmpty;
 
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: hasContent
             ? DefaultTabController(
-                length: 3,
+                length: 4,
                 child: Column(
                   children: [
                     _EntityTabBar(
                       npcCount: npcs.length,
                       locationCount: locations.length,
                       itemCount: items.length,
+                      monsterCount: monsters.length,
                     ),
                     Expanded(
                       child: TabBarView(
@@ -123,6 +130,11 @@ class _EntitiesContent extends StatelessWidget {
                             campaignId: campaignId,
                             sessionId: sessionId,
                           ),
+                          _MonstersList(
+                            monsters: monsters,
+                            campaignId: campaignId,
+                            sessionId: sessionId,
+                          ),
                         ],
                       ),
                     ),
@@ -133,7 +145,7 @@ class _EntitiesContent extends StatelessWidget {
                 icon: Icons.inventory_2_outlined,
                 title: 'No entities extracted',
                 message:
-                    'NPCs, locations, and items will appear here once the session is processed.',
+                    'NPCs, locations, items, and monsters will appear here once the session is processed.',
               ),
       ),
     );
@@ -145,11 +157,13 @@ class _EntityTabBar extends StatelessWidget {
     required this.npcCount,
     required this.locationCount,
     required this.itemCount,
+    required this.monsterCount,
   });
 
   final int npcCount;
   final int locationCount;
   final int itemCount;
+  final int monsterCount;
 
   @override
   Widget build(BuildContext context) {
@@ -165,6 +179,7 @@ class _EntityTabBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
       ),
       child: TabBar(
+        isScrollable: true,
         indicator: BoxDecoration(
           color: theme.colorScheme.primary,
           borderRadius: BorderRadius.circular(Spacing.cardRadius),
@@ -177,6 +192,7 @@ class _EntityTabBar extends StatelessWidget {
           Tab(text: 'NPCs ($npcCount)'),
           Tab(text: 'Locations ($locationCount)'),
           Tab(text: 'Items ($itemCount)'),
+          Tab(text: 'Monsters ($monsterCount)'),
         ],
       ),
     );
@@ -468,6 +484,106 @@ class _ItemsListState extends ConsumerState<_ItemsList> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Item saved'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      final error = ref.read(entityEditingProvider).error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save: ${error ?? "Unknown error"}'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+}
+
+class _MonstersList extends ConsumerStatefulWidget {
+  const _MonstersList({
+    required this.monsters,
+    required this.campaignId,
+    required this.sessionId,
+  });
+
+  final List<Monster> monsters;
+  final String campaignId;
+  final String sessionId;
+
+  @override
+  ConsumerState<_MonstersList> createState() => _MonstersListState();
+}
+
+class _MonstersListState extends ConsumerState<_MonstersList> {
+  late List<Monster> _localMonsters;
+
+  @override
+  void initState() {
+    super.initState();
+    _localMonsters = List.from(widget.monsters);
+  }
+
+  @override
+  void didUpdateWidget(_MonstersList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.monsters != widget.monsters) {
+      _localMonsters = List.from(widget.monsters);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_localMonsters.isEmpty) {
+      return const EmptySectionState(
+        icon: Icons.pest_control_outlined,
+        message: 'No monsters extracted from this session.',
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(Spacing.lg),
+      itemCount: _localMonsters.length,
+      itemBuilder: (context, index) {
+        final monster = _localMonsters[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: Spacing.md),
+          child: EditableEntityCard(
+            icon: Icons.pest_control_outlined,
+            name: monster.name,
+            subtitle: monster.monsterType,
+            description: monster.description,
+            isEdited: monster.isEdited,
+            subtitleLabel: 'Monster Type',
+            onSave: ({required name, subtitle, description}) =>
+                _onSaveMonster(index, monster, name, subtitle, description),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _onSaveMonster(
+    int index,
+    Monster original,
+    String name,
+    String? monsterType,
+    String? description,
+  ) async {
+    final notifier = ref.read(entityEditingProvider.notifier);
+    final result = await notifier.updateMonster(
+      original.id,
+      name: name,
+      monsterType: monsterType,
+      description: description,
+    );
+
+    if (!mounted) return;
+
+    if (result != null) {
+      setState(() => _localMonsters[index] = result);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Monster saved'),
           duration: Duration(seconds: 2),
         ),
       );

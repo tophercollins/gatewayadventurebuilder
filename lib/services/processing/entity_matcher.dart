@@ -1,6 +1,7 @@
 import '../../data/models/entity_appearance.dart';
 import '../../data/models/item.dart';
 import '../../data/models/location.dart';
+import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
 import '../../data/repositories/entity_repository.dart';
 import 'llm_response_models.dart';
@@ -191,15 +192,72 @@ class EntityMatcher {
     return results;
   }
 
+  /// Match monsters extracted from LLM to existing world monsters.
+  Future<List<EntityMatchResult<Monster>>> matchMonsters({
+    required String worldId,
+    required List<MonsterData> extractedMonsters,
+  }) async {
+    final existingMonsters = await _entityRepo.getMonstersByWorld(worldId);
+    final results = <EntityMatchResult<Monster>>[];
+
+    for (final extracted in extractedMonsters) {
+      final match = _findMonsterMatch(extracted.name, existingMonsters);
+
+      if (match != null) {
+        var wasUpdated = false;
+        if (!match.isEdited) {
+          final updatedMonster = _mergeMonsterData(match, extracted);
+          if (updatedMonster != match) {
+            await _entityRepo.updateMonster(updatedMonster);
+            wasUpdated = true;
+            results.add(
+              EntityMatchResult(
+                entity: updatedMonster,
+                isNew: false,
+                wasUpdated: true,
+              ),
+            );
+            continue;
+          }
+        }
+        results.add(
+          EntityMatchResult(
+            entity: match,
+            isNew: false,
+            wasUpdated: wasUpdated,
+          ),
+        );
+      } else {
+        final newMonster = await _entityRepo.createMonster(
+          worldId: worldId,
+          name: extracted.name,
+          description: extracted.description,
+          monsterType: extracted.monsterType,
+        );
+        results.add(
+          EntityMatchResult(
+            entity: newMonster,
+            isNew: true,
+            wasUpdated: false,
+          ),
+        );
+      }
+    }
+
+    return results;
+  }
+
   /// Create entity appearances for the session.
   Future<void> createAppearances({
     required String sessionId,
     required List<EntityMatchResult<Npc>> npcs,
     required List<EntityMatchResult<Location>> locations,
     required List<EntityMatchResult<Item>> items,
+    required List<EntityMatchResult<Monster>> monsters,
     required List<NpcData> npcData,
     required List<LocationData> locationData,
     required List<ItemData> itemData,
+    required List<MonsterData> monsterData,
   }) async {
     // Create NPC appearances
     for (var i = 0; i < npcs.length; i++) {
@@ -236,6 +294,20 @@ class EntityMatcher {
       await _entityRepo.createAppearance(
         sessionId: sessionId,
         entityType: EntityType.item,
+        entityId: result.entity.id,
+        context: data?.context,
+        firstAppearance: result.isNew,
+        timestampMs: data?.timestampMs,
+      );
+    }
+
+    // Create monster appearances
+    for (var i = 0; i < monsters.length; i++) {
+      final result = monsters[i];
+      final data = i < monsterData.length ? monsterData[i] : null;
+      await _entityRepo.createAppearance(
+        sessionId: sessionId,
+        entityType: EntityType.monster,
         entityId: result.entity.id,
         context: data?.context,
         firstAppearance: result.isNew,
@@ -300,6 +372,23 @@ class EntityMatcher {
       description: existing.description ?? extracted.description,
       itemType: existing.itemType ?? extracted.itemType,
       properties: existing.properties ?? extracted.properties,
+    );
+  }
+
+  Monster? _findMonsterMatch(String name, List<Monster> existing) {
+    final normalizedName = _normalizeName(name);
+    for (final monster in existing) {
+      if (_normalizeName(monster.name) == normalizedName) {
+        return monster;
+      }
+    }
+    return null;
+  }
+
+  Monster _mergeMonsterData(Monster existing, MonsterData extracted) {
+    return existing.copyWith(
+      description: existing.description ?? extracted.description,
+      monsterType: existing.monsterType ?? extracted.monsterType,
     );
   }
 }

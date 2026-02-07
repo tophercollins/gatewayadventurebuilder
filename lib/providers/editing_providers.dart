@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/action_item.dart';
 import '../data/models/item.dart';
 import '../data/models/location.dart';
+import '../data/models/monster.dart';
 import '../data/models/npc.dart';
 import '../data/models/player_moment.dart';
 import '../data/models/scene.dart';
@@ -206,6 +207,41 @@ class EntityEditingNotifier extends StateNotifier<EditingState> {
         updatedAt: DateTime.now(),
       );
       await repo.updateItem(updated, markEdited: true);
+
+      state = const EditingState();
+      return updated.copyWith(isEdited: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
+    }
+  }
+
+  /// Update monster fields.
+  Future<Monster?> updateMonster(
+    String monsterId, {
+    String? name,
+    String? description,
+    String? monsterType,
+    String? notes,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final repo = _ref.read(entityRepositoryProvider);
+      final monster = await repo.getMonsterById(monsterId);
+      if (monster == null) {
+        state = state.copyWith(isLoading: false, error: 'Monster not found');
+        return null;
+      }
+
+      final updated = monster.copyWith(
+        name: name ?? monster.name,
+        description: description ?? monster.description,
+        monsterType: monsterType ?? monster.monsterType,
+        notes: notes ?? monster.notes,
+        updatedAt: DateTime.now(),
+      );
+      await repo.updateMonster(updated, markEdited: true);
 
       state = const EditingState();
       return updated.copyWith(isEdited: true);

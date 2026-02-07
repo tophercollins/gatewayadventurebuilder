@@ -7,9 +7,12 @@ import '../ui/screens/add_player_screen.dart';
 import '../ui/screens/all_players_screen.dart';
 import '../ui/screens/campaign_home_screen.dart';
 import '../ui/screens/campaigns_list_screen.dart';
+import '../ui/screens/character_detail/character_detail_screen.dart';
+import '../ui/screens/characters_list_screen.dart';
 import '../ui/screens/home_screen.dart';
 import '../ui/screens/item_detail_screen.dart';
 import '../ui/screens/location_detail_screen.dart';
+import '../ui/screens/monster_detail_screen.dart';
 import '../ui/screens/new_campaign_screen.dart';
 import '../ui/screens/notification_settings/notification_settings_screen.dart';
 import '../ui/screens/npc_detail/npc_detail_screen.dart';
@@ -74,9 +77,14 @@ abstract final class Routes {
   static const String locationDetail =
       '/campaigns/:id/world/locations/:locationId';
   static const String itemDetail = '/campaigns/:id/world/items/:itemId';
+  static const String monsterDetail =
+      '/campaigns/:id/world/monsters/:monsterId';
   static const String players = '/campaigns/:id/players';
   static const String newPlayer = '/campaigns/:id/players/new';
+  static const String characters = '/campaigns/:id/characters';
   static const String newCharacter = '/campaigns/:id/characters/new';
+  static const String characterDetail =
+      '/campaigns/:id/characters/:characterId';
 
   // Helper methods for building paths with parameters
   static String campaignPath(String id) => '/campaigns/$id';
@@ -110,12 +118,18 @@ abstract final class Routes {
       '/campaigns/$campaignId/world/locations/$locationId';
   static String itemDetailPath(String campaignId, String itemId) =>
       '/campaigns/$campaignId/world/items/$itemId';
+  static String monsterDetailPath(String campaignId, String monsterId) =>
+      '/campaigns/$campaignId/world/monsters/$monsterId';
   static String playersPath(String campaignId) =>
       '/campaigns/$campaignId/players';
   static String newPlayerPath(String campaignId) =>
       '/campaigns/$campaignId/players/new';
+  static String charactersPath(String campaignId) =>
+      '/campaigns/$campaignId/characters';
   static String newCharacterPath(String campaignId) =>
       '/campaigns/$campaignId/characters/new';
+  static String characterDetailPath(String campaignId, String characterId) =>
+      '/campaigns/$campaignId/characters/$characterId';
 }
 
 /// Creates a fresh GoRouter instance.
@@ -348,6 +362,25 @@ final List<RouteBase> _campaignRoutes = [
           );
         },
       ),
+      // Monster Detail
+      GoRoute(
+        path: 'monsters/:monsterId',
+        name: 'monsterDetail',
+        pageBuilder: (context, state) {
+          final campaignId = state.pathParameters['id']!;
+          final monsterId = state.pathParameters['monsterId']!;
+          return _buildPage(
+            context: context,
+            state: state,
+            title: 'Monster',
+            showBack: true,
+            child: MonsterDetailScreen(
+              campaignId: campaignId,
+              monsterId: monsterId,
+            ),
+          );
+        },
+      ),
     ],
   ),
 
@@ -383,20 +416,56 @@ final List<RouteBase> _campaignRoutes = [
     },
   ),
 
-  // New Character
+  // Characters
   GoRoute(
-    path: 'characters/new',
-    name: 'newCharacter',
+    path: 'characters',
+    name: 'characters',
     pageBuilder: (context, state) {
       final id = state.pathParameters['id']!;
       return _buildPage(
         context: context,
         state: state,
-        title: 'Add Character',
+        title: 'Characters',
         showBack: true,
-        child: AddCharacterScreen(campaignId: id),
+        child: CharactersListScreen(campaignId: id),
       );
     },
+    routes: [
+      // New Character (must come before :characterId)
+      GoRoute(
+        path: 'new',
+        name: 'newCharacter',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return _buildPage(
+            context: context,
+            state: state,
+            title: 'Add Character',
+            showBack: true,
+            child: AddCharacterScreen(campaignId: id),
+          );
+        },
+      ),
+      // Character Detail
+      GoRoute(
+        path: ':characterId',
+        name: 'characterDetail',
+        pageBuilder: (context, state) {
+          final campaignId = state.pathParameters['id']!;
+          final characterId = state.pathParameters['characterId']!;
+          return _buildPage(
+            context: context,
+            state: state,
+            title: 'Character',
+            showBack: true,
+            child: CharacterDetailScreen(
+              campaignId: campaignId,
+              characterId: characterId,
+            ),
+          );
+        },
+      ),
+    ],
   ),
 
   // Sessions List

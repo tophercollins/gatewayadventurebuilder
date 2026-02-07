@@ -6,6 +6,7 @@ import '../../data/models/action_item.dart';
 import '../../data/models/entity_appearance.dart';
 import '../../data/models/item.dart';
 import '../../data/models/location.dart';
+import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
 import '../../data/models/scene.dart';
 import '../../data/models/session.dart';
@@ -56,6 +57,7 @@ class ExportService {
       npcs: entities.npcs,
       locations: entities.locations,
       items: entities.items,
+      monsters: entities.monsters,
       actionItems: actionItems,
     );
   }
@@ -106,6 +108,7 @@ class ExportService {
         'npcs': entities.npcs.map(_npcToJson).toList(),
         'locations': entities.locations.map(_locationToJson).toList(),
         'items': entities.items.map(_itemToJson).toList(),
+        'monsters': entities.monsters.map(_monsterToJson).toList(),
       },
       'actionItems': actionItems
           .map((a) => {
@@ -158,10 +161,12 @@ class ExportService {
       final npcs = await entityRepo.getNpcsByWorld(worldId);
       final locations = await entityRepo.getLocationsByWorld(worldId);
       final items = await entityRepo.getItemsByWorld(worldId);
+      final monsters = await entityRepo.getMonstersByWorld(worldId);
       entitiesData = {
         'npcs': npcs.map(_npcToJson).toList(),
         'locations': locations.map(_locationToJson).toList(),
         'items': items.map(_itemToJson).toList(),
+        'monsters': monsters.map(_monsterToJson).toList(),
       };
     }
 
@@ -178,7 +183,7 @@ class ExportService {
 
   /// Exports world entities of a given type as CSV.
   ///
-  /// Supported [entityType] values: `'npc'`, `'location'`, `'item'`.
+  /// Supported [entityType] values: `'npc'`, `'location'`, `'item'`, `'monster'`.
   Future<String> exportEntitiesCsv({
     required String worldId,
     required EntityRepository entityRepo,
@@ -191,6 +196,8 @@ class ExportService {
         return _exportLocationsCsv(worldId, entityRepo);
       case 'item':
         return _exportItemsCsv(worldId, entityRepo);
+      case 'monster':
+        return _exportMonstersCsv(worldId, entityRepo);
       default:
         return '';
     }
@@ -209,6 +216,7 @@ class ExportService {
     required List<Npc> npcs,
     required List<Location> locations,
     required List<Item> items,
+    required List<Monster> monsters,
     required List<ActionItem> actionItems,
   }) {
     final buf = StringBuffer();
@@ -236,7 +244,10 @@ class ExportService {
       }
     }
 
-    if (npcs.isNotEmpty || locations.isNotEmpty || items.isNotEmpty) {
+    if (npcs.isNotEmpty ||
+        locations.isNotEmpty ||
+        items.isNotEmpty ||
+        monsters.isNotEmpty) {
       buf.writeln('## Entities Mentioned');
       if (npcs.isNotEmpty) {
         buf.writeln(
@@ -251,6 +262,11 @@ class ExportService {
       if (items.isNotEmpty) {
         buf.writeln(
           '- **Items:** ${items.map((i) => i.name).join(', ')}',
+        );
+      }
+      if (monsters.isNotEmpty) {
+        buf.writeln(
+          '- **Monsters:** ${monsters.map((m) => m.name).join(', ')}',
         );
       }
       buf.writeln();
@@ -284,7 +300,12 @@ class ExportService {
       campaignId,
     );
     if (campaignWithWorld == null) {
-      return const _SessionEntities(npcs: [], locations: [], items: []);
+      return const _SessionEntities(
+        npcs: [],
+        locations: [],
+        items: [],
+        monsters: [],
+      );
     }
 
     final worldId = campaignWithWorld.world.id;
@@ -302,16 +323,23 @@ class ExportService {
         .where((a) => a.entityType == EntityType.item)
         .map((a) => a.entityId)
         .toSet();
+    final monsterIds = appearances
+        .where((a) => a.entityType == EntityType.monster)
+        .map((a) => a.entityId)
+        .toSet();
 
     final allNpcs = await entityRepo.getNpcsByWorld(worldId);
     final allLocations = await entityRepo.getLocationsByWorld(worldId);
     final allItems = await entityRepo.getItemsByWorld(worldId);
+    final allMonsters = await entityRepo.getMonstersByWorld(worldId);
 
     return _SessionEntities(
       npcs: allNpcs.where((n) => npcIds.contains(n.id)).toList(),
       locations:
           allLocations.where((l) => locationIds.contains(l.id)).toList(),
       items: allItems.where((i) => itemIds.contains(i.id)).toList(),
+      monsters:
+          allMonsters.where((m) => monsterIds.contains(m.id)).toList(),
     );
   }
 
@@ -336,6 +364,13 @@ class ExportService {
         'type': item.itemType,
         'properties': item.properties,
         'notes': item.notes,
+      };
+
+  Map<String, dynamic> _monsterToJson(Monster monster) => {
+        'name': monster.name,
+        'description': monster.description,
+        'type': monster.monsterType,
+        'notes': monster.notes,
       };
 
   Future<String> _exportNpcsCsv(
@@ -388,6 +423,22 @@ class ExportService {
     return buf.toString();
   }
 
+  Future<String> _exportMonstersCsv(
+    String worldId,
+    EntityRepository entityRepo,
+  ) async {
+    final monsters = await entityRepo.getMonstersByWorld(worldId);
+    final buf = StringBuffer();
+    buf.writeln('Name,Description,Type,Notes');
+    for (final monster in monsters) {
+      buf.writeln(
+        '${_csvEscape(monster.name)},${_csvEscape(monster.description)},'
+        '${_csvEscape(monster.monsterType)},${_csvEscape(monster.notes)}',
+      );
+    }
+    return buf.toString();
+  }
+
   String _csvEscape(String? value) {
     if (value == null) return '';
     if (value.contains(',') || value.contains('"') || value.contains('\n')) {
@@ -402,8 +453,10 @@ class _SessionEntities {
     required this.npcs,
     required this.locations,
     required this.items,
+    required this.monsters,
   });
   final List<Npc> npcs;
   final List<Location> locations;
   final List<Item> items;
+  final List<Monster> monsters;
 }

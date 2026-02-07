@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TTRPG Session Tracker — a desktop-first Flutter app for Game Masters that records tabletop RPG sessions, transcribes audio, and uses AI (Gemini Flash) to generate summaries, extract entities (NPCs, locations, items), and track campaign details. Offline-first architecture with optional Supabase cloud sync.
+TTRPG Session Tracker — a desktop-first Flutter app for Game Masters that records tabletop RPG sessions, transcribes audio, and uses AI (Gemini Flash) to generate summaries, extract entities (NPCs, locations, items, monsters), and track campaign details. Offline-first architecture with optional Supabase cloud sync.
 
-**Status:** v0.2.0 — All 15 MVP phases complete plus 10-item post-MVP feature backlog. `flutter analyze` passes with 0 issues. DB version 3.
+**Status:** v0.2.0 — All 15 MVP phases complete plus 10-item post-MVP feature backlog. `flutter analyze` passes with 0 issues. DB version 4.
 
 ### Version History
 - **v0.0** — Initial 15-phase MVP (project setup through polish)
@@ -52,7 +52,7 @@ Recording → Transcription (Whisper on macOS / Gemini on Win+Linux) → AI proc
 - **Offline-first:** Recording and transcription (macOS) work without internet. AI processing queues until online.
 - **Immutable raw data:** Audio files (`session_audio`), transcripts (`session_transcripts.raw_text`), and transcript segments are never modified after creation.
 - **Editable outputs:** AI-generated content (summaries, scenes, entities, action items) is editable with `is_edited` flag tracking. Transcripts have a separate `edited_text` column preserving the raw original.
-- **World-level entities:** NPCs, locations, and items belong to a `world`, shared across campaigns within that world.
+- **World-level entities:** NPCs, locations, items, and monsters belong to a `world`, shared across campaigns within that world.
 - **Future-proofed:** `user_id` fields included for eventual multi-user support; MVP uses a hardcoded single user.
 - **Dual-platform transcription:** macOS uses local Whisper (30-min chunks, free), Windows/Linux use Gemini Flash-Lite (2-min chunks, cloud). Platform-selected at runtime via `transcriptionServiceProvider`.
 
@@ -82,17 +82,18 @@ lib/
 ```
 
 ### Database Schema
-25 tables defined in BACKEND_STRUCTURE.md (+ `notification_settings`). DB version 3. Key relationships:
+26 tables defined in BACKEND_STRUCTURE.md (+ `notification_settings`). DB version 4. Key relationships:
 - `worlds` → `campaigns` → `sessions` (hierarchical)
 - `players` ↔ `campaigns` (many-to-many via `campaign_players`)
 - `players` → `characters` → sessions (via `session_attendees`)
 - `sessions` → `session_audio`, `session_transcripts`, `session_summaries`, `scenes`, `action_items`, `player_moments`
-- `worlds` → `npcs`, `locations`, `items` (entity database)
+- `worlds` → `npcs`, `locations`, `items`, `monsters` (entity database)
 - `entity_appearances` links any entity type to sessions
 
 #### Migrations
 - **v1→v2:** `ALTER TABLE session_transcripts ADD COLUMN edited_text TEXT`
 - **v2→v3:** `ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT`
+- **v3→v4:** `CREATE TABLE monsters` + `CREATE INDEX idx_monsters_world`
 
 #### SessionStatus Enum
 `recording`, `transcribing`, `queued`, `processing`, `complete`, `error`, `logged`, `interrupted`
@@ -138,7 +139,7 @@ Sessions flow through a `processing_queue` table with statuses: `pending` → `p
 |------|----------|
 | PRD.md | Product requirements, MVP scope, success criteria, pricing |
 | TECH_STACK.md | All dependencies with versions and rationale |
-| BACKEND_STRUCTURE.md | 25-table schema with indexes, immutability rules, migrations |
+| BACKEND_STRUCTURE.md | 26-table schema with indexes, immutability rules, migrations |
 | FRONTEND_GUIDELINES.md | Design system, colors, typography, spacing, component specs |
 | IMPLEMENTATION_PLAN.md | 15-phase build sequence (all complete) + post-MVP checklist |
 | APP_FLOW.md | 29 screens, routes, and 10 user flows |

@@ -22,7 +22,7 @@ class DatabaseHelper {
   }
 
   /// Database version for migrations.
-  static const int _version = 3;
+  static const int _version = 5;
 
   /// Database filename.
   static const String _dbName = 'ttrpg_tracker.db';
@@ -87,6 +87,35 @@ class DatabaseHelper {
       await db.execute(
         'ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT',
       );
+    }
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE monsters (
+          id TEXT PRIMARY KEY,
+          world_id TEXT NOT NULL REFERENCES worlds(id),
+          copied_from_id TEXT REFERENCES monsters(id),
+          name TEXT NOT NULL,
+          description TEXT,
+          monster_type TEXT,
+          notes TEXT,
+          is_edited INTEGER DEFAULT 0,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      ''');
+      await db.execute(
+        'CREATE INDEX idx_monsters_world ON monsters(world_id)',
+      );
+    }
+    if (oldVersion < 5) {
+      for (final table in [
+        'worlds', 'campaigns', 'players', 'characters',
+        'npcs', 'locations', 'items',
+      ]) {
+        await db.execute(
+          'ALTER TABLE $table ADD COLUMN image_path TEXT',
+        );
+      }
     }
   }
 

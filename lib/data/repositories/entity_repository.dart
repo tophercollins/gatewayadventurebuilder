@@ -4,6 +4,7 @@ import '../database/database_helper.dart';
 import '../models/entity_appearance.dart';
 import '../models/item.dart';
 import '../models/location.dart';
+import '../models/monster.dart';
 import '../models/npc.dart';
 import '../models/npc_quote.dart';
 import '../models/npc_relationship.dart';
@@ -228,6 +229,89 @@ class EntityRepository {
   Future<void> deleteItem(String id) async {
     final db = await _db.database;
     await db.delete('items', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ============================================
+  // MONSTERS
+  // ============================================
+
+  Future<Monster> createMonster({
+    required String worldId,
+    required String name,
+    String? description,
+    String? monsterType,
+    String? notes,
+  }) async {
+    final db = await _db.database;
+    final now = DateTime.now();
+    final monster = Monster(
+      id: _uuid.v4(),
+      worldId: worldId,
+      name: name,
+      description: description,
+      monsterType: monsterType,
+      notes: notes,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await db.insert('monsters', monster.toMap());
+    return monster;
+  }
+
+  Future<Monster?> getMonsterById(String id) async {
+    final db = await _db.database;
+    final results = await db.query(
+      'monsters',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (results.isEmpty) return null;
+    return Monster.fromMap(results.first);
+  }
+
+  Future<List<Monster>> getMonstersByWorld(String worldId) async {
+    final db = await _db.database;
+    final results = await db.query(
+      'monsters',
+      where: 'world_id = ?',
+      whereArgs: [worldId],
+      orderBy: 'name ASC',
+    );
+    return results.map((m) => Monster.fromMap(m)).toList();
+  }
+
+  Future<Monster?> findMonsterByName(String worldId, String name) async {
+    final db = await _db.database;
+    final results = await db.query(
+      'monsters',
+      where: 'world_id = ? AND name = ?',
+      whereArgs: [worldId, name],
+      limit: 1,
+    );
+    if (results.isEmpty) return null;
+    return Monster.fromMap(results.first);
+  }
+
+  Future<void> updateMonster(
+    Monster monster, {
+    bool markEdited = false,
+  }) async {
+    final db = await _db.database;
+    final updated = monster.copyWith(
+      updatedAt: DateTime.now(),
+      isEdited: markEdited ? true : monster.isEdited,
+    );
+    await db.update(
+      'monsters',
+      updated.toMap(),
+      where: 'id = ?',
+      whereArgs: [monster.id],
+    );
+  }
+
+  Future<void> deleteMonster(String id) async {
+    final db = await _db.database;
+    await db.delete('monsters', where: 'id = ?', whereArgs: [id]);
   }
 
   // ============================================

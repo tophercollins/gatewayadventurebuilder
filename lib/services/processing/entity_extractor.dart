@@ -49,7 +49,7 @@ class EntityExtractor {
     );
 
     // 3. Extract items
-    onProgress?.call(ProcessingStep.extractingEntities, 0.54);
+    onProgress?.call(ProcessingStep.extractingEntities, 0.51);
     final itemPrompt = ItemPrompt.build(
       gameSystem: ctx.gameSystem,
       campaignName: ctx.campaign.name,
@@ -59,6 +59,19 @@ class EntityExtractor {
     final itemResult = await _llmService.extractItems(
       transcript: transcript,
       prompt: itemPrompt,
+    );
+
+    // 4. Extract monsters
+    onProgress?.call(ProcessingStep.extractingEntities, 0.54);
+    final monsterPrompt = MonsterPrompt.build(
+      gameSystem: ctx.gameSystem,
+      campaignName: ctx.campaign.name,
+      attendeeNames: ctx.attendeeNames,
+      existingMonsterNames: ctx.existingMonsterNames,
+    );
+    final monsterResult = await _llmService.extractMonsters(
+      transcript: transcript,
+      prompt: monsterPrompt,
     );
 
     // Match and persist
@@ -74,21 +87,28 @@ class EntityExtractor {
       worldId: ctx.world.id,
       extractedItems: itemResult.data?.items ?? [],
     );
+    final monsterMatches = await _entityMatcher.matchMonsters(
+      worldId: ctx.world.id,
+      extractedMonsters: monsterResult.data?.monsters ?? [],
+    );
 
     await _entityMatcher.createAppearances(
       sessionId: ctx.session.id,
       npcs: npcMatches,
       locations: locMatches,
       items: itemMatches,
+      monsters: monsterMatches,
       npcData: npcResult.data?.npcs ?? [],
       locationData: locResult.data?.locations ?? [],
       itemData: itemResult.data?.items ?? [],
+      monsterData: monsterResult.data?.monsters ?? [],
     );
 
     return EntityCounts(
       npcs: npcMatches.length,
       locations: locMatches.length,
       items: itemMatches.length,
+      monsters: monsterMatches.length,
     );
   }
 }

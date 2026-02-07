@@ -77,3 +77,28 @@ class ItemsResponse {
     }
   }
 }
+
+/// Response model for dedicated monster extraction.
+class MonstersResponse {
+  const MonstersResponse({required this.monsters});
+
+  final List<MonsterData> monsters;
+
+  factory MonstersResponse.fromJson(Map<String, dynamic> json) {
+    final monsterList = json['monsters'] as List<dynamic>? ?? [];
+    return MonstersResponse(
+      monsters: monsterList
+          .map((e) => MonsterData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  static MonstersResponse? tryParse(String text) {
+    try {
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
+      return MonstersResponse.fromJson(json);
+    } catch (_) {
+      return null;
+    }
+  }
+}

@@ -65,7 +65,7 @@ class _WorldDatabaseContent extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: hasContent
             ? DefaultTabController(
-                length: 3,
+                length: 4,
                 child: Column(
                   children: [
                     _SearchBar(
@@ -76,6 +76,7 @@ class _WorldDatabaseContent extends StatelessWidget {
                       npcCount: data.npcs.length,
                       locationCount: data.locations.length,
                       itemCount: data.items.length,
+                      monsterCount: data.monsters.length,
                     ),
                     Expanded(
                       child: TabBarView(
@@ -95,6 +96,11 @@ class _WorldDatabaseContent extends StatelessWidget {
                             campaignId: campaignId,
                             searchQuery: searchQuery,
                           ),
+                          _MonstersList(
+                            monsters: data.monsters,
+                            campaignId: campaignId,
+                            searchQuery: searchQuery,
+                          ),
                         ],
                       ),
                     ),
@@ -105,7 +111,7 @@ class _WorldDatabaseContent extends StatelessWidget {
                 icon: Icons.public_outlined,
                 title: 'No entities yet',
                 message:
-                    'NPCs, locations, and items will appear here '
+                    'NPCs, locations, items, and monsters will appear here '
                     'as they are discovered in your sessions.',
               ),
       ),
@@ -149,11 +155,13 @@ class _EntityTabBar extends StatelessWidget {
     required this.npcCount,
     required this.locationCount,
     required this.itemCount,
+    required this.monsterCount,
   });
 
   final int npcCount;
   final int locationCount;
   final int itemCount;
+  final int monsterCount;
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +177,7 @@ class _EntityTabBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
       ),
       child: TabBar(
+        isScrollable: true,
         indicator: BoxDecoration(
           color: theme.colorScheme.primary,
           borderRadius: BorderRadius.circular(Spacing.cardRadius),
@@ -181,6 +190,7 @@ class _EntityTabBar extends StatelessWidget {
           Tab(text: 'NPCs ($npcCount)'),
           Tab(text: 'Locations ($locationCount)'),
           Tab(text: 'Items ($itemCount)'),
+          Tab(text: 'Monsters ($monsterCount)'),
         ],
       ),
     );
@@ -349,6 +359,62 @@ class _ItemsList extends StatelessWidget {
       return item.item.name.toLowerCase().contains(query) ||
           (item.item.description?.toLowerCase().contains(query) ?? false) ||
           (item.item.itemType?.toLowerCase().contains(query) ?? false);
+    }).toList();
+  }
+}
+
+class _MonstersList extends StatelessWidget {
+  const _MonstersList({
+    required this.monsters,
+    required this.campaignId,
+    required this.searchQuery,
+  });
+
+  final List<MonsterWithCount> monsters;
+  final String campaignId;
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _filterMonsters();
+    if (filtered.isEmpty) {
+      return EmptySectionState(
+        icon: Icons.pest_control_outlined,
+        message: searchQuery.isNotEmpty
+            ? 'No monsters match "$searchQuery"'
+            : 'No monsters in this world yet.',
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(Spacing.lg),
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final item = filtered[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: Spacing.md),
+          child: _WorldEntityCard(
+            icon: Icons.pest_control_outlined,
+            name: item.monster.name,
+            subtitle: item.monster.monsterType,
+            description: item.monster.description,
+            appearanceCount: item.appearanceCount,
+            onTap: () => context.push(
+              Routes.monsterDetailPath(campaignId, item.monster.id),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<MonsterWithCount> _filterMonsters() {
+    if (searchQuery.isEmpty) return monsters;
+    final query = searchQuery.toLowerCase();
+    return monsters.where((item) {
+      return item.monster.name.toLowerCase().contains(query) ||
+          (item.monster.description?.toLowerCase().contains(query) ?? false) ||
+          (item.monster.monsterType?.toLowerCase().contains(query) ?? false);
     }).toList();
   }
 }

@@ -210,6 +210,11 @@ class _SessionDetailContent extends ConsumerWidget {
         '${detail.items.length} item${detail.items.length == 1 ? '' : 's'}',
       );
     }
+    if (detail.monsters.isNotEmpty) {
+      counts.add(
+        '${detail.monsters.length} monster${detail.monsters.length == 1 ? '' : 's'}',
+      );
+    }
     if (counts.isEmpty) return 'No entities extracted';
     return counts.join(', ');
   }

@@ -192,6 +192,32 @@ class ItemData {
   }
 }
 
+class MonsterData {
+  const MonsterData({
+    required this.name,
+    this.description,
+    this.monsterType,
+    this.context,
+    this.timestampMs,
+  });
+
+  final String name;
+  final String? description;
+  final String? monsterType;
+  final String? context;
+  final int? timestampMs;
+
+  factory MonsterData.fromJson(Map<String, dynamic> json) {
+    return MonsterData(
+      name: json['name'] as String? ?? 'Unknown',
+      description: json['description'] as String?,
+      monsterType: json['monster_type'] as String?,
+      context: json['context'] as String?,
+      timestampMs: json['timestamp_ms'] as int?,
+    );
+  }
+}
+
 /// Response model for action items extraction.
 class ActionItemsResponse {
   const ActionItemsResponse({required this.actionItems});

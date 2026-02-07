@@ -97,6 +97,11 @@ class _GlobalStatsTab extends ConsumerWidget {
                 icon: Icons.inventory_2_outlined,
               ),
               _StatCard(
+                label: 'Monsters',
+                value: '${stats.totalMonsters}',
+                icon: Icons.pest_control_outlined,
+              ),
+              _StatCard(
                 label: 'Longest Session',
                 value: '${stats.longestSessionMinutes} min',
                 icon: Icons.schedule_outlined,

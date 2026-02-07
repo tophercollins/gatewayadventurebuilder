@@ -72,7 +72,8 @@ class EntityAppearance {
 enum EntityType {
   npc('npc'),
   location('location'),
-  item('item');
+  item('item'),
+  monster('monster');
 
   const EntityType(this.value);
   final String value;

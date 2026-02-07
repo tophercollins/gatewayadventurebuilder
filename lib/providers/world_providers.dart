@@ -4,6 +4,7 @@ import '../data/models/character.dart';
 import '../data/models/entity_appearance.dart';
 import '../data/models/item.dart';
 import '../data/models/location.dart';
+import '../data/models/monster.dart';
 import '../data/models/npc.dart';
 import '../data/models/npc_quote.dart';
 import '../data/models/npc_relationship.dart';
@@ -35,6 +36,16 @@ class LocationWithCount {
 class ItemWithCount {
   const ItemWithCount({required this.item, required this.appearanceCount});
   final Item item;
+  final int appearanceCount;
+}
+
+/// Data class for a monster with its appearance count.
+class MonsterWithCount {
+  const MonsterWithCount({
+    required this.monster,
+    required this.appearanceCount,
+  });
+  final Monster monster;
   final int appearanceCount;
 }
 
@@ -100,6 +111,28 @@ final worldItemsProvider = FutureProvider.autoDispose
       return result;
     });
 
+/// Provider for all monsters in a world with appearance counts.
+final worldMonstersProvider = FutureProvider.autoDispose
+    .family<List<MonsterWithCount>, String>((ref, worldId) async {
+      ref.watch(worldEntitiesRevisionProvider);
+      final entityRepo = ref.watch(entityRepositoryProvider);
+
+      final monsters = await entityRepo.getMonstersByWorld(worldId);
+      final result = <MonsterWithCount>[];
+
+      for (final monster in monsters) {
+        final count = await entityRepo.countAppearances(
+          entityType: EntityType.monster,
+          entityId: monster.id,
+        );
+        result.add(
+          MonsterWithCount(monster: monster, appearanceCount: count),
+        );
+      }
+
+      return result;
+    });
+
 /// Provider for entity appearances for a specific entity.
 final entityAppearancesProvider = FutureProvider.autoDispose
     .family<List<EntityAppearance>, ({EntityType type, String entityId})>((
@@ -152,6 +185,13 @@ final itemByIdProvider = FutureProvider.autoDispose.family<Item?, String>((
   return await entityRepo.getItemById(itemId);
 });
 
+/// Provider for a single monster by ID.
+final monsterByIdProvider = FutureProvider.autoDispose
+    .family<Monster?, String>((ref, monsterId) async {
+      final entityRepo = ref.watch(entityRepositoryProvider);
+      return await entityRepo.getMonsterById(monsterId);
+    });
+
 /// Provider for sessions where an entity appeared.
 final entitySessionsProvider = FutureProvider.autoDispose
     .family<List<Session>, ({EntityType type, String entityId})>((
@@ -193,13 +233,16 @@ class WorldDatabaseData {
     required this.npcs,
     required this.locations,
     required this.items,
+    required this.monsters,
   });
 
   final List<NpcWithCount> npcs;
   final List<LocationWithCount> locations;
   final List<ItemWithCount> items;
+  final List<MonsterWithCount> monsters;
 
-  int get totalEntities => npcs.length + locations.length + items.length;
+  int get totalEntities =>
+      npcs.length + locations.length + items.length + monsters.length;
 }
 
 /// Provider for all world database data.
@@ -251,10 +294,23 @@ final worldDatabaseProvider = FutureProvider.autoDispose
         itemsWithCounts.add(ItemWithCount(item: item, appearanceCount: count));
       }
 
+      final monsters = await entityRepo.getMonstersByWorld(worldId);
+      final monstersWithCounts = <MonsterWithCount>[];
+      for (final monster in monsters) {
+        final count = await entityRepo.countAppearances(
+          entityType: EntityType.monster,
+          entityId: monster.id,
+        );
+        monstersWithCounts.add(
+          MonsterWithCount(monster: monster, appearanceCount: count),
+        );
+      }
+
       return WorldDatabaseData(
         npcs: npcsWithCounts,
         locations: locationsWithCounts,
         items: itemsWithCounts,
+        monsters: monstersWithCounts,
       );
     });
 
@@ -281,6 +337,12 @@ class EntityEditor {
   Future<void> updateItem(Item item) async {
     await _entityRepo.updateItem(item, markEdited: true);
     _ref.invalidate(itemByIdProvider(item.id));
+  }
+
+  /// Updates a monster and refreshes data.
+  Future<void> updateMonster(Monster monster) async {
+    await _entityRepo.updateMonster(monster, markEdited: true);
+    _ref.invalidate(monsterByIdProvider(monster.id));
   }
 }
 

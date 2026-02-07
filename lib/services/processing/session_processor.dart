@@ -89,6 +89,7 @@ class SessionProcessor {
       var totalNpcs = 0;
       var totalLocations = 0;
       var totalItems = 0;
+      var totalMonsters = 0;
       for (final chunk in chunks) {
         final counts = await entityExtractor.extract(
           ctx: context,
@@ -98,11 +99,13 @@ class SessionProcessor {
         totalNpcs += counts.npcs;
         totalLocations += counts.locations;
         totalItems += counts.items;
+        totalMonsters += counts.monsters;
       }
       stats = stats.copyWith(
         npcCount: totalNpcs,
         locationCount: totalLocations,
         itemCount: totalItems,
+        monsterCount: totalMonsters,
       );
 
       // Action items: process each chunk
@@ -132,6 +135,7 @@ class SessionProcessor {
         npcCount: stats.npcCount,
         locationCount: stats.locationCount,
         itemCount: stats.itemCount,
+        monsterCount: stats.monsterCount,
         actionItemCount: stats.actionItemCount,
         momentCount: stats.momentCount,
       );

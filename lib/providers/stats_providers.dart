@@ -11,6 +11,7 @@ class GlobalStats {
     this.totalNpcs = 0,
     this.totalLocations = 0,
     this.totalItems = 0,
+    this.totalMonsters = 0,
     this.longestSessionMinutes = 0,
   });
 
@@ -20,9 +21,11 @@ class GlobalStats {
   final int totalNpcs;
   final int totalLocations;
   final int totalItems;
+  final int totalMonsters;
   final int longestSessionMinutes;
 
-  int get totalEntities => totalNpcs + totalLocations + totalItems;
+  int get totalEntities =>
+      totalNpcs + totalLocations + totalItems + totalMonsters;
 }
 
 /// Stats for a single campaign.
@@ -34,6 +37,7 @@ class CampaignStats {
     this.npcCount = 0,
     this.locationCount = 0,
     this.itemCount = 0,
+    this.monsterCount = 0,
     this.playerCount = 0,
     this.firstSessionDate,
     this.lastSessionDate,
@@ -45,11 +49,13 @@ class CampaignStats {
   final int npcCount;
   final int locationCount;
   final int itemCount;
+  final int monsterCount;
   final int playerCount;
   final DateTime? firstSessionDate;
   final DateTime? lastSessionDate;
 
-  int get totalEntities => npcCount + locationCount + itemCount;
+  int get totalEntities =>
+      npcCount + locationCount + itemCount + monsterCount;
 }
 
 /// Stats for a single player across campaigns.
@@ -99,14 +105,17 @@ final globalStatsProvider = FutureProvider.autoDispose<GlobalStats>((ref) async 
   var totalNpcs = 0;
   var totalLocations = 0;
   var totalItems = 0;
+  var totalMonsters = 0;
 
   for (final world in worlds) {
     final npcs = await entityRepo.getNpcsByWorld(world.id);
     final locations = await entityRepo.getLocationsByWorld(world.id);
     final items = await entityRepo.getItemsByWorld(world.id);
+    final monsters = await entityRepo.getMonstersByWorld(world.id);
     totalNpcs += npcs.length;
     totalLocations += locations.length;
     totalItems += items.length;
+    totalMonsters += monsters.length;
   }
 
   return GlobalStats(
@@ -116,6 +125,7 @@ final globalStatsProvider = FutureProvider.autoDispose<GlobalStats>((ref) async 
     totalNpcs: totalNpcs,
     totalLocations: totalLocations,
     totalItems: totalItems,
+    totalMonsters: totalMonsters,
     longestSessionMinutes: (longestSeconds / 60).round(),
   );
 });
@@ -155,15 +165,18 @@ final campaignStatsListProvider =
     var npcCount = 0;
     var locationCount = 0;
     var itemCount = 0;
+    var monsterCount = 0;
 
     if (campaignWithWorld != null) {
       final worldId = campaignWithWorld.world.id;
       final npcs = await entityRepo.getNpcsByWorld(worldId);
       final locations = await entityRepo.getLocationsByWorld(worldId);
       final items = await entityRepo.getItemsByWorld(worldId);
+      final monsters = await entityRepo.getMonstersByWorld(worldId);
       npcCount = npcs.length;
       locationCount = locations.length;
       itemCount = items.length;
+      monsterCount = monsters.length;
     }
 
     result.add(CampaignStats(
@@ -173,6 +186,7 @@ final campaignStatsListProvider =
       npcCount: npcCount,
       locationCount: locationCount,
       itemCount: itemCount,
+      monsterCount: monsterCount,
       playerCount: players.length,
       firstSessionDate: firstDate,
       lastSessionDate: lastDate,

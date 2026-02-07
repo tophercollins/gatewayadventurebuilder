@@ -387,4 +387,34 @@ class MockLLMService implements LLMService {
       ),
     );
   }
+
+  @override
+  Future<LLMResult<MonstersResponse>> extractMonsters({
+    required String transcript,
+    required String prompt,
+  }) async {
+    await _delay();
+    if (shouldFail) {
+      return LLMResult.failure(failureMessage);
+    }
+    return const LLMResult.success(
+      MonstersResponse(
+        monsters: [
+          MonsterData(
+            name: 'Goblin Raider',
+            description: 'Small, vicious humanoids that attack in packs.',
+            monsterType: 'humanoid',
+            context: 'Ambushed the party at the Old Mill.',
+          ),
+          MonsterData(
+            name: 'Shadow Wolf',
+            description:
+                'A large wolf wreathed in dark energy, found in the marshes.',
+            monsterType: 'beast',
+            context: 'Encountered at the edge of Shadowfen Marshes.',
+          ),
+        ],
+      ),
+    );
+  }
 }

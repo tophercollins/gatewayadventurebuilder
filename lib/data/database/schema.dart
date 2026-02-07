@@ -19,6 +19,7 @@ abstract final class DatabaseSchema {
     _createNpcs,
     _createLocations,
     _createItems,
+    _createMonsters,
     _createEntityAppearances,
     _createNpcRelationships,
     _createNpcQuotes,
@@ -35,6 +36,7 @@ abstract final class DatabaseSchema {
     'CREATE INDEX idx_npcs_world ON npcs(world_id)',
     'CREATE INDEX idx_locations_world ON locations(world_id)',
     'CREATE INDEX idx_items_world ON items(world_id)',
+    'CREATE INDEX idx_monsters_world ON monsters(world_id)',
     'CREATE INDEX idx_entity_appearances_session ON entity_appearances(session_id)',
     'CREATE INDEX idx_entity_appearances_entity ON entity_appearances(entity_type, entity_id)',
     'CREATE INDEX idx_action_items_campaign ON action_items(campaign_id)',
@@ -62,6 +64,7 @@ abstract final class DatabaseSchema {
       name TEXT NOT NULL,
       description TEXT,
       game_system TEXT,
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -76,6 +79,7 @@ abstract final class DatabaseSchema {
       game_system TEXT,
       status TEXT DEFAULT 'active',
       start_date TEXT,
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -87,6 +91,7 @@ abstract final class DatabaseSchema {
       user_id TEXT NOT NULL REFERENCES users(id),
       name TEXT NOT NULL,
       notes TEXT,
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -115,6 +120,7 @@ abstract final class DatabaseSchema {
       goals TEXT,
       notes TEXT,
       status TEXT DEFAULT 'active',
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -220,6 +226,7 @@ abstract final class DatabaseSchema {
       status TEXT DEFAULT 'alive',
       notes TEXT,
       is_edited INTEGER DEFAULT 0,
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -236,6 +243,7 @@ abstract final class DatabaseSchema {
       parent_location_id TEXT REFERENCES locations(id),
       notes TEXT,
       is_edited INTEGER DEFAULT 0,
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -252,6 +260,22 @@ abstract final class DatabaseSchema {
       properties TEXT,
       current_owner_type TEXT,
       current_owner_id TEXT,
+      notes TEXT,
+      is_edited INTEGER DEFAULT 0,
+      image_path TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  ''';
+
+  static const String _createMonsters = '''
+    CREATE TABLE monsters (
+      id TEXT PRIMARY KEY,
+      world_id TEXT NOT NULL REFERENCES worlds(id),
+      copied_from_id TEXT REFERENCES monsters(id),
+      name TEXT NOT NULL,
+      description TEXT,
+      monster_type TEXT,
       notes TEXT,
       is_edited INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,

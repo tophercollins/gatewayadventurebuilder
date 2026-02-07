@@ -12,6 +12,7 @@ User (future multi-user)
         ├── NPC
         ├── Location
         ├── Item
+        ├── Monster
         └── Campaign
               ├── Player ←→ Campaign (many-to-many)
               ├── Character (belongs to Player + Campaign)
@@ -22,7 +23,7 @@ User (future multi-user)
                     ├── Scene
                     ├── ActionItem
                     ├── PlayerMoment
-                    └── EntityAppearance (links to NPC/Location/Item)
+                    └── EntityAppearance (links to NPC/Location/Item/Monster)
 ```
 
 ---
@@ -34,14 +35,14 @@ User (future multi-user)
 │   User   │────<│    World     │────<│   Campaign   │
 └──────────┘     └──────────────┘     └──────────────┘
                         │                     │
-                   ┌────┼────┐                │
-                   │    │    │                │
-                ┌──┴┐ ┌┴──┐ ┌┴──┐    ┌───────┴───────┐
-                │NPC│ │Loc│ │Itm│    │    Session     │
-                └───┘ └───┘ └───┘    └───────┬───────┘
-                   │    │    │        ┌──┬──┬─┼──┬──┐
-                   │    │    │        │  │  │ │  │  │
-                   └────┼────┘        │  │  │ │  │  │
+                   ┌────┼────┬────┐            │
+                   │    │    │    │            │
+                ┌──┴┐ ┌┴──┐ ┌┴──┐ ┌┴──┐ ┌─────┴───────┐
+                │NPC│ │Loc│ │Itm│ │Mon│ │    Session    │
+                └───┘ └───┘ └───┘ └───┘ └──────┬───────┘
+                   │    │    │    │      ┌──┬──┬─┼──┬──┐
+                   │    │    │    │      │  │  │ │  │  │
+                   └────┼────┼────┘      │  │  │ │  │  │
                         │             │  │  │ │  │  │
                  ┌──────┴──────┐      │  │  │ │  │  │
                  │  Entity     │<─────┘  │  │ │  │  │
@@ -363,15 +364,34 @@ World-level entities.
 
 ---
 
+### monsters
+
+World-level creature/enemy types.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | TEXT (UUID) | PRIMARY KEY | Unique monster ID |
+| world_id | TEXT (UUID) | FK → worlds.id, NOT NULL | Parent world |
+| copied_from_id | TEXT (UUID) | FK → monsters.id | If copied from another world |
+| name | TEXT | NOT NULL | Monster name |
+| description | TEXT | | Monster description |
+| monster_type | TEXT | | dragon, undead, beast, aberration, construct, etc. |
+| notes | TEXT | | GM notes |
+| is_edited | INTEGER | DEFAULT 0 | Whether GM has edited |
+| created_at | TEXT (ISO 8601) | NOT NULL | When first extracted |
+| updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
+
+---
+
 ### entity_appearances
 
-Links entities (NPCs, locations, items) to sessions where they appeared. Many-to-many with context.
+Links entities (NPCs, locations, items, monsters) to sessions where they appeared. Many-to-many with context.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | TEXT (UUID) | PRIMARY KEY | Unique ID |
 | session_id | TEXT (UUID) | FK → sessions.id, NOT NULL | Session appeared in |
-| entity_type | TEXT | NOT NULL | npc, location, item |
+| entity_type | TEXT | NOT NULL | npc, location, item, monster |
 | entity_id | TEXT (UUID) | NOT NULL | ID of the entity |
 | context | TEXT | | Brief description of appearance/role in session |
 | first_appearance | INTEGER | DEFAULT 0 | Was this the first time? (0/1) |
@@ -491,8 +511,9 @@ Tracks imported text that was processed for entity extraction (campaign creation
 |---------|-----------|----------|
 | v1→v2 | `ALTER TABLE session_transcripts ADD COLUMN edited_text TEXT` | v0.1 |
 | v2→v3 | `ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT` | v0.2 |
+| v3→v4 | `CREATE TABLE monsters` + `CREATE INDEX idx_monsters_world` | v0.3 |
 
-Current database version: **3** (see `database_helper.dart`).
+Current database version: **4** (see `database_helper.dart`).
 
 New tables added to `schema.dart` `createTableStatements` are created automatically on first install. `ALTER TABLE` migrations only needed for columns added after initial release.
 
@@ -539,7 +560,7 @@ When user triggers reprocess (or better LLM becomes available):
 2. Run through LLM processing pipeline
 3. Create new rows for: summary, scenes, entity appearances, action items, player moments
 4. Mark old processed outputs as superseded (or replace, user choice)
-5. Entities (NPCs, locations, items) are **updated**, not duplicated
+5. Entities (NPCs, locations, items, monsters) are **updated**, not duplicated
 6. GM edits on entities are preserved (AI won't overwrite `is_edited = 1` fields)
 
 ---
@@ -589,6 +610,7 @@ CREATE INDEX idx_sessions_campaign ON sessions(campaign_id);
 CREATE INDEX idx_npcs_world ON npcs(world_id);
 CREATE INDEX idx_locations_world ON locations(world_id);
 CREATE INDEX idx_items_world ON items(world_id);
+CREATE INDEX idx_monsters_world ON monsters(world_id);
 CREATE INDEX idx_entity_appearances_session ON entity_appearances(session_id);
 CREATE INDEX idx_entity_appearances_entity ON entity_appearances(entity_type, entity_id);
 CREATE INDEX idx_action_items_campaign ON action_items(campaign_id);
