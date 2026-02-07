@@ -39,10 +39,7 @@ class MockConnectivityService extends ConnectivityService {
 ///
 /// The header format matches WavResampler._createHeader() so
 /// ensureWhisperFormat() returns the original path (no resampling).
-Future<File> createDummyWavFile(
-  String path, {
-  int durationSeconds = 10,
-}) async {
+Future<File> createDummyWavFile(String path, {int durationSeconds = 10}) async {
   const sampleRate = 16000;
   const numChannels = 1;
   const bitsPerSample = 16;
@@ -102,8 +99,7 @@ Future<File> createDummyWavFile(
 class TestNotificationSettingsNotifier
     extends StateNotifier<NotificationSettings>
     implements NotificationSettingsNotifier {
-  TestNotificationSettingsNotifier()
-    : super(const NotificationSettings());
+  TestNotificationSettingsNotifier() : super(const NotificationSettings());
 
   @override
   Future<void> setEmailEnabled(bool enabled) async {
@@ -205,9 +201,7 @@ Future<SeedData> seedSessionData(ProviderContainer container) async {
   );
 
   // Set duration (createSession doesn't accept it directly)
-  await sessionRepo.updateSession(
-    session.copyWith(durationSeconds: 10),
-  );
+  await sessionRepo.updateSession(session.copyWith(durationSeconds: 10));
 
   // Add attendees
   for (var i = 0; i < playerIds.length; i++) {

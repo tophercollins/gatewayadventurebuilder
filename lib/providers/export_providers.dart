@@ -32,7 +32,7 @@ class ExportState {
 /// Orchestrates repo access, export formatting, and file saving.
 class ExportStateNotifier extends StateNotifier<ExportState> {
   ExportStateNotifier(this._exportService, this._fileSaver, this._ref)
-      : super(const ExportState());
+    : super(const ExportState());
 
   final ExportService _exportService;
   final FileSaver _fileSaver;
@@ -103,7 +103,7 @@ class ExportStateNotifier extends StateNotifier<ExportState> {
 /// Provider for export state management.
 final exportStateProvider =
     StateNotifierProvider.autoDispose<ExportStateNotifier, ExportState>((ref) {
-  final exportService = ref.watch(exportServiceProvider);
-  final fileSaver = ref.watch(fileSaverProvider);
-  return ExportStateNotifier(exportService, fileSaver, ref);
-});
+      final exportService = ref.watch(exportServiceProvider);
+      final fileSaver = ref.watch(fileSaverProvider);
+      return ExportStateNotifier(exportService, fileSaver, ref);
+    });

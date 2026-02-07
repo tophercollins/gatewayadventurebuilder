@@ -2,6 +2,7 @@
 enum PlayerSharingMode {
   /// GM reviews first, then manually sends to players.
   reviewFirst,
+
   /// Automatically sent to players after processing.
   autoSend,
 }

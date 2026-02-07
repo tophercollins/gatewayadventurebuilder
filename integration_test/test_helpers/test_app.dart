@@ -59,9 +59,7 @@ Future<Database> setUpTestEnvironment() async {
 
 /// Creates a [ProviderContainer] with optional overrides.
 /// Use for programmatic (non-widget) tests that drive the pipeline directly.
-ProviderContainer buildTestContainer({
-  List<Override> overrides = const [],
-}) {
+ProviderContainer buildTestContainer({List<Override> overrides = const []}) {
   return ProviderContainer(overrides: overrides);
 }
 

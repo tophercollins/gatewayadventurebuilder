@@ -92,17 +92,16 @@ class ExportService {
           ? {'overallSummary': summary.overallSummary}
           : null,
       'scenes': scenes
-          .map((s) => {
-                'index': s.sceneIndex,
-                'title': s.title,
-                'summary': s.summary,
-              })
+          .map(
+            (s) => {
+              'index': s.sceneIndex,
+              'title': s.title,
+              'summary': s.summary,
+            },
+          )
           .toList(),
       'transcript': transcript != null
-          ? {
-              'rawText': transcript.rawText,
-              'editedText': transcript.editedText,
-            }
+          ? {'rawText': transcript.rawText, 'editedText': transcript.editedText}
           : null,
       'entities': {
         'npcs': entities.npcs.map(_npcToJson).toList(),
@@ -111,12 +110,14 @@ class ExportService {
         'monsters': entities.monsters.map(_monsterToJson).toList(),
       },
       'actionItems': actionItems
-          .map((a) => {
-                'title': a.title,
-                'description': a.description,
-                'status': a.status.value,
-                'type': a.actionType,
-              })
+          .map(
+            (a) => {
+              'title': a.title,
+              'description': a.description,
+              'status': a.status.value,
+              'type': a.actionType,
+            },
+          )
           .toList(),
     };
 
@@ -250,9 +251,7 @@ class ExportService {
         monsters.isNotEmpty) {
       buf.writeln('## Entities Mentioned');
       if (npcs.isNotEmpty) {
-        buf.writeln(
-          '- **NPCs:** ${npcs.map((n) => n.name).join(', ')}',
-        );
+        buf.writeln('- **NPCs:** ${npcs.map((n) => n.name).join(', ')}');
       }
       if (locations.isNotEmpty) {
         buf.writeln(
@@ -260,9 +259,7 @@ class ExportService {
         );
       }
       if (items.isNotEmpty) {
-        buf.writeln(
-          '- **Items:** ${items.map((i) => i.name).join(', ')}',
-        );
+        buf.writeln('- **Items:** ${items.map((i) => i.name).join(', ')}');
       }
       if (monsters.isNotEmpty) {
         buf.writeln(
@@ -335,43 +332,41 @@ class ExportService {
 
     return _SessionEntities(
       npcs: allNpcs.where((n) => npcIds.contains(n.id)).toList(),
-      locations:
-          allLocations.where((l) => locationIds.contains(l.id)).toList(),
+      locations: allLocations.where((l) => locationIds.contains(l.id)).toList(),
       items: allItems.where((i) => itemIds.contains(i.id)).toList(),
-      monsters:
-          allMonsters.where((m) => monsterIds.contains(m.id)).toList(),
+      monsters: allMonsters.where((m) => monsterIds.contains(m.id)).toList(),
     );
   }
 
   Map<String, dynamic> _npcToJson(Npc npc) => {
-        'name': npc.name,
-        'description': npc.description,
-        'role': npc.role,
-        'status': npc.status.value,
-        'notes': npc.notes,
-      };
+    'name': npc.name,
+    'description': npc.description,
+    'role': npc.role,
+    'status': npc.status.value,
+    'notes': npc.notes,
+  };
 
   Map<String, dynamic> _locationToJson(Location location) => {
-        'name': location.name,
-        'description': location.description,
-        'type': location.locationType,
-        'notes': location.notes,
-      };
+    'name': location.name,
+    'description': location.description,
+    'type': location.locationType,
+    'notes': location.notes,
+  };
 
   Map<String, dynamic> _itemToJson(Item item) => {
-        'name': item.name,
-        'description': item.description,
-        'type': item.itemType,
-        'properties': item.properties,
-        'notes': item.notes,
-      };
+    'name': item.name,
+    'description': item.description,
+    'type': item.itemType,
+    'properties': item.properties,
+    'notes': item.notes,
+  };
 
   Map<String, dynamic> _monsterToJson(Monster monster) => {
-        'name': monster.name,
-        'description': monster.description,
-        'type': monster.monsterType,
-        'notes': monster.notes,
-      };
+    'name': monster.name,
+    'description': monster.description,
+    'type': monster.monsterType,
+    'notes': monster.notes,
+  };
 
   Future<String> _exportNpcsCsv(
     String worldId,

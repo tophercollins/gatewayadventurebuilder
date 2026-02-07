@@ -138,7 +138,7 @@ final queueItemBySessionProvider =
 /// Notifier for managing queue initialization and actions.
 class QueueNotifier extends StateNotifier<QueueState> {
   QueueNotifier(this._manager, this._connectivity, this._ref)
-      : super(const QueueState()) {
+    : super(const QueueState()) {
     _initialize();
   }
 

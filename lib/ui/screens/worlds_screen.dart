@@ -44,7 +44,9 @@ class _WorldsContent extends ConsumerWidget {
         child: Stack(
           children: [
             worlds.isEmpty
-                ? _EmptyState(onCreateWorld: () => _showWorldDialog(context, ref))
+                ? _EmptyState(
+                    onCreateWorld: () => _showWorldDialog(context, ref),
+                  )
                 : ListView.builder(
                     padding: const EdgeInsets.all(Spacing.lg),
                     itemCount: worlds.length + 1,
@@ -102,9 +104,8 @@ class _WorldCard extends ConsumerWidget {
 
     VoidCallback? onTap;
     if (summary.campaigns.isNotEmpty) {
-      onTap = () => context.go(
-            Routes.worldDatabasePath(summary.campaigns.first.id),
-          );
+      onTap = () =>
+          context.go(Routes.worldDatabasePath(summary.campaigns.first.id));
     }
 
     return Material(
@@ -130,8 +131,7 @@ class _WorldCard extends ConsumerWidget {
               Expanded(child: _WorldCardDetails(summary: summary)),
               _WorldCardActions(
                 world: world,
-                hasChildren: totalEntities > 0 ||
-                    summary.campaigns.isNotEmpty,
+                hasChildren: totalEntities > 0 || summary.campaigns.isNotEmpty,
                 onTap: onTap,
                 ref: ref,
               ),
@@ -173,8 +173,7 @@ class _WorldCardDetails extends StatelessWidget {
             ),
           ),
         ],
-        if (world.description != null &&
-            world.description!.isNotEmpty) ...[
+        if (world.description != null && world.description!.isNotEmpty) ...[
           const SizedBox(height: Spacing.xxs),
           Text(
             world.description!,
@@ -244,12 +243,8 @@ class _WorldCardActions extends StatelessWidget {
                 ? Theme.of(context).colorScheme.outline
                 : Theme.of(context).colorScheme.error,
           ),
-          tooltip: hasChildren
-              ? 'Remove campaigns first'
-              : 'Delete world',
-          onPressed: hasChildren
-              ? null
-              : () => _confirmDelete(context),
+          tooltip: hasChildren ? 'Remove campaigns first' : 'Delete world',
+          onPressed: hasChildren ? null : () => _confirmDelete(context),
         ),
         if (onTap != null)
           Icon(
@@ -314,8 +309,9 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.world?.name ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.world?.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.world?.description ?? '',
+    );
     final gs = widget.world?.gameSystem;
     if (gs != null && gameSystems.contains(gs)) {
       _selectedGameSystem = gs;
@@ -419,8 +415,9 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ImagePickerField(
-                currentImagePath:
-                    _imageRemoved ? null : widget.world?.imagePath,
+                currentImagePath: _imageRemoved
+                    ? null
+                    : widget.world?.imagePath,
                 pendingImagePath: _pendingImagePath,
                 fallbackIcon: Icons.public_outlined,
                 isBanner: false,
@@ -466,9 +463,9 @@ class _WorldFormDialogState extends ConsumerState<_WorldFormDialog> {
                   onChanged: (v) => _customGameSystem = v,
                   validator: (v) =>
                       _selectedGameSystem == 'Other' &&
-                              (v == null || v.trim().isEmpty)
-                          ? 'Please enter your game system'
-                          : null,
+                          (v == null || v.trim().isEmpty)
+                      ? 'Please enter your game system'
+                      : null,
                 ),
               ],
               const SizedBox(height: Spacing.fieldSpacing),

@@ -32,29 +32,21 @@ class SessionTranscriptScreen extends ConsumerWidget {
         if (transcript == null) {
           return const NotFoundState(message: 'No transcript available');
         }
-        return _TranscriptContent(
-          sessionId: sessionId,
-          transcript: transcript,
-        );
+        return _TranscriptContent(sessionId: sessionId, transcript: transcript);
       },
     );
   }
 }
 
 class _TranscriptContent extends ConsumerWidget {
-  const _TranscriptContent({
-    required this.sessionId,
-    required this.transcript,
-  });
+  const _TranscriptContent({required this.sessionId, required this.transcript});
 
   final String sessionId;
   final SessionTranscript transcript;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final segmentsAsync = ref.watch(
-      transcriptSegmentsProvider(transcript.id),
-    );
+    final segmentsAsync = ref.watch(transcriptSegmentsProvider(transcript.id));
 
     return Center(
       child: ConstrainedBox(
@@ -176,9 +168,7 @@ class _TranscriptViewState extends ConsumerState<_TranscriptView> {
           ),
         ),
         const SizedBox(height: Spacing.md),
-        ...widget.segments.map(
-          (seg) => _SegmentTile(segment: seg),
-        ),
+        ...widget.segments.map((seg) => _SegmentTile(segment: seg)),
       ],
     );
   }
@@ -224,15 +214,9 @@ class _TranscriptViewState extends ConsumerState<_TranscriptView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            OutlinedButton(
-              onPressed: _toggleEdit,
-              child: const Text('Cancel'),
-            ),
+            OutlinedButton(onPressed: _toggleEdit, child: const Text('Cancel')),
             const SizedBox(width: Spacing.sm),
-            FilledButton(
-              onPressed: _saveEdit,
-              child: const Text('Save'),
-            ),
+            FilledButton(onPressed: _saveEdit, child: const Text('Save')),
           ],
         ),
       ],
@@ -255,11 +239,13 @@ class _TranscriptViewState extends ConsumerState<_TranscriptView> {
       return;
     }
 
-    await ref.read(transcriptEditorProvider).saveTranscript(
-      transcriptId: widget.transcript.id,
-      sessionId: widget.sessionId,
-      newText: newText,
-    );
+    await ref
+        .read(transcriptEditorProvider)
+        .saveTranscript(
+          transcriptId: widget.transcript.id,
+          sessionId: widget.sessionId,
+          newText: newText,
+        );
 
     if (!mounted) return;
 
@@ -297,10 +283,12 @@ class _TranscriptViewState extends ConsumerState<_TranscriptView> {
 
     if (confirmed != true || !mounted) return;
 
-    await ref.read(transcriptEditorProvider).revertTranscript(
-      transcriptId: widget.transcript.id,
-      sessionId: widget.sessionId,
-    );
+    await ref
+        .read(transcriptEditorProvider)
+        .revertTranscript(
+          transcriptId: widget.transcript.id,
+          sessionId: widget.sessionId,
+        );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

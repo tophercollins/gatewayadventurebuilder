@@ -293,19 +293,19 @@ class _StopButton extends StatelessWidget {
           height: 96,
           child: Center(
             child: isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 32,
                     height: 32,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      color: Colors.white,
+                      color: theme.colorScheme.onPrimary,
                     ),
                   )
                 : Container(
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.colorScheme.onPrimary,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),

@@ -176,10 +176,7 @@ class _PlayerCardState extends State<PlayerCard> {
         ),
         if (widget.onPlayerDeleted != null)
           IconButton(
-            icon: Icon(
-              Icons.delete_outlined,
-              color: theme.colorScheme.error,
-            ),
+            icon: Icon(Icons.delete_outlined, color: theme.colorScheme.error),
             onPressed: () => _confirmDeletePlayer(context),
             tooltip: 'Delete player',
           ),

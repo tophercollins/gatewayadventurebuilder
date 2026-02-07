@@ -166,9 +166,9 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
     if (!confirmed || !mounted) return;
 
     try {
-      await ref.read(campaignEditorProvider).deleteCampaign(
-        widget.detail.campaign.id,
-      );
+      await ref
+          .read(campaignEditorProvider)
+          .deleteCampaign(widget.detail.campaign.id);
       if (mounted) context.go(Routes.campaigns);
     } catch (e) {
       if (mounted) {
@@ -442,9 +442,8 @@ class _QuickLinksSection extends StatelessWidget {
                 icon: Icons.book_outlined,
                 title: 'Sessions',
                 count: detail.sessions.length,
-                onTap: () => context.go(
-                  Routes.sessionsListPath(detail.campaign.id),
-                ),
+                onTap: () =>
+                    context.go(Routes.sessionsListPath(detail.campaign.id)),
               ),
             ),
             const SizedBox(width: Spacing.md),
@@ -467,8 +466,7 @@ class _QuickLinksSection extends StatelessWidget {
                 icon: Icons.group_outlined,
                 title: 'Players',
                 count: detail.playerCount,
-                onTap: () =>
-                    context.go(Routes.playersPath(detail.campaign.id)),
+                onTap: () => context.go(Routes.playersPath(detail.campaign.id)),
               ),
             ),
             const SizedBox(width: Spacing.md),
@@ -601,9 +599,8 @@ class _RecentSessionsSection extends StatelessWidget {
             ),
             if (detail.sessions.length > 5)
               TextButton(
-                onPressed: () => context.go(
-                  Routes.sessionsListPath(detail.campaign.id),
-                ),
+                onPressed: () =>
+                    context.go(Routes.sessionsListPath(detail.campaign.id)),
                 child: const Text('View all'),
               ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/player_moment.dart';
 import '../../utils/formatters.dart';
+import '../theme/colors.dart';
 import '../theme/spacing.dart';
 
 /// A card widget for displaying a player moment/highlight.
@@ -63,36 +64,37 @@ class MomentCard extends StatelessWidget {
     String? type,
     ThemeData theme,
   ) {
+    final b = theme.brightness;
     return switch (type) {
       'quote' => (
         label: 'Quote',
         icon: Icons.format_quote_outlined,
-        color: Colors.blue,
+        color: b.momentQuote,
       ),
       'roleplay' => (
         label: 'Roleplay',
         icon: Icons.theater_comedy_outlined,
-        color: Colors.purple,
+        color: b.momentRoleplay,
       ),
       'combat' => (
         label: 'Combat',
         icon: Icons.sports_martial_arts_outlined,
-        color: Colors.red,
+        color: b.momentCombat,
       ),
       'puzzle' => (
         label: 'Problem Solving',
         icon: Icons.lightbulb_outline,
-        color: Colors.orange,
+        color: b.momentPuzzle,
       ),
       'humor' => (
         label: 'Funny Moment',
         icon: Icons.sentiment_very_satisfied_outlined,
-        color: Colors.amber,
+        color: b.momentHumor,
       ),
       'teamwork' => (
         label: 'Teamwork',
         icon: Icons.group_outlined,
-        color: Colors.green,
+        color: b.momentTeamwork,
       ),
       _ => (
         label: 'Highlight',

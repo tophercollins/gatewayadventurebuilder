@@ -238,9 +238,7 @@ final sessionEntitiesProvider = FutureProvider.autoDispose
             .where((l) => locationIds.contains(l.id))
             .toList(),
         items: allItems.where((i) => itemIds.contains(i.id)).toList(),
-        monsters: allMonsters
-            .where((m) => monsterIds.contains(m.id))
-            .toList(),
+        monsters: allMonsters.where((m) => monsterIds.contains(m.id)).toList(),
       );
     });
 
@@ -302,9 +300,7 @@ class SessionEditor {
     );
     await _sessionRepo.updateSession(updated);
     _ref.invalidate(
-      sessionDetailProvider(
-        (campaignId: campaignId, sessionId: session.id),
-      ),
+      sessionDetailProvider((campaignId: campaignId, sessionId: session.id)),
     );
     _ref.read(sessionsRevisionProvider.notifier).state++;
   }

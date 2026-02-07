@@ -32,9 +32,7 @@ class FileSaver {
   /// Returns the export directory, creating it if it does not exist.
   Future<Directory> _getExportDirectory() async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final exportDir = Directory(
-      '${documentsDir.path}/HistoryCheck/exports',
-    );
+    final exportDir = Directory('${documentsDir.path}/HistoryCheck/exports');
     if (!exportDir.existsSync()) {
       await exportDir.create(recursive: true);
     }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/npc_relationship.dart';
 import '../../../providers/world_providers.dart';
+import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
 import '../../widgets/empty_state.dart';
 
@@ -144,7 +145,7 @@ class _RelationshipCard extends ConsumerWidget {
   Color _sentimentColor(ThemeData theme, RelationshipSentiment sentiment) {
     switch (sentiment) {
       case RelationshipSentiment.friendly:
-        return Colors.green;
+        return theme.brightness.sentimentFriendly;
       case RelationshipSentiment.hostile:
         return theme.colorScheme.error;
       case RelationshipSentiment.neutral:

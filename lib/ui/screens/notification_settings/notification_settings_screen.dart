@@ -279,9 +279,7 @@ class _ThemeSection extends ConsumerWidget {
             ],
             selected: {themeMode},
             onSelectionChanged: (selected) {
-              ref
-                  .read(themeModeProvider.notifier)
-                  .setThemeMode(selected.first);
+              ref.read(themeModeProvider.notifier).setThemeMode(selected.first);
             },
           ),
         ],

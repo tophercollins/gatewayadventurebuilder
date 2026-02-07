@@ -136,8 +136,7 @@ class _CampaignStatsTab extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(Spacing.lg),
           itemCount: statsList.length,
-          separatorBuilder: (_, _) =>
-              const SizedBox(height: Spacing.md),
+          separatorBuilder: (_, _) => const SizedBox(height: Spacing.md),
           itemBuilder: (context, index) {
             final stats = statsList[index];
             return _CampaignStatCard(stats: stats);
@@ -177,22 +176,13 @@ class _CampaignStatCard extends StatelessWidget {
             spacing: Spacing.lg,
             runSpacing: Spacing.sm,
             children: [
-              _InlineStat(
-                label: 'Sessions',
-                value: '${stats.totalSessions}',
-              ),
+              _InlineStat(label: 'Sessions', value: '${stats.totalSessions}'),
               _InlineStat(
                 label: 'Hours',
                 value: stats.totalHoursPlayed.toStringAsFixed(1),
               ),
-              _InlineStat(
-                label: 'Players',
-                value: '${stats.playerCount}',
-              ),
-              _InlineStat(
-                label: 'Entities',
-                value: '${stats.totalEntities}',
-              ),
+              _InlineStat(label: 'Players', value: '${stats.playerCount}'),
+              _InlineStat(label: 'Entities', value: '${stats.totalEntities}'),
             ],
           ),
         ],
@@ -218,8 +208,7 @@ class _PlayerStatsTab extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(Spacing.lg),
           itemCount: statsList.length,
-          separatorBuilder: (_, _) =>
-              const SizedBox(height: Spacing.md),
+          separatorBuilder: (_, _) => const SizedBox(height: Spacing.md),
           itemBuilder: (context, index) {
             final stats = statsList[index];
             return _PlayerStatCard(stats: stats);
@@ -260,10 +249,7 @@ class _PlayerStatCard extends StatelessWidget {
             spacing: Spacing.lg,
             runSpacing: Spacing.sm,
             children: [
-              _InlineStat(
-                label: 'Attendance',
-                value: '$attendancePct%',
-              ),
+              _InlineStat(label: 'Attendance', value: '$attendancePct%'),
               _InlineStat(
                 label: 'Sessions',
                 value: '${stats.sessionsAttended}',
@@ -272,10 +258,7 @@ class _PlayerStatCard extends StatelessWidget {
                 label: 'Campaigns',
                 value: '${stats.campaignsPlayed}',
               ),
-              _InlineStat(
-                label: 'Moments',
-                value: '${stats.momentsCount}',
-              ),
+              _InlineStat(label: 'Moments', value: '${stats.momentsCount}'),
             ],
           ),
         ],

@@ -173,11 +173,6 @@ class SessionRepository {
     return results.map((m) => SessionAttendee.fromMap(m)).toList();
   }
 
-  Future<void> removeAttendee(String id) async {
-    final db = await _db.database;
-    await db.delete('session_attendees', where: 'id = ?', whereArgs: [id]);
-  }
-
   // ============================================
   // SESSION AUDIO (IMMUTABLE - INSERT ONLY)
   // ============================================
@@ -214,12 +209,6 @@ class SessionRepository {
     );
     if (results.isEmpty) return null;
     return SessionAudio.fromMap(results.first);
-  }
-
-  /// Delete audio - only for privacy compliance.
-  Future<void> deleteAudio(String id) async {
-    final db = await _db.database;
-    await db.delete('session_audio', where: 'id = ?', whereArgs: [id]);
   }
 
   // ============================================

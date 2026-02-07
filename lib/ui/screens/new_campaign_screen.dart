@@ -66,7 +66,9 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
 
       // If creating a new world, do it first.
       if (_isCreatingNewWorld) {
-        final world = await ref.read(worldEditorProvider).createWorld(
+        final world = await ref
+            .read(worldEditorProvider)
+            .createWorld(
               name: _newWorldNameController.text.trim(),
               gameSystem: _getGameSystem(),
             );
@@ -235,10 +237,12 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
             initialValue: _selectedWorldId,
             hint: const Text('Auto-create from campaign name'),
             items: [
-              ...worlds.map((ws) => DropdownMenuItem(
-                    value: ws.world.id,
-                    child: Text(ws.world.name),
-                  )),
+              ...worlds.map(
+                (ws) => DropdownMenuItem(
+                  value: ws.world.id,
+                  child: Text(ws.world.name),
+                ),
+              ),
               const DropdownMenuItem(
                 value: _createNewWorldId,
                 child: Text('+ Create new world'),
@@ -268,8 +272,9 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         TextFormField(
           key: const Key('newCampaign_newWorldName'),
           controller: _newWorldNameController,
-          decoration:
-              const InputDecoration(hintText: 'Enter a name for the new world'),
+          decoration: const InputDecoration(
+            hintText: 'Enter a name for the new world',
+          ),
           validator: (value) {
             if (_isCreatingNewWorld &&
                 (value == null || value.trim().isEmpty)) {
@@ -329,8 +334,7 @@ class _NewCampaignScreenState extends ConsumerState<NewCampaignScreen> {
         TextFormField(
           key: const Key('newCampaign_customGameSystem'),
           initialValue: _customGameSystem,
-          decoration:
-              const InputDecoration(hintText: 'Enter your game system'),
+          decoration: const InputDecoration(hintText: 'Enter your game system'),
           onChanged: (value) => _customGameSystem = value,
           validator: (value) {
             if (_selectedGameSystem == 'Other' &&

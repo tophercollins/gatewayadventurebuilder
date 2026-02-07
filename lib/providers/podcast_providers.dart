@@ -14,11 +14,8 @@ final podcastGeneratorProvider = Provider<PodcastGenerator>((ref) {
 
 /// Provider that loads the saved podcast script for a session.
 /// Returns null if no summary or no podcast script exists.
-final podcastScriptProvider =
-    FutureProvider.autoDispose.family<String?, String>((
-      ref,
-      sessionId,
-    ) async {
+final podcastScriptProvider = FutureProvider.autoDispose
+    .family<String?, String>((ref, sessionId) async {
       final summaryRepo = ref.watch(summaryRepositoryProvider);
       final summary = await summaryRepo.getSummaryBySession(sessionId);
       return summary?.podcastScript;
@@ -26,18 +23,12 @@ final podcastScriptProvider =
 
 /// State for podcast generation.
 class PodcastGenerationState {
-  const PodcastGenerationState({
-    this.isGenerating = false,
-    this.error,
-  });
+  const PodcastGenerationState({this.isGenerating = false, this.error});
 
   final bool isGenerating;
   final String? error;
 
-  PodcastGenerationState copyWith({
-    bool? isGenerating,
-    String? error,
-  }) {
+  PodcastGenerationState copyWith({bool? isGenerating, String? error}) {
     return PodcastGenerationState(
       isGenerating: isGenerating ?? this.isGenerating,
       error: error,
@@ -47,11 +38,8 @@ class PodcastGenerationState {
 
 /// StateNotifier for managing podcast generation state.
 class PodcastGenerationNotifier extends StateNotifier<PodcastGenerationState> {
-  PodcastGenerationNotifier(
-    this._generator,
-    this._summaryRepo,
-    this._ref,
-  ) : super(const PodcastGenerationState());
+  PodcastGenerationNotifier(this._generator, this._summaryRepo, this._ref)
+    : super(const PodcastGenerationState());
 
   final PodcastGenerator _generator;
   final SummaryRepository _summaryRepo;
@@ -72,21 +60,16 @@ class PodcastGenerationNotifier extends StateNotifier<PodcastGenerationState> {
     }
 
     // Load transcript text
-    final transcriptAsync = _ref.read(
-      sessionTranscriptProvider(sessionId),
-    );
+    final transcriptAsync = _ref.read(sessionTranscriptProvider(sessionId));
     final transcriptText = transcriptAsync.valueOrNull?.displayText ?? '';
 
     // Load campaign name and attendees from session detail
     final detailAsync = _ref.read(
-      sessionDetailProvider(
-        (campaignId: campaignId, sessionId: sessionId),
-      ),
+      sessionDetailProvider((campaignId: campaignId, sessionId: sessionId)),
     );
     final detail = detailAsync.valueOrNull;
     final campaignName = detail?.session.title ?? 'Campaign Session';
-    final attendeeNames =
-        detail?.players.values.map((p) => p.name).toList();
+    final attendeeNames = detail?.players.values.map((p) => p.name).toList();
 
     state = const PodcastGenerationState(isGenerating: true);
 
@@ -117,11 +100,12 @@ class PodcastGenerationNotifier extends StateNotifier<PodcastGenerationState> {
 }
 
 /// Provider for podcast generation state management.
-final podcastGenerationStateProvider = StateNotifierProvider.autoDispose<
-  PodcastGenerationNotifier,
-  PodcastGenerationState
->((ref) {
-  final generator = ref.watch(podcastGeneratorProvider);
-  final summaryRepo = ref.watch(summaryRepositoryProvider);
-  return PodcastGenerationNotifier(generator, summaryRepo, ref);
-});
+final podcastGenerationStateProvider =
+    StateNotifierProvider.autoDispose<
+      PodcastGenerationNotifier,
+      PodcastGenerationState
+    >((ref) {
+      final generator = ref.watch(podcastGeneratorProvider);
+      final summaryRepo = ref.watch(summaryRepositoryProvider);
+      return PodcastGenerationNotifier(generator, summaryRepo, ref);
+    });

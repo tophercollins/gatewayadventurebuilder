@@ -60,7 +60,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // 9. Verify custom game system field appears
-    expect(find.byKey(const Key('newCampaign_customGameSystem')), findsOneWidget);
+    expect(
+      find.byKey(const Key('newCampaign_customGameSystem')),
+      findsOneWidget,
+    );
 
     // 10. Enter custom game system
     await tester.enterText(

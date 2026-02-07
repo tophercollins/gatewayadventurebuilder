@@ -40,9 +40,9 @@ class _PostSessionScreenState extends ConsumerState<PostSessionScreen> {
     if (postState.phase == PostSessionPhase.idle) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          ref.read(postSessionNotifierProvider.notifier).processRecording(
-            widget.sessionId,
-          );
+          ref
+              .read(postSessionNotifierProvider.notifier)
+              .processRecording(widget.sessionId);
         }
       });
     }
@@ -116,10 +116,7 @@ class _PostSessionScreenState extends ConsumerState<PostSessionScreen> {
           children: [
             OutlinedButton(
               onPressed: () => context.go(
-                Routes.sessionDetailPath(
-                  widget.campaignId,
-                  widget.sessionId,
-                ),
+                Routes.sessionDetailPath(widget.campaignId, widget.sessionId),
               ),
               child: const Text('View Session'),
             ),

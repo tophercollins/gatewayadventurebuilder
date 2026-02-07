@@ -34,9 +34,10 @@ class _MonsterDetailScreenState extends ConsumerState<MonsterDetailScreen> {
   Widget build(BuildContext context) {
     final monsterAsync = ref.watch(monsterByIdProvider(widget.monsterId));
     final sessionsAsync = ref.watch(
-      entitySessionsProvider(
-        (type: EntityType.monster, entityId: widget.monsterId),
-      ),
+      entitySessionsProvider((
+        type: EntityType.monster,
+        entityId: widget.monsterId,
+      )),
     );
 
     return monsterAsync.when(
@@ -329,8 +330,7 @@ class _SessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.title ??
-                          'Session ${session.sessionNumber ?? ""}',
+                      session.title ?? 'Session ${session.sessionNumber ?? ""}',
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(
@@ -387,9 +387,7 @@ class _MonsterEditFormState extends State<_MonsterEditForm> {
     _descriptionController = TextEditingController(
       text: widget.monster.description ?? '',
     );
-    _notesController = TextEditingController(
-      text: widget.monster.notes ?? '',
-    );
+    _notesController = TextEditingController(text: widget.monster.notes ?? '');
   }
 
   @override

@@ -14,7 +14,7 @@ class EntityImage extends StatelessWidget {
     this.borderRadius,
     this.fallbackChild,
     super.key,
-  })  : isBanner = false;
+  }) : isBanner = false;
 
   /// Wide 16:9 banner image.
   const EntityImage.banner({
@@ -22,9 +22,9 @@ class EntityImage extends StatelessWidget {
     required this.fallbackIcon,
     this.fallbackChild,
     super.key,
-  })  : size = 0,
-      borderRadius = null,
-      isBanner = true;
+  }) : size = 0,
+       borderRadius = null,
+       isBanner = true;
 
   final String? imagePath;
   final IconData fallbackIcon;
@@ -105,11 +105,7 @@ class EntityImage extends StatelessWidget {
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
       ),
       child: Center(
-        child: Icon(
-          fallbackIcon,
-          color: theme.colorScheme.primary,
-          size: 48,
-        ),
+        child: Icon(fallbackIcon, color: theme.colorScheme.primary, size: 48),
       ),
     );
   }

@@ -235,11 +235,7 @@ class EntityMatcher {
           monsterType: extracted.monsterType,
         );
         results.add(
-          EntityMatchResult(
-            entity: newMonster,
-            isNew: true,
-            wasUpdated: false,
-          ),
+          EntityMatchResult(entity: newMonster, isNew: true, wasUpdated: false),
         );
       }
     }

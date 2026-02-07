@@ -143,7 +143,11 @@ class _ContentArea extends ConsumerWidget {
 /// Path segments that only serve as prefixes for nested routes and have
 /// no standalone route definition (e.g. `/campaigns/:id/sessions` has no page).
 const _intermediateSegments = {
-  'sessions', 'npcs', 'locations', 'items', 'monsters',
+  'sessions',
+  'npcs',
+  'locations',
+  'items',
+  'monsters',
 };
 
 /// Calculates the parent path for back navigation.

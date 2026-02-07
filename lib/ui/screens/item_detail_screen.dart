@@ -356,7 +356,6 @@ class _SessionCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _ItemEditForm extends ConsumerStatefulWidget {
@@ -452,9 +451,9 @@ class _ItemEditFormState extends ConsumerState<_ItemEditForm> {
       widget.onSave(updated);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
         setState(() => _isSaving = false);
       }
     }
@@ -479,16 +478,14 @@ class _ItemEditFormState extends ConsumerState<_ItemEditForm> {
               currentImagePath: _imageRemoved ? null : widget.item.imagePath,
               pendingImagePath: _pendingImagePath,
               fallbackIcon: Icons.inventory_2_outlined,
-              onImageSelected: (path) =>
-                  setState(() {
-                    _pendingImagePath = path;
-                    _imageRemoved = false;
-                  }),
-              onImageRemoved: () =>
-                  setState(() {
-                    _pendingImagePath = null;
-                    _imageRemoved = true;
-                  }),
+              onImageSelected: (path) => setState(() {
+                _pendingImagePath = path;
+                _imageRemoved = false;
+              }),
+              onImageRemoved: () => setState(() {
+                _pendingImagePath = null;
+                _imageRemoved = true;
+              }),
             ),
             TextFormField(
               controller: _nameController,

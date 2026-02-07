@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/action_item.dart';
 import '../../providers/editing_providers.dart';
 import '../../providers/session_detail_providers.dart';
+import '../theme/colors.dart';
 import '../theme/spacing.dart';
 import '../widgets/empty_state.dart';
 
@@ -485,9 +486,12 @@ class _EditableActionItemCardState
       ),
       ActionItemStatus.inProgress => (
         label: 'In Progress',
-        color: Colors.orange,
+        color: theme.brightness.statusInProgress,
       ),
-      ActionItemStatus.resolved => (label: 'Resolved', color: Colors.green),
+      ActionItemStatus.resolved => (
+        label: 'Resolved',
+        color: theme.brightness.success,
+      ),
       ActionItemStatus.dropped => (
         label: 'Dropped',
         color: theme.colorScheme.onSurfaceVariant,

@@ -42,7 +42,8 @@ Each segment should be 5-15 seconds. Include all spoken words.''';
     if (key == null || key.isEmpty) {
       throw const TranscriptionException(
         TranscriptionErrorType.modelNotLoaded,
-        message: 'Gemini API key not configured. '
+        message:
+            'Gemini API key not configured. '
             'Please set your API key in Settings.',
       );
     }

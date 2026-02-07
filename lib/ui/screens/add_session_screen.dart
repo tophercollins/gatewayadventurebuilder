@@ -56,8 +56,7 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
               // Session type toggle
               _SessionTypeToggle(
                 hasTranscript: _hasTranscript,
-                onChanged: (value) =>
-                    setState(() => _hasTranscript = value),
+                onChanged: (value) => setState(() => _hasTranscript = value),
               ),
               const SizedBox(height: Spacing.lg),
 
@@ -74,8 +73,7 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
               // Date picker
               _DatePickerField(
                 selectedDate: _selectedDate,
-                onDateSelected: (date) =>
-                    setState(() => _selectedDate = date),
+                onDateSelected: (date) => setState(() => _selectedDate = date),
               ),
               const SizedBox(height: Spacing.md),
 
@@ -120,9 +118,11 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_hasTranscript
-                        ? 'Add Session with Transcript'
-                        : 'Log Session'),
+                    : Text(
+                        _hasTranscript
+                            ? 'Add Session with Transcript'
+                            : 'Log Session',
+                      ),
               ),
             ],
           ),
@@ -138,9 +138,7 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
 
     try {
       final sessionRepo = ref.read(sessionRepositoryProvider);
-      final nextNum = await sessionRepo.getNextSessionNumber(
-        widget.campaignId,
-      );
+      final nextNum = await sessionRepo.getNextSessionNumber(widget.campaignId);
 
       final title = _titleController.text.trim().isEmpty
           ? null
@@ -161,31 +159,23 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
           whisperModel: 'manual',
         );
         // Set status to queued for AI processing
-        await sessionRepo.updateSessionStatus(
-          session.id,
-          SessionStatus.queued,
-        );
+        await sessionRepo.updateSessionStatus(session.id, SessionStatus.queued);
       } else {
         // Log-only session
-        await sessionRepo.updateSessionStatus(
-          session.id,
-          SessionStatus.logged,
-        );
+        await sessionRepo.updateSessionStatus(session.id, SessionStatus.logged);
       }
 
       // Invalidate providers
       ref.read(sessionsRevisionProvider.notifier).state++;
 
       if (mounted) {
-        context.go(
-          Routes.sessionDetailPath(widget.campaignId, session.id),
-        );
+        context.go(Routes.sessionDetailPath(widget.campaignId, session.id));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create session: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to create session: $e')));
         setState(() => _isSubmitting = false);
       }
     }
@@ -280,9 +270,7 @@ class _ToggleCard extends StatelessWidget {
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : null,
+                  color: isSelected ? theme.colorScheme.primary : null,
                 ),
               ),
               const SizedBox(height: Spacing.xxs),

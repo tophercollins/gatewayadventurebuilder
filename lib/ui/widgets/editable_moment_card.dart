@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/player_moment.dart';
 import '../../providers/editing_providers.dart';
 import '../../utils/formatters.dart';
+import '../theme/colors.dart';
 import '../theme/spacing.dart';
 
 /// An editable card widget for displaying a player moment/highlight.
@@ -220,12 +221,12 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
             FilledButton.icon(
               onPressed: isSaving ? null : _saveEditing,
               icon: isSaving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: theme.colorScheme.onPrimary,
                       ),
                     )
                   : const Icon(Icons.check, size: 18),
@@ -241,36 +242,37 @@ class _EditableMomentCardState extends ConsumerState<EditableMomentCard> {
     String? type,
     ThemeData theme,
   ) {
+    final b = theme.brightness;
     return switch (type) {
       'quote' => (
         label: 'Quote',
         icon: Icons.format_quote_outlined,
-        color: Colors.blue,
+        color: b.momentQuote,
       ),
       'roleplay' => (
         label: 'Roleplay',
         icon: Icons.theater_comedy_outlined,
-        color: Colors.purple,
+        color: b.momentRoleplay,
       ),
       'combat' => (
         label: 'Combat',
         icon: Icons.sports_martial_arts_outlined,
-        color: Colors.red,
+        color: b.momentCombat,
       ),
       'puzzle' => (
         label: 'Problem Solving',
         icon: Icons.lightbulb_outline,
-        color: Colors.orange,
+        color: b.momentPuzzle,
       ),
       'humor' => (
         label: 'Funny Moment',
         icon: Icons.sentiment_very_satisfied_outlined,
-        color: Colors.amber,
+        color: b.momentHumor,
       ),
       'teamwork' => (
         label: 'Teamwork',
         icon: Icons.group_outlined,
-        color: Colors.green,
+        color: b.momentTeamwork,
       ),
       _ => (
         label: 'Highlight',

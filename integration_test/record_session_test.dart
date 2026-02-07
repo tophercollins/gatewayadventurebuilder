@@ -105,26 +105,27 @@ void main() {
       // 6. Run transcription
       await container
           .read(transcriptionNotifierProvider.notifier)
-          .transcribe(
-            sessionId: seed.sessionId,
-            audioFilePath: wavPath,
-          );
+          .transcribe(sessionId: seed.sessionId, audioFilePath: wavPath);
 
       // 7. Verify transcription completed
       final txState = container.read(transcriptionNotifierProvider);
-      expect(txState.isComplete, isTrue, reason: 'Transcription should complete');
+      expect(
+        txState.isComplete,
+        isTrue,
+        reason: 'Transcription should complete',
+      );
 
       // 8. Verify transcript exists in DB
-      final transcript = await sessionRepo.getLatestTranscript(
-        seed.sessionId,
-      );
+      final transcript = await sessionRepo.getLatestTranscript(seed.sessionId);
       expect(transcript, isNotNull, reason: 'Transcript should exist in DB');
-      expect(transcript!.rawText, isNotEmpty, reason: 'Transcript text should not be empty');
+      expect(
+        transcript!.rawText,
+        isNotEmpty,
+        reason: 'Transcript text should not be empty',
+      );
 
       // 9. Verify session status is queued (set by TranscriptionNotifier)
-      final sessionAfterTx = await sessionRepo.getSessionById(
-        seed.sessionId,
-      );
+      final sessionAfterTx = await sessionRepo.getSessionById(seed.sessionId);
       expect(
         sessionAfterTx!.status,
         SessionStatus.queued,
@@ -156,9 +157,7 @@ void main() {
       expect(result.momentCount, greaterThan(0));
 
       // 12. Verify session status is complete
-      final sessionAfterAI = await sessionRepo.getSessionById(
-        seed.sessionId,
-      );
+      final sessionAfterAI = await sessionRepo.getSessionById(seed.sessionId);
       expect(
         sessionAfterAI!.status,
         SessionStatus.complete,
@@ -167,9 +166,7 @@ void main() {
 
       // 13. Verify summary exists in DB
       final summaryRepo = container.read(summaryRepositoryProvider);
-      final summary = await summaryRepo.getSummaryBySession(
-        seed.sessionId,
-      );
+      final summary = await summaryRepo.getSummaryBySession(seed.sessionId);
       expect(summary, isNotNull, reason: 'Summary should exist in DB');
       expect(
         summary!.overallSummary,

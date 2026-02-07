@@ -55,7 +55,7 @@ enum RecordingState { idle, recording, paused, stopped }
 /// Supports long recordings (10+ hours) via streaming to disk.
 class AudioRecordingService {
   AudioRecordingService({RecordingRecoveryService? recoveryService})
-      : _recoveryService = recoveryService ?? RecordingRecoveryService();
+    : _recoveryService = recoveryService ?? RecordingRecoveryService();
 
   final AudioRecorder _recorder = AudioRecorder();
   final RecordingRecoveryService _recoveryService;
@@ -120,7 +120,11 @@ class AudioRecordingService {
 
   /// Start recording to the specified file path.
   /// If filePath is null, generates one using sessionId.
-  Future<void> start({required String sessionId, String? campaignId, String? filePath}) async {
+  Future<void> start({
+    required String sessionId,
+    String? campaignId,
+    String? filePath,
+  }) async {
     // Check permissions first
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {

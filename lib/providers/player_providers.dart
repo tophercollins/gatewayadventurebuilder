@@ -59,30 +59,24 @@ final playersWithCharactersProvider =
     });
 
 /// Provider for a single character by ID.
-final characterDetailProvider =
-    FutureProvider.autoDispose.family<Character?, String>((ref, characterId) {
+final characterDetailProvider = FutureProvider.autoDispose
+    .family<Character?, String>((ref, characterId) {
       ref.watch(charactersRevisionProvider);
       final playerRepo = ref.watch(playerRepositoryProvider);
       return playerRepo.getCharacterById(characterId);
     });
 
 /// Provider for sessions a character attended.
-final characterSessionsProvider =
-    FutureProvider.autoDispose.family<List<Session>, String>((
-      ref,
-      characterId,
-    ) {
+final characterSessionsProvider = FutureProvider.autoDispose
+    .family<List<Session>, String>((ref, characterId) {
       ref.watch(charactersRevisionProvider);
       final playerRepo = ref.watch(playerRepositoryProvider);
       return playerRepo.getSessionsByCharacter(characterId);
     });
 
 /// Provider for the player who owns a character.
-final characterPlayerProvider =
-    FutureProvider.autoDispose.family<Player?, String>((
-      ref,
-      playerId,
-    ) {
+final characterPlayerProvider = FutureProvider.autoDispose
+    .family<Player?, String>((ref, playerId) {
       final playerRepo = ref.watch(playerRepositoryProvider);
       return playerRepo.getPlayerById(playerId);
     });
@@ -162,10 +156,7 @@ class PlayerEditor {
   /// Removes a player from a campaign and deletes them, including image.
   Future<void> deletePlayer(Player player, String campaignId) async {
     final imageService = _ref.read(imageStorageProvider);
-    await imageService.deleteImage(
-      entityType: 'players',
-      entityId: player.id,
-    );
+    await imageService.deleteImage(entityType: 'players', entityId: player.id);
     await _playerRepo.removePlayerFromCampaign(
       playerId: player.id,
       campaignId: campaignId,

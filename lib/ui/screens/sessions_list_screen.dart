@@ -25,17 +25,13 @@ class SessionsListScreen extends ConsumerWidget {
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: sessionsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Text('Error loading sessions: $error'),
-          ),
+          error: (error, stack) =>
+              Center(child: Text('Error loading sessions: $error')),
           data: (sessions) {
             if (sessions.isEmpty) {
               return _EmptyState(campaignId: campaignId);
             }
-            return _SessionsList(
-              sessions: sessions,
-              campaignId: campaignId,
-            );
+            return _SessionsList(sessions: sessions, campaignId: campaignId);
           },
         ),
       ),
@@ -87,15 +83,15 @@ class _SessionsList extends ConsumerWidget {
     try {
       await ref.read(sessionEditorProvider).deleteSession(session.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Deleted "$title"')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Deleted "$title"')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete session: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete session: $e')));
       }
     }
   }

@@ -312,16 +312,15 @@ ${_escapeHtml(transcript)}</div>
     buffer.writeln('SESSION READY FOR REVIEW');
     buffer.writeln('========================');
     buffer.writeln();
-    buffer.writeln(
-      'Your session has been processed and is ready for review.',
-    );
+    buffer.writeln('Your session has been processed and is ready for review.');
     buffer.writeln();
     buffer.writeln('Campaign: $campaignName');
     buffer.writeln('Session: $displayTitle');
     buffer.writeln('Date: $formattedDate');
 
     // Stats
-    final hasStats = formattedDuration != null ||
+    final hasStats =
+        formattedDuration != null ||
         sceneCount > 0 ||
         npcCount > 0 ||
         locationCount > 0 ||

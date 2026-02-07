@@ -85,49 +85,48 @@ class AppSidebar extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Column(
-        children: [
-          // Header with collapse toggle
-          _SidebarHeader(
-            isCollapsed: isCollapsed,
-            onToggleCollapse: onToggleCollapse,
-          ),
-          const Divider(height: 1),
-
-          // Main navigation items
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
-              children: [
-                ..._mainItems.map(
-                  (item) => _SidebarNavItem(
-                    item: item,
-                    isCollapsed: isCollapsed,
-                    isActive: _isActive(item.path),
-                    onTap: () => context.go(item.path),
-                  ),
-                ),
-
-              ],
-            ),
-          ),
-
-          // Settings at bottom
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
-            child: _SidebarNavItem(
-              item: const SidebarItem(
-                icon: Icons.settings_outlined,
-                label: 'Settings',
-                path: Routes.notificationSettings,
-              ),
+          children: [
+            // Header with collapse toggle
+            _SidebarHeader(
               isCollapsed: isCollapsed,
-              isActive: _isActive(Routes.notificationSettings),
-              onTap: () => context.go(Routes.notificationSettings),
+              onToggleCollapse: onToggleCollapse,
             ),
-          ),
-        ],
-      ),
+            const Divider(height: 1),
+
+            // Main navigation items
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+                children: [
+                  ..._mainItems.map(
+                    (item) => _SidebarNavItem(
+                      item: item,
+                      isCollapsed: isCollapsed,
+                      isActive: _isActive(item.path),
+                      onTap: () => context.go(item.path),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Settings at bottom
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+              child: _SidebarNavItem(
+                item: const SidebarItem(
+                  icon: Icons.settings_outlined,
+                  label: 'Settings',
+                  path: Routes.notificationSettings,
+                ),
+                isCollapsed: isCollapsed,
+                isActive: _isActive(Routes.notificationSettings),
+                onTap: () => context.go(Routes.notificationSettings),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -242,4 +241,3 @@ class _SidebarNavItem extends StatelessWidget {
     );
   }
 }
-

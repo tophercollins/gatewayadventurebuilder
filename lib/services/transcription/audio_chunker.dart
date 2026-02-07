@@ -190,9 +190,7 @@ class AudioChunker {
         if (chunkSize % 2 != 0) pos++;
       }
 
-      if (numChannels == null ||
-          sampleRate == null ||
-          bitsPerSample == null) {
+      if (numChannels == null || sampleRate == null || bitsPerSample == null) {
         throw const AudioChunkerException(
           AudioChunkerError.invalidFormat,
           message: 'WAV file missing fmt chunk',
@@ -311,5 +309,4 @@ class AudioChunker {
 
     return header.buffer.asUint8List();
   }
-
 }

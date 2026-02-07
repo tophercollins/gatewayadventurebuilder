@@ -195,10 +195,7 @@ class WorldEditor {
   /// Deletes a world and its campaigns, including image.
   Future<void> deleteWorld(String worldId) async {
     final imageService = _ref.read(imageStorageProvider);
-    await imageService.deleteImage(
-      entityType: 'worlds',
-      entityId: worldId,
-    );
+    await imageService.deleteImage(entityType: 'worlds', entityId: worldId);
     await _campaignRepo.deleteWorld(worldId);
     _ref.read(worldsRevisionProvider.notifier).state++;
     _ref.read(campaignsRevisionProvider.notifier).state++;

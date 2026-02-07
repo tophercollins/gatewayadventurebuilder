@@ -93,10 +93,8 @@ class QueueState {
 }
 
 /// Callback when a queue item completes successfully.
-typedef QueueItemCompleteCallback = Future<void> Function(
-  String sessionId,
-  ProcessingResult result,
-);
+typedef QueueItemCompleteCallback =
+    Future<void> Function(String sessionId, ProcessingResult result);
 
 /// Manages the processing queue for offline-first session processing.
 /// Monitors the queue, checks connectivity, and processes items when online.

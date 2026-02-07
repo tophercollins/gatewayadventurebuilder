@@ -103,18 +103,19 @@ class DatabaseHelper {
           updated_at TEXT NOT NULL
         )
       ''');
-      await db.execute(
-        'CREATE INDEX idx_monsters_world ON monsters(world_id)',
-      );
+      await db.execute('CREATE INDEX idx_monsters_world ON monsters(world_id)');
     }
     if (oldVersion < 5) {
       for (final table in [
-        'worlds', 'campaigns', 'players', 'characters',
-        'npcs', 'locations', 'items',
+        'worlds',
+        'campaigns',
+        'players',
+        'characters',
+        'npcs',
+        'locations',
+        'items',
       ]) {
-        await db.execute(
-          'ALTER TABLE $table ADD COLUMN image_path TEXT',
-        );
+        await db.execute('ALTER TABLE $table ADD COLUMN image_path TEXT');
       }
     }
   }

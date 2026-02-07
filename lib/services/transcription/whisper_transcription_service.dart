@@ -115,7 +115,9 @@ class WhisperTranscriptionService implements TranscriptionService {
       );
 
       final fileSize = await file.length();
-      debugPrint('[WhisperService] Starting transcription: $audioFilePath ($fileSize bytes)');
+      debugPrint(
+        '[WhisperService] Starting transcription: $audioFilePath ($fileSize bytes)',
+      );
 
       // Run transcription in isolate
       final result = await _whisper!.transcribe(
@@ -128,7 +130,9 @@ class WhisperTranscriptionService implements TranscriptionService {
         ),
       );
 
-      debugPrint('[WhisperService] Whisper returned result, parsing segments...');
+      debugPrint(
+        '[WhisperService] Whisper returned result, parsing segments...',
+      );
 
       if (_isCancelled) {
         throw const TranscriptionException(TranscriptionErrorType.cancelled);
@@ -155,7 +159,9 @@ class WhisperTranscriptionService implements TranscriptionService {
           ? segments.map((s) => s.text).join(' ')
           : result.text.trim();
 
-      debugPrint('[WhisperService] Parsed ${segments.length} segments, fullText length: ${fullText.length}');
+      debugPrint(
+        '[WhisperService] Parsed ${segments.length} segments, fullText length: ${fullText.length}',
+      );
 
       onProgress?.call(
         const TranscriptionProgress(

@@ -27,9 +27,8 @@ class HomeScreen extends ConsumerWidget {
                 const _WelcomeHeader(),
                 const SizedBox(height: Spacing.xxl),
                 campaignsAsync.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (_, _) => _buildDefaultActions(context),
                   data: (campaigns) {
                     if (campaigns.isEmpty) {
@@ -73,9 +72,8 @@ class HomeScreen extends ConsumerWidget {
           icon: Icons.play_arrow_rounded,
           title: 'Continue Campaign',
           description: lastCampaign.campaign.name,
-          onTap: () => context.go(
-            Routes.campaignPath(lastCampaign.campaign.id),
-          ),
+          onTap: () =>
+              context.go(Routes.campaignPath(lastCampaign.campaign.id)),
         ),
         const SizedBox(height: Spacing.md),
         _HomeOption(

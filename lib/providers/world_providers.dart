@@ -126,9 +126,7 @@ final worldMonstersProvider = FutureProvider.autoDispose
           entityType: EntityType.monster,
           entityId: monster.id,
         );
-        result.add(
-          MonsterWithCount(monster: monster, appearanceCount: count),
-        );
+        result.add(MonsterWithCount(monster: monster, appearanceCount: count));
       }
 
       return result;
@@ -187,11 +185,12 @@ final itemByIdProvider = FutureProvider.autoDispose.family<Item?, String>((
 });
 
 /// Provider for a single monster by ID.
-final monsterByIdProvider = FutureProvider.autoDispose
-    .family<Monster?, String>((ref, monsterId) async {
-      final entityRepo = ref.watch(entityRepositoryProvider);
-      return await entityRepo.getMonsterById(monsterId);
-    });
+final monsterByIdProvider = FutureProvider.autoDispose.family<Monster?, String>(
+  (ref, monsterId) async {
+    final entityRepo = ref.watch(entityRepositoryProvider);
+    return await entityRepo.getMonsterById(monsterId);
+  },
+);
 
 /// Provider for sessions where an entity appeared.
 final entitySessionsProvider = FutureProvider.autoDispose

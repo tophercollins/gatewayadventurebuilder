@@ -168,11 +168,7 @@ class _RemoveButton extends StatelessWidget {
         onTap: onPressed,
         child: Padding(
           padding: const EdgeInsets.all(4),
-          child: Icon(
-            Icons.close,
-            size: 16,
-            color: theme.colorScheme.onError,
-          ),
+          child: Icon(Icons.close, size: 16, color: theme.colorScheme.onError),
         ),
       ),
     );

@@ -320,5 +320,4 @@ class SessionProcessor {
     }
     return count;
   }
-
 }

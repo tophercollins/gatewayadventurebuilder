@@ -27,7 +27,9 @@ class WavResampler {
     if (header.sampleRate == targetSampleRate &&
         header.numChannels == targetChannels &&
         header.bitsPerSample == targetBitsPerSample) {
-      debugPrint('[WavResampler] Audio already in Whisper format, no resampling needed');
+      debugPrint(
+        '[WavResampler] Audio already in Whisper format, no resampling needed',
+      );
       return ResampleResult(filePath: audioFilePath, isTemporary: false);
     }
 
@@ -111,9 +113,7 @@ class WavResampler {
         if (chunkSize % 2 != 0) pos++;
       }
 
-      if (numChannels == null ||
-          sampleRate == null ||
-          bitsPerSample == null) {
+      if (numChannels == null || sampleRate == null || bitsPerSample == null) {
         throw const FormatException('WAV file missing fmt chunk');
       }
 
@@ -121,7 +121,9 @@ class WavResampler {
         // Fallback: assume data starts at byte 44
         dataOffset = 44;
         dataSize = fileLength - 44;
-        debugPrint('[WavResampler] WARNING: data chunk not found, assuming offset=44');
+        debugPrint(
+          '[WavResampler] WARNING: data chunk not found, assuming offset=44',
+        );
       }
 
       return _WavHeader(
@@ -164,7 +166,8 @@ class WavResampler {
         final frac = srcPos - srcIndex;
 
         if (srcIndex + 1 < sourceSamples.length) {
-          resampled[i] = sourceSamples[srcIndex] * (1 - frac) +
+          resampled[i] =
+              sourceSamples[srcIndex] * (1 - frac) +
               sourceSamples[srcIndex + 1] * frac;
         } else if (srcIndex < sourceSamples.length) {
           resampled[i] = sourceSamples[srcIndex];

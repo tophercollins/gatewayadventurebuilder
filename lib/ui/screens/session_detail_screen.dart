@@ -76,9 +76,8 @@ class _SessionDetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final audioAsync = ref.watch(sessionAudioProvider(sessionId));
-    final hasTranscript = ref.watch(
-      sessionHasTranscriptProvider(sessionId),
-    ).valueOrNull ?? true;
+    final hasTranscript =
+        ref.watch(sessionHasTranscriptProvider(sessionId)).valueOrNull ?? true;
 
     return Center(
       child: ConstrainedBox(
@@ -101,10 +100,7 @@ class _SessionDetailContent extends ConsumerWidget {
                 if (audioInfo == null) return const <Widget>[];
                 return <Widget>[
                   const SizedBox(height: Spacing.md),
-                  AudioPlayerCard(
-                    sessionId: sessionId,
-                    audioInfo: audioInfo,
-                  ),
+                  AudioPlayerCard(sessionId: sessionId, audioInfo: audioInfo),
                 ];
               },
             ),
@@ -146,21 +142,16 @@ class _SessionDetailContent extends ConsumerWidget {
                   context.go(Routes.sessionSummaryPath(campaignId, sessionId)),
             ),
             const SizedBox(height: Spacing.md),
-            PodcastCard(
-              sessionId: sessionId,
-              campaignId: campaignId,
-            ),
+            PodcastCard(sessionId: sessionId, campaignId: campaignId),
             const SizedBox(height: Spacing.md),
             SectionCard(
               title: 'Extracted Items',
               icon: Icons.people_outline,
               preview: _buildEntitiesPreview(),
-              onViewMore: () => context.go(
-                Routes.sessionEntitiesPath(campaignId, sessionId),
-              ),
-              onEdit: () => context.go(
-                Routes.sessionEntitiesPath(campaignId, sessionId),
-              ),
+              onViewMore: () =>
+                  context.go(Routes.sessionEntitiesPath(campaignId, sessionId)),
+              onEdit: () =>
+                  context.go(Routes.sessionEntitiesPath(campaignId, sessionId)),
             ),
             const SizedBox(height: Spacing.md),
             SectionCard(
@@ -183,10 +174,7 @@ class _SessionDetailContent extends ConsumerWidget {
                   context.go(Routes.sessionPlayersPath(campaignId, sessionId)),
             ),
             const SizedBox(height: Spacing.xl),
-            _ExportSection(
-              sessionId: sessionId,
-              campaignId: campaignId,
-            ),
+            _ExportSection(sessionId: sessionId, campaignId: campaignId),
           ],
         ),
       ),
@@ -236,15 +224,15 @@ class _SessionDetailContent extends ConsumerWidget {
       await ref.read(sessionEditorProvider).deleteSession(sessionId);
       if (context.mounted) {
         context.go(Routes.campaignPath(campaignId));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Deleted "$title"')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Deleted "$title"')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete session: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete session: $e')));
       }
     }
   }
@@ -255,24 +243,26 @@ class _SessionDetailContent extends ConsumerWidget {
     String newTitle,
   ) async {
     try {
-      await ref.read(sessionEditorProvider).updateTitle(
-        session: detail.session,
-        newTitle: newTitle,
-        campaignId: campaignId,
-      );
+      await ref
+          .read(sessionEditorProvider)
+          .updateTitle(
+            session: detail.session,
+            newTitle: newTitle,
+            campaignId: campaignId,
+          );
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update title: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update title: $e')));
       }
     }
   }
 
   Future<void> _handleResync(BuildContext context, WidgetRef ref) async {
-    final worldId = await ref.read(sessionEditorProvider).getWorldId(
-      campaignId,
-    );
+    final worldId = await ref
+        .read(sessionEditorProvider)
+        .getWorldId(campaignId);
     if (worldId == null) {
       if (context.mounted) {
         ScaffoldMessenger.of(
@@ -293,9 +283,7 @@ class _SessionDetailContent extends ConsumerWidget {
     if (result.isSuccess) {
       if (result.totalUpdates > 0) {
         ref.invalidate(
-          sessionDetailProvider(
-            (campaignId: campaignId, sessionId: sessionId),
-          ),
+          sessionDetailProvider((campaignId: campaignId, sessionId: sessionId)),
         );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -338,9 +326,8 @@ class _TranscriptSectionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transcriptAsync = ref.watch(sessionTranscriptProvider(sessionId));
 
-    void navigateToTranscript() => context.go(
-          Routes.sessionTranscriptPath(campaignId, sessionId),
-        );
+    void navigateToTranscript() =>
+        context.go(Routes.sessionTranscriptPath(campaignId, sessionId));
 
     return transcriptAsync.when(
       loading: () => SectionCard(
@@ -447,10 +434,7 @@ class _RetryTranscriptionBanner extends ConsumerWidget {
     );
   }
 
-  Widget _buildTranscribingState(
-    ThemeData theme,
-    TranscriptionState state,
-  ) {
+  Widget _buildTranscribingState(ThemeData theme, TranscriptionState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -483,10 +467,7 @@ class _RetryTranscriptionBanner extends ConsumerWidget {
     );
   }
 
-  Future<void> _startTranscription(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _startTranscription(BuildContext context, WidgetRef ref) async {
     final notifier = ref.read(transcriptionNotifierProvider.notifier);
     await notifier.transcribe(
       sessionId: sessionId,
@@ -504,24 +485,19 @@ class _RetryTranscriptionBanner extends ConsumerWidget {
     if (state.isComplete) {
       // Refresh session detail and transcript to show new data
       ref.invalidate(
-        sessionDetailProvider(
-          (campaignId: campaignId, sessionId: sessionId),
-        ),
+        sessionDetailProvider((campaignId: campaignId, sessionId: sessionId)),
       );
       ref.invalidate(sessionTranscriptProvider(sessionId));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Transcription complete')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Transcription complete')));
     }
   }
 }
 
 /// Export section with buttons for Markdown and JSON export.
 class _ExportSection extends ConsumerWidget {
-  const _ExportSection({
-    required this.sessionId,
-    required this.campaignId,
-  });
+  const _ExportSection({required this.sessionId, required this.campaignId});
 
   final String sessionId;
   final String campaignId;
@@ -597,10 +573,9 @@ class _ExportSection extends ConsumerWidget {
     WidgetRef ref,
     String format,
   ) async {
-    await ref.read(exportStateProvider.notifier).exportSession(
-      sessionId: sessionId,
-      format: format,
-    );
+    await ref
+        .read(exportStateProvider.notifier)
+        .exportSession(sessionId: sessionId, format: format);
 
     if (!context.mounted) return;
     final result = ref.read(exportStateProvider);

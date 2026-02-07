@@ -126,18 +126,24 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
     );
 
     try {
-      debugPrint('[TranscriptionNotifier] Starting transcription for $sessionId');
+      debugPrint(
+        '[TranscriptionNotifier] Starting transcription for $sessionId',
+      );
       await _manager.transcribeSession(
         sessionId: sessionId,
         audioFilePath: audioFilePath,
         language: language,
         onProgress: _handleProgress,
       );
-      debugPrint('[TranscriptionNotifier] Transcription manager returned, updating status to queued');
+      debugPrint(
+        '[TranscriptionNotifier] Transcription manager returned, updating status to queued',
+      );
 
       // Update session status to queued (ready for AI processing)
       await _sessionRepo.updateSessionStatus(sessionId, SessionStatus.queued);
-      debugPrint('[TranscriptionNotifier] Status updated, setting state to complete');
+      debugPrint(
+        '[TranscriptionNotifier] Status updated, setting state to complete',
+      );
 
       state = state.copyWith(
         phase: TranscriptionPhase.complete,
@@ -148,7 +154,9 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
       );
       debugPrint('[TranscriptionNotifier] Done');
     } on TranscriptionException catch (e) {
-      debugPrint('[TranscriptionNotifier] TranscriptionException: ${e.message}');
+      debugPrint(
+        '[TranscriptionNotifier] TranscriptionException: ${e.message}',
+      );
       state = state.copyWith(
         phase: TranscriptionPhase.error,
         message: e.userMessage,

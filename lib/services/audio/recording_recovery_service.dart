@@ -57,8 +57,9 @@ class RecordingRecoveryService {
       return null;
     }
 
-    final startTime =
-        startTimeStr != null ? DateTime.tryParse(startTimeStr) : null;
+    final startTime = startTimeStr != null
+        ? DateTime.tryParse(startTimeStr)
+        : null;
 
     return InterruptedRecording(
       sessionId: sessionId,

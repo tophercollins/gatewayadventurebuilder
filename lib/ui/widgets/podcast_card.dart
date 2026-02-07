@@ -195,8 +195,7 @@ class _PodcastCardState extends ConsumerState<PodcastCard> {
   }
 
   Widget _buildScriptContent(ThemeData theme, String script) {
-    final displayText =
-        _isExpanded ? script : _truncate(script, 200);
+    final displayText = _isExpanded ? script : _truncate(script, 200);
     final needsToggle = script.length > 200;
 
     return Column(
@@ -262,19 +261,15 @@ class _PodcastCardState extends ConsumerState<PodcastCard> {
           )
         : FilledButton.icon(
             onPressed: () => _generate(ref),
-            icon: const Icon(
-              Icons.auto_awesome,
-              size: Spacing.iconSizeCompact,
-            ),
+            icon: const Icon(Icons.auto_awesome, size: Spacing.iconSizeCompact),
             label: const Text('Generate Podcast Recap'),
           );
   }
 
   void _generate(WidgetRef ref) {
-    ref.read(podcastGenerationStateProvider.notifier).generate(
-      sessionId: widget.sessionId,
-      campaignId: widget.campaignId,
-    );
+    ref
+        .read(podcastGenerationStateProvider.notifier)
+        .generate(sessionId: widget.sessionId, campaignId: widget.campaignId);
   }
 
   void _copyToClipboard(BuildContext context, String text) {

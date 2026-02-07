@@ -75,14 +75,14 @@ class NotificationSettingsNotifier extends StateNotifier<NotificationSettings> {
 /// Waits for settings to load from SharedPreferences before creating the
 /// notifier, so consumers always see persisted values instead of defaults.
 final notificationSettingsProvider =
-    StateNotifierProvider<NotificationSettingsNotifier, NotificationSettings>(
-      (ref) {
-        final initial = ref.watch(_initialSettingsProvider);
-        return NotificationSettingsNotifier(
-          initial.valueOrNull ?? const NotificationSettings(),
-        );
-      },
-    );
+    StateNotifierProvider<NotificationSettingsNotifier, NotificationSettings>((
+      ref,
+    ) {
+      final initial = ref.watch(_initialSettingsProvider);
+      return NotificationSettingsNotifier(
+        initial.valueOrNull ?? const NotificationSettings(),
+      );
+    });
 
 /// In-app notification state for showing snackbars/toasts.
 class InAppNotification {

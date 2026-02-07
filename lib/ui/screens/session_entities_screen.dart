@@ -93,7 +93,8 @@ class _EntitiesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasContent = npcs.isNotEmpty ||
+    final hasContent =
+        npcs.isNotEmpty ||
         locations.isNotEmpty ||
         items.isNotEmpty ||
         monsters.isNotEmpty;

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/campaign.dart';
-import '../data/models/world.dart';
 import '../data/models/player.dart';
+import '../data/models/world.dart';
 import 'repository_providers.dart';
 
 /// Data class for a world with entity counts and linked campaign IDs.
@@ -24,10 +24,7 @@ class WorldSummary {
 
 /// Data class for a player with their campaign count.
 class PlayerSummary {
-  const PlayerSummary({
-    required this.player,
-    required this.campaignCount,
-  });
+  const PlayerSummary({required this.player, required this.campaignCount});
 
   final Player player;
   final int campaignCount;
@@ -37,8 +34,9 @@ class PlayerSummary {
 final worldsRevisionProvider = StateProvider<int>((ref) => 0);
 
 /// Provider fetching all worlds for the current user with entity counts.
-final allWorldsProvider =
-    FutureProvider.autoDispose<List<WorldSummary>>((ref) async {
+final allWorldsProvider = FutureProvider.autoDispose<List<WorldSummary>>((
+  ref,
+) async {
   ref.watch(worldsRevisionProvider);
   final user = await ref.watch(currentUserProvider.future);
   final campaignRepo = ref.watch(campaignRepositoryProvider);
@@ -53,21 +51,24 @@ final allWorldsProvider =
     final items = await entityRepo.getItemsByWorld(world.id);
     final campaigns = await campaignRepo.getCampaignsByWorld(world.id);
 
-    result.add(WorldSummary(
-      world: world,
-      npcCount: npcs.length,
-      locationCount: locations.length,
-      itemCount: items.length,
-      campaigns: campaigns,
-    ));
+    result.add(
+      WorldSummary(
+        world: world,
+        npcCount: npcs.length,
+        locationCount: locations.length,
+        itemCount: items.length,
+        campaigns: campaigns,
+      ),
+    );
   }
 
   return result;
 });
 
 /// Provider fetching all players for the current user with campaign counts.
-final allPlayersProvider =
-    FutureProvider.autoDispose<List<PlayerSummary>>((ref) async {
+final allPlayersProvider = FutureProvider.autoDispose<List<PlayerSummary>>((
+  ref,
+) async {
   final user = await ref.watch(currentUserProvider.future);
   final playerRepo = ref.watch(playerRepositoryProvider);
   final campaignRepo = ref.watch(campaignRepositoryProvider);

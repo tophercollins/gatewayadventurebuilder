@@ -61,18 +61,6 @@ class EntityRepository {
     return results.map((m) => Npc.fromMap(m)).toList();
   }
 
-  Future<Npc?> findNpcByName(String worldId, String name) async {
-    final db = await _db.database;
-    final results = await db.query(
-      'npcs',
-      where: 'world_id = ? AND name = ?',
-      whereArgs: [worldId, name],
-      limit: 1,
-    );
-    if (results.isEmpty) return null;
-    return Npc.fromMap(results.first);
-  }
-
   Future<void> updateNpc(Npc npc, {bool markEdited = false}) async {
     final db = await _db.database;
     final updated = npc.copyWith(
@@ -280,22 +268,7 @@ class EntityRepository {
     return results.map((m) => Monster.fromMap(m)).toList();
   }
 
-  Future<Monster?> findMonsterByName(String worldId, String name) async {
-    final db = await _db.database;
-    final results = await db.query(
-      'monsters',
-      where: 'world_id = ? AND name = ?',
-      whereArgs: [worldId, name],
-      limit: 1,
-    );
-    if (results.isEmpty) return null;
-    return Monster.fromMap(results.first);
-  }
-
-  Future<void> updateMonster(
-    Monster monster, {
-    bool markEdited = false,
-  }) async {
+  Future<void> updateMonster(Monster monster, {bool markEdited = false}) async {
     final db = await _db.database;
     final updated = monster.copyWith(
       updatedAt: DateTime.now(),

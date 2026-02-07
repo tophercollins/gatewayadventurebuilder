@@ -88,12 +88,10 @@ class _PlayerEditFormState extends ConsumerState<PlayerEditForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ImagePickerField(
-            currentImagePath:
-                _imageRemoved ? null : widget.player.imagePath,
+            currentImagePath: _imageRemoved ? null : widget.player.imagePath,
             pendingImagePath: _pendingImagePath,
             fallbackIcon: Icons.person,
-            onImageSelected: (path) =>
-                setState(() => _pendingImagePath = path),
+            onImageSelected: (path) => setState(() => _pendingImagePath = path),
             onImageRemoved: () => setState(() {
               _pendingImagePath = null;
               _imageRemoved = true;

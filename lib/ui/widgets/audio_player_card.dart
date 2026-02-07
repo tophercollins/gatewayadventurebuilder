@@ -36,10 +36,9 @@ class _AudioPlayerCardState extends ConsumerState<AudioPlayerCard> {
     if (playback.status == PlaybackStatus.idle && widget.audioInfo.fileExists) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          ref.read(playbackNotifierProvider.notifier).loadSession(
-            widget.audioInfo.filePath,
-            widget.sessionId,
-          );
+          ref
+              .read(playbackNotifierProvider.notifier)
+              .loadSession(widget.audioInfo.filePath, widget.sessionId);
         }
       });
     }

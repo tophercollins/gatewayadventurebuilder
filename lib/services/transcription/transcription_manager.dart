@@ -190,7 +190,9 @@ class TranscriptionManager {
       }
 
       // Merge results
-      debugPrint('[TranscriptionManager] Merging ${chunkResults.length} chunk results');
+      debugPrint(
+        '[TranscriptionManager] Merging ${chunkResults.length} chunk results',
+      );
       _reportProgress(
         onProgress,
         sessionId,
@@ -203,7 +205,9 @@ class TranscriptionManager {
         modelName: transcriptionService.modelName,
         language: language,
       );
-      debugPrint('[TranscriptionManager] Merged: ${mergedResult.segments.length} segments, ${mergedResult.fullText.length} chars');
+      debugPrint(
+        '[TranscriptionManager] Merged: ${mergedResult.segments.length} segments, ${mergedResult.fullText.length} chars',
+      );
 
       // Save to database
       debugPrint('[TranscriptionManager] Saving to database...');

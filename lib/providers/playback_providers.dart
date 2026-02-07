@@ -84,10 +84,7 @@ class PlaybackNotifier extends StateNotifier<PlaybackState> {
     }
 
     _cancelSubscriptions();
-    state = PlaybackState(
-      status: PlaybackStatus.loading,
-      sessionId: sessionId,
-    );
+    state = PlaybackState(status: PlaybackStatus.loading, sessionId: sessionId);
 
     try {
       final duration = await _service.loadFile(filePath);
@@ -201,11 +198,11 @@ class PlaybackNotifier extends StateNotifier<PlaybackState> {
 
 /// AutoDispose playback notifier — cleans up stream subscriptions when no
 /// widget is watching, preventing defunct element assertions.
-final playbackNotifierProvider = StateNotifierProvider.autoDispose<
-    PlaybackNotifier, PlaybackState>((ref) {
-  final service = ref.watch(audioPlaybackServiceProvider);
-  return PlaybackNotifier(service);
-});
+final playbackNotifierProvider =
+    StateNotifierProvider.autoDispose<PlaybackNotifier, PlaybackState>((ref) {
+      final service = ref.watch(audioPlaybackServiceProvider);
+      return PlaybackNotifier(service);
+    });
 
 /// Info about a session's audio file, including whether it exists on disk.
 class SessionAudioInfo {
@@ -221,18 +218,16 @@ class SessionAudioInfo {
 }
 
 /// Loads session audio metadata and checks file existence.
-final sessionAudioProvider =
-    FutureProvider.autoDispose.family<SessionAudioInfo?, String>(
-  (ref, sessionId) async {
-    final sessionRepo = ref.watch(sessionRepositoryProvider);
-    final audio = await sessionRepo.getAudioBySession(sessionId);
-    if (audio == null) return null;
+final sessionAudioProvider = FutureProvider.autoDispose
+    .family<SessionAudioInfo?, String>((ref, sessionId) async {
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      final audio = await sessionRepo.getAudioBySession(sessionId);
+      if (audio == null) return null;
 
-    final exists = await File(audio.filePath).exists();
-    return SessionAudioInfo(
-      filePath: audio.filePath,
-      fileExists: exists,
-      durationSeconds: audio.durationSeconds,
-    );
-  },
-);
+      final exists = await File(audio.filePath).exists();
+      return SessionAudioInfo(
+        filePath: audio.filePath,
+        fileExists: exists,
+        durationSeconds: audio.durationSeconds,
+      );
+    });

@@ -55,7 +55,7 @@ class PostSessionState {
 /// Coordinates audio saving, session updates, and transcription initiation.
 class PostSessionNotifier extends StateNotifier<PostSessionState> {
   PostSessionNotifier(this._sessionRepo, this._ref)
-      : super(const PostSessionState());
+    : super(const PostSessionState());
 
   final SessionRepository _sessionRepo;
   final Ref _ref;
@@ -136,7 +136,8 @@ class PostSessionNotifier extends StateNotifier<PostSessionState> {
 
       final transcriptionState = _ref.read(transcriptionNotifierProvider);
       if (!transcriptionState.isComplete) {
-        final detail = transcriptionState.error?.message ??
+        final detail =
+            transcriptionState.error?.message ??
             transcriptionState.error?.details;
         final msg = transcriptionState.message ?? 'Transcription failed';
         throw Exception(detail != null ? '$msg\n$detail' : msg);
@@ -166,8 +167,7 @@ class PostSessionNotifier extends StateNotifier<PostSessionState> {
   /// Retry processing. If audio was already saved, retries transcription only.
   Future<void> retry(String sessionId) async {
     _ref.read(transcriptionNotifierProvider.notifier).reset();
-    if (state.audioFilePath != null &&
-        state.phase == PostSessionPhase.error) {
+    if (state.audioFilePath != null && state.phase == PostSessionPhase.error) {
       state = state.copyWith(
         phase: PostSessionPhase.transcribing,
         clearError: true,
@@ -182,8 +182,8 @@ class PostSessionNotifier extends StateNotifier<PostSessionState> {
 /// Provider for the post-session processing notifier.
 final postSessionNotifierProvider =
     StateNotifierProvider.autoDispose<PostSessionNotifier, PostSessionState>((
-  ref,
-) {
-  final sessionRepo = ref.watch(sessionRepositoryProvider);
-  return PostSessionNotifier(sessionRepo, ref);
-});
+      ref,
+    ) {
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      return PostSessionNotifier(sessionRepo, ref);
+    });

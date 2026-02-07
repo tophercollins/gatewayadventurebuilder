@@ -121,10 +121,8 @@ class ProcessingState {
 }
 
 /// Callback type for notification after processing.
-typedef OnProcessingComplete = Future<void> Function(
-  String sessionId,
-  ProcessingResult result,
-);
+typedef OnProcessingComplete =
+    Future<void> Function(String sessionId, ProcessingResult result);
 
 /// Notifier for managing processing state.
 class ProcessingStateNotifier extends StateNotifier<ProcessingState> {

@@ -136,12 +136,10 @@ class _PlayersContent extends ConsumerWidget {
             player: pwc.player,
             characters: pwc.characters,
             campaignId: campaignId,
-            onPlayerUpdated: (player) =>
-                _updatePlayer(context, ref, player),
+            onPlayerUpdated: (player) => _updatePlayer(context, ref, player),
             onCharacterUpdated: (character) =>
                 _updateCharacter(context, ref, character),
-            onPlayerDeleted: () =>
-                _deletePlayer(context, ref, pwc.player),
+            onPlayerDeleted: () => _deletePlayer(context, ref, pwc.player),
             onCharacterDeleted: (characterId) =>
                 _deleteCharacter(context, ref, characterId),
           ),
@@ -159,9 +157,9 @@ class _PlayersContent extends ConsumerWidget {
       await ref.read(playerEditorProvider).updatePlayer(player, campaignId);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update player: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update player: $e')));
       }
     }
   }
@@ -172,10 +170,9 @@ class _PlayersContent extends ConsumerWidget {
     Character character,
   ) async {
     try {
-      await ref.read(playerEditorProvider).updateCharacter(
-        character,
-        campaignId,
-      );
+      await ref
+          .read(playerEditorProvider)
+          .updateCharacter(character, campaignId);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -194,9 +191,9 @@ class _PlayersContent extends ConsumerWidget {
       await ref.read(playerEditorProvider).deletePlayer(player, campaignId);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete player: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete player: $e')));
       }
     }
   }
@@ -207,10 +204,9 @@ class _PlayersContent extends ConsumerWidget {
     String characterId,
   ) async {
     try {
-      await ref.read(playerEditorProvider).deleteCharacter(
-        characterId,
-        campaignId,
-      );
+      await ref
+          .read(playerEditorProvider)
+          .deleteCharacter(characterId, campaignId);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -277,8 +277,9 @@ final recordingRecoveryProvider = Provider<RecordingRecoveryService>((ref) {
 });
 
 /// Provider that checks for interrupted recordings on startup.
-final interruptedRecordingProvider =
-    FutureProvider<InterruptedRecording?>((ref) async {
+final interruptedRecordingProvider = FutureProvider<InterruptedRecording?>((
+  ref,
+) async {
   final recoveryService = ref.watch(recordingRecoveryProvider);
   return await recoveryService.checkForInterruptedRecording();
 });

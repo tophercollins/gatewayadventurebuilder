@@ -97,9 +97,9 @@ class _NpcEditFormState extends ConsumerState<NpcEditForm> {
       widget.onSave(updated);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
         setState(() => _isSaving = false);
       }
     }
@@ -124,16 +124,14 @@ class _NpcEditFormState extends ConsumerState<NpcEditForm> {
               currentImagePath: _imageRemoved ? null : widget.npc.imagePath,
               pendingImagePath: _pendingImagePath,
               fallbackIcon: Icons.person_outline,
-              onImageSelected: (path) =>
-                  setState(() {
-                    _pendingImagePath = path;
-                    _imageRemoved = false;
-                  }),
-              onImageRemoved: () =>
-                  setState(() {
-                    _pendingImagePath = null;
-                    _imageRemoved = true;
-                  }),
+              onImageSelected: (path) => setState(() {
+                _pendingImagePath = path;
+                _imageRemoved = false;
+              }),
+              onImageRemoved: () => setState(() {
+                _pendingImagePath = null;
+                _imageRemoved = true;
+              }),
             ),
             TextFormField(
               controller: _nameController,

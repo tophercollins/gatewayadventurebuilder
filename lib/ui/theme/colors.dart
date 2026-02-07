@@ -127,3 +127,24 @@ extension StatusColors on Brightness {
   Color get success =>
       this == Brightness.light ? AppColors.lightSuccess : AppColors.darkSuccess;
 }
+
+/// Semantic colors for moment types and entity status indicators.
+/// Access via `Theme.of(context).brightness.momentQuote`, etc.
+extension SemanticColors on Brightness {
+  Color get momentQuote =>
+      this == Brightness.light ? const Color(0xFF2563EB) : const Color(0xFF60A5FA);
+  Color get momentRoleplay =>
+      this == Brightness.light ? const Color(0xFF7C3AED) : const Color(0xFFA78BFA);
+  Color get momentCombat =>
+      this == Brightness.light ? const Color(0xFFDC2626) : const Color(0xFFEF4444);
+  Color get momentPuzzle =>
+      this == Brightness.light ? const Color(0xFFEA580C) : const Color(0xFFFB923C);
+  Color get momentHumor =>
+      this == Brightness.light ? const Color(0xFFD97706) : const Color(0xFFFBBF24);
+  Color get momentTeamwork =>
+      this == Brightness.light ? const Color(0xFF16A34A) : const Color(0xFF4ADE80);
+  Color get statusInProgress =>
+      this == Brightness.light ? const Color(0xFFEA580C) : const Color(0xFFFB923C);
+  Color get sentimentFriendly =>
+      this == Brightness.light ? const Color(0xFF16A34A) : const Color(0xFF4ADE80);
+}

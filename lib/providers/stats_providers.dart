@@ -54,8 +54,7 @@ class CampaignStats {
   final DateTime? firstSessionDate;
   final DateTime? lastSessionDate;
 
-  int get totalEntities =>
-      npcCount + locationCount + itemCount + monsterCount;
+  int get totalEntities => npcCount + locationCount + itemCount + monsterCount;
 }
 
 /// Stats for a single player across campaigns.
@@ -79,7 +78,9 @@ class PlayerStats {
 }
 
 /// Provider for global stats.
-final globalStatsProvider = FutureProvider.autoDispose<GlobalStats>((ref) async {
+final globalStatsProvider = FutureProvider.autoDispose<GlobalStats>((
+  ref,
+) async {
   final user = await ref.watch(currentUserProvider.future);
   final campaignRepo = ref.watch(campaignRepositoryProvider);
   final sessionRepo = ref.watch(sessionRepositoryProvider);
@@ -133,72 +134,76 @@ final globalStatsProvider = FutureProvider.autoDispose<GlobalStats>((ref) async 
 /// Provider for per-campaign stats.
 final campaignStatsListProvider =
     FutureProvider.autoDispose<List<CampaignStats>>((ref) async {
-  final user = await ref.watch(currentUserProvider.future);
-  final campaignRepo = ref.watch(campaignRepositoryProvider);
-  final sessionRepo = ref.watch(sessionRepositoryProvider);
-  final entityRepo = ref.watch(entityRepositoryProvider);
-  final playerRepo = ref.watch(playerRepositoryProvider);
+      final user = await ref.watch(currentUserProvider.future);
+      final campaignRepo = ref.watch(campaignRepositoryProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      final entityRepo = ref.watch(entityRepositoryProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
 
-  final campaigns = await campaignRepo.getCampaignsByUser(user.id);
-  final result = <CampaignStats>[];
+      final campaigns = await campaignRepo.getCampaignsByUser(user.id);
+      final result = <CampaignStats>[];
 
-  for (final campaign in campaigns) {
-    final sessions = await sessionRepo.getSessionsByCampaign(campaign.id);
-    final players = await playerRepo.getPlayersByCampaign(campaign.id);
+      for (final campaign in campaigns) {
+        final sessions = await sessionRepo.getSessionsByCampaign(campaign.id);
+        final players = await playerRepo.getPlayersByCampaign(campaign.id);
 
-    var totalSeconds = 0;
-    DateTime? firstDate;
-    DateTime? lastDate;
+        var totalSeconds = 0;
+        DateTime? firstDate;
+        DateTime? lastDate;
 
-    for (final session in sessions) {
-      totalSeconds += session.durationSeconds ?? 0;
-      if (firstDate == null || session.date.isBefore(firstDate)) {
-        firstDate = session.date;
+        for (final session in sessions) {
+          totalSeconds += session.durationSeconds ?? 0;
+          if (firstDate == null || session.date.isBefore(firstDate)) {
+            firstDate = session.date;
+          }
+          if (lastDate == null || session.date.isAfter(lastDate)) {
+            lastDate = session.date;
+          }
+        }
+
+        final campaignWithWorld = await campaignRepo.getCampaignWithWorld(
+          campaign.id,
+        );
+        var npcCount = 0;
+        var locationCount = 0;
+        var itemCount = 0;
+        var monsterCount = 0;
+
+        if (campaignWithWorld != null) {
+          final worldId = campaignWithWorld.world.id;
+          final npcs = await entityRepo.getNpcsByWorld(worldId);
+          final locations = await entityRepo.getLocationsByWorld(worldId);
+          final items = await entityRepo.getItemsByWorld(worldId);
+          final monsters = await entityRepo.getMonstersByWorld(worldId);
+          npcCount = npcs.length;
+          locationCount = locations.length;
+          itemCount = items.length;
+          monsterCount = monsters.length;
+        }
+
+        result.add(
+          CampaignStats(
+            campaignName: campaign.name,
+            totalSessions: sessions.length,
+            totalHoursPlayed: totalSeconds / 3600.0,
+            npcCount: npcCount,
+            locationCount: locationCount,
+            itemCount: itemCount,
+            monsterCount: monsterCount,
+            playerCount: players.length,
+            firstSessionDate: firstDate,
+            lastSessionDate: lastDate,
+          ),
+        );
       }
-      if (lastDate == null || session.date.isAfter(lastDate)) {
-        lastDate = session.date;
-      }
-    }
 
-    final campaignWithWorld =
-        await campaignRepo.getCampaignWithWorld(campaign.id);
-    var npcCount = 0;
-    var locationCount = 0;
-    var itemCount = 0;
-    var monsterCount = 0;
-
-    if (campaignWithWorld != null) {
-      final worldId = campaignWithWorld.world.id;
-      final npcs = await entityRepo.getNpcsByWorld(worldId);
-      final locations = await entityRepo.getLocationsByWorld(worldId);
-      final items = await entityRepo.getItemsByWorld(worldId);
-      final monsters = await entityRepo.getMonstersByWorld(worldId);
-      npcCount = npcs.length;
-      locationCount = locations.length;
-      itemCount = items.length;
-      monsterCount = monsters.length;
-    }
-
-    result.add(CampaignStats(
-      campaignName: campaign.name,
-      totalSessions: sessions.length,
-      totalHoursPlayed: totalSeconds / 3600.0,
-      npcCount: npcCount,
-      locationCount: locationCount,
-      itemCount: itemCount,
-      monsterCount: monsterCount,
-      playerCount: players.length,
-      firstSessionDate: firstDate,
-      lastSessionDate: lastDate,
-    ));
-  }
-
-  return result;
-});
+      return result;
+    });
 
 /// Provider for per-player stats.
-final playerStatsListProvider =
-    FutureProvider.autoDispose<List<PlayerStats>>((ref) async {
+final playerStatsListProvider = FutureProvider.autoDispose<List<PlayerStats>>((
+  ref,
+) async {
   final user = await ref.watch(currentUserProvider.future);
   final campaignRepo = ref.watch(campaignRepositoryProvider);
   final sessionRepo = ref.watch(sessionRepositoryProvider);
@@ -215,8 +220,7 @@ final playerStatsListProvider =
     for (final player in players) {
       var attended = 0;
       for (final session in sessions) {
-        final attendees =
-            await sessionRepo.getAttendeesBySession(session.id);
+        final attendees = await sessionRepo.getAttendeesBySession(session.id);
         if (attendees.any((a) => a.playerId == player.id)) {
           attended++;
         }
@@ -227,13 +231,10 @@ final playerStatsListProvider =
       final existing = playerMap[player.id];
       playerMap[player.id] = PlayerStats(
         playerName: player.name,
-        sessionsAttended:
-            (existing?.sessionsAttended ?? 0) + attended,
-        totalSessions:
-            (existing?.totalSessions ?? 0) + sessions.length,
+        sessionsAttended: (existing?.sessionsAttended ?? 0) + attended,
+        totalSessions: (existing?.totalSessions ?? 0) + sessions.length,
         campaignsPlayed: (existing?.campaignsPlayed ?? 0) + 1,
-        momentsCount:
-            (existing?.momentsCount ?? 0) + moments.length,
+        momentsCount: (existing?.momentsCount ?? 0) + moments.length,
       );
     }
   }

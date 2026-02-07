@@ -21,7 +21,8 @@ class PodcastGenerator {
         ? '\nPlayers at this session: ${attendeeNames.join(', ')}'
         : '';
 
-    final prompt = '''
+    final prompt =
+        '''
 You are a charismatic radio host narrating a recap of a tabletop RPG session. Write a short podcast-style script (roughly 2-3 minutes when read aloud, about 350-500 words) that recaps this session of "$campaignName".$attendeeSection
 
 Guidelines:
