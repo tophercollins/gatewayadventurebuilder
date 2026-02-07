@@ -7,10 +7,13 @@ import '../../config/routes.dart';
 import '../../data/models/campaign.dart';
 import '../../data/models/session.dart';
 import '../../providers/campaign_providers.dart';
+import '../../providers/image_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../../utils/formatters.dart';
 import '../theme/spacing.dart';
 import '../widgets/delete_confirmation_dialog.dart';
 import '../widgets/entity_image.dart';
+import '../widgets/image_picker_field.dart';
 import '../widgets/status_badge.dart';
 
 /// Campaign Home screen - dashboard for a single campaign.
@@ -82,6 +85,8 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
   late final TextEditingController _descriptionController;
   String? _selectedGameSystem;
   String? _customGameSystem;
+  String? _pendingImagePath;
+  bool _imageRemoved = false;
   bool _isSaving = false;
 
   @override
@@ -99,6 +104,8 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
     final campaign = widget.detail.campaign;
     _nameController.text = campaign.name;
     _descriptionController.text = campaign.description ?? '';
+    _pendingImagePath = null;
+    _imageRemoved = false;
     _syncGameSystem();
   }
 
@@ -135,15 +142,37 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
     setState(() => _isSaving = true);
 
     try {
-      final updated = widget.detail.campaign.copyWith(
+      final campaign = widget.detail.campaign;
+      final imageService = ref.read(imageStorageProvider);
+      final editor = ref.read(campaignEditorProvider);
+
+      String? imagePath = campaign.imagePath;
+
+      if (_imageRemoved && _pendingImagePath == null) {
+        await imageService.deleteImage(
+          entityType: 'campaigns',
+          entityId: campaign.id,
+        );
+        imagePath = null;
+      } else if (_pendingImagePath != null) {
+        imagePath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'campaigns',
+          entityId: campaign.id,
+          imageType: EntityImageType.banner,
+        );
+      }
+
+      final updated = campaign.copyWith(
         name: _nameController.text.trim(),
         gameSystem: _getGameSystem(),
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
+        imagePath: imagePath,
         updatedAt: DateTime.now(),
       );
-      await ref.read(campaignEditorProvider).updateCampaign(updated);
+      await editor.updateCampaign(updated);
       if (mounted) setState(() => _isEditing = false);
     } catch (e) {
       if (mounted) {
@@ -334,6 +363,20 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
+          ),
+          const SizedBox(height: Spacing.md),
+          ImagePickerField(
+            currentImagePath:
+                _imageRemoved ? null : widget.detail.campaign.imagePath,
+            pendingImagePath: _pendingImagePath,
+            fallbackIcon: Icons.auto_stories,
+            isBanner: true,
+            onImageSelected: (path) =>
+                setState(() => _pendingImagePath = path),
+            onImageRemoved: () => setState(() {
+              _pendingImagePath = null;
+              _imageRemoved = true;
+            }),
           ),
           const SizedBox(height: Spacing.md),
           TextFormField(

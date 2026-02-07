@@ -56,6 +56,8 @@ class Campaign {
     };
   }
 
+  static const Object _sentinel = Object();
+
   Campaign copyWith({
     String? id,
     String? worldId,
@@ -64,7 +66,7 @@ class Campaign {
     String? gameSystem,
     CampaignStatus? status,
     DateTime? startDate,
-    String? imagePath,
+    Object? imagePath = _sentinel,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -76,7 +78,9 @@ class Campaign {
       gameSystem: gameSystem ?? this.gameSystem,
       status: status ?? this.status,
       startDate: startDate ?? this.startDate,
-      imagePath: imagePath ?? this.imagePath,
+      imagePath: identical(imagePath, _sentinel)
+          ? this.imagePath
+          : imagePath as String?,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
