@@ -37,7 +37,6 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     // Initialize FFI for desktop
     sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
 
     final Directory appDir = await getApplicationDocumentsDirectory();
     final String dbPath = join(appDir.path, 'ttrpg_tracker', _dbName);
