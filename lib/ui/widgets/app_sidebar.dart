@@ -56,6 +56,11 @@ class AppSidebar extends StatelessWidget {
       path: Routes.allPlayers,
     ),
     const SidebarItem(
+      icon: Icons.person_outline,
+      label: 'Characters',
+      path: Routes.allCharacters,
+    ),
+    const SidebarItem(
       icon: Icons.bar_chart_outlined,
       label: 'Stats',
       path: Routes.stats,
@@ -203,6 +208,8 @@ class _SidebarNavItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(Spacing.cardRadius),
           child: Container(
             height: Spacing.buttonHeight,
+            clipBehavior: Clip.hardEdge,
+            decoration: const BoxDecoration(),
             padding: EdgeInsets.symmetric(
               horizontal: isCollapsed ? Spacing.sm : Spacing.md,
             ),

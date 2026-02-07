@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/campaign.dart';
+import '../data/models/character.dart';
 import '../data/models/player.dart';
 import '../data/models/world.dart';
 import 'repository_providers.dart';
@@ -63,6 +64,38 @@ final allWorldsProvider = FutureProvider.autoDispose<List<WorldSummary>>((
   }
 
   return result;
+});
+
+/// Data class for a character with its campaign name.
+class CharacterSummary {
+  const CharacterSummary({
+    required this.character,
+    required this.campaignName,
+  });
+
+  final Character character;
+  final String campaignName;
+}
+
+/// Provider fetching all characters for the current user with campaign names.
+final allCharactersProvider =
+    FutureProvider.autoDispose<List<CharacterSummary>>((ref) async {
+  final user = await ref.watch(currentUserProvider.future);
+  final playerRepo = ref.watch(playerRepositoryProvider);
+  final campaignRepo = ref.watch(campaignRepositoryProvider);
+
+  final characters = await playerRepo.getCharactersByUser(user.id);
+  final campaigns = await campaignRepo.getCampaignsByUser(user.id);
+  final campaignMap = {for (final c in campaigns) c.id: c.name};
+
+  return characters
+      .map(
+        (ch) => CharacterSummary(
+          character: ch,
+          campaignName: campaignMap[ch.campaignId] ?? 'Unknown',
+        ),
+      )
+      .toList();
 });
 
 /// Provider fetching all players for the current user with campaign counts.

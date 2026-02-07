@@ -194,6 +194,21 @@ class PlayerRepository {
     return results.map((m) => Character.fromMap(m)).toList();
   }
 
+  Future<List<Character>> getCharactersByUser(String userId) async {
+    final db = await _db.database;
+    final results = await db.rawQuery(
+      '''
+      SELECT ch.* FROM characters ch
+      JOIN campaigns c ON ch.campaign_id = c.id
+      JOIN worlds w ON c.world_id = w.id
+      WHERE w.user_id = ?
+      ORDER BY ch.name ASC
+    ''',
+      [userId],
+    );
+    return results.map((m) => Character.fromMap(m)).toList();
+  }
+
   Future<Character?> getActiveCharacterForPlayerInCampaign({
     required String playerId,
     required String campaignId,

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../ui/screens/add_character_screen.dart';
 import '../ui/screens/add_session_screen.dart';
 import '../ui/screens/add_player_screen.dart';
+import '../ui/screens/all_characters_screen.dart';
 import '../ui/screens/all_players_screen.dart';
 import '../ui/screens/campaign_home_screen.dart';
 import '../ui/screens/campaigns_list_screen.dart';
@@ -46,6 +47,7 @@ abstract final class Routes {
   static const String stats = '/stats';
   static const String worlds = '/worlds';
   static const String allPlayers = '/players';
+  static const String allCharacters = '/characters';
 
   // Campaigns
   static const String campaigns = '/campaigns';
@@ -266,6 +268,19 @@ GoRouter createAppRouter({String initialLocation = Routes.startup}) {
               title: 'All Players',
               showBack: true,
               child: const AllPlayersScreen(),
+            ),
+          ),
+
+          // Global Characters
+          GoRoute(
+            path: Routes.allCharacters,
+            name: 'allCharacters',
+            pageBuilder: (context, state) => _buildPage(
+              context: context,
+              state: state,
+              title: 'All Characters',
+              showBack: true,
+              child: const AllCharactersScreen(),
             ),
           ),
 
