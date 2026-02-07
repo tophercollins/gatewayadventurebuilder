@@ -4,6 +4,98 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.4.0] — 2026-02-07 — Organisations Entity Type + Monster imagePath Fix
+
+Adds **organisations** as the 5th world-level entity type (factions, guilds, governments, cults, military orders, etc.) across all layers of the app. Also fixes the missing `imagePath` field on the Monster model that was missed in the v4→v5 migration, and updates the monster detail screen to display images.
+
+### Added
+
+#### New Model
+- **New: `lib/data/models/organisation.dart`** — Organisation data class with fields: `id`, `worldId`, `copiedFromId`, `name`, `description`, `organisationType`, `notes`, `isEdited`, `imagePath`, `createdAt`, `updatedAt`. Includes `fromMap`, `toMap`, `copyWith`.
+
+#### New LLM Prompt
+- **New: `lib/services/processing/prompts/organisation_prompt.dart`** — Extraction prompt for organisations
+  - 10 types: `guild`, `faction`, `government`, `cult`, `military`, `mercenary`, `religious`, `criminal`, `noble_house`, `trade_company`
+  - Output format: JSON array of `{name, description, organisation_type, context, timestamp_ms}`
+
+#### New Screen
+- **New: `lib/ui/screens/organisation_detail_screen.dart`** — Full detail screen following existing entity pattern
+  - Header with `EntityImage.avatar` (icon: `Icons.groups_outlined`)
+  - Info section (description, notes)
+  - Appearances section (sessions where organisation was mentioned)
+  - Edit form with name, type, description, notes fields
+  - Uses `organisationByIdProvider` and `entitySessionsProvider`
+
+### Changed
+
+#### Database Migration v5→v6
+- `ALTER TABLE monsters ADD COLUMN image_path TEXT` — fixes missing column from v4→v5 migration
+- `CREATE TABLE organisations` — full schema with `id`, `world_id`, `copied_from_id`, `name`, `description`, `organisation_type`, `notes`, `is_edited`, `image_path`, `created_at`, `updated_at`
+- `CREATE INDEX idx_organisations_world ON organisations(world_id)`
+- Modified: `lib/data/database/database_helper.dart` — version bump from 5 to 6
+- Modified: `lib/data/database/schema.dart` — added `_createOrganisations` table + index; added `image_path TEXT` to `_createMonsters`
+
+#### Entity Appearance Enum
+- `lib/data/models/entity_appearance.dart` — Added `organisation('organisation')` to `EntityType` enum
+
+#### Monster Model Fix
+- `lib/data/models/monster.dart` — Added `imagePath` field to constructor, class fields, `fromMap`, `toMap`, `copyWith`
+
+#### Repository
+- `lib/data/repositories/entity_repository.dart` — Added full CRUD: `createOrganisation`, `getOrganisationById`, `getOrganisationsByWorld`, `updateOrganisation`, `deleteOrganisation`
+
+#### Processing Pipeline (7 files)
+- `lib/services/processing/llm_response_models.dart` — Added `OrganisationData` class (name, description, organisationType, context, timestampMs)
+- `lib/services/processing/entity_response_models.dart` — Added `OrganisationsResponse` class with `tryParse` static method
+- `lib/services/processing/prompts/prompts.dart` — Added `export 'organisation_prompt.dart'` to barrel file
+- `lib/services/processing/llm_service.dart` — Added `extractOrganisations()` abstract method + Gemini implementation
+- `lib/services/processing/session_context.dart` — Added `existingOrganisations` field + `existingOrganisationNames` getter; updated `SessionContextLoader.load()`
+- `lib/services/processing/entity_matcher.dart` — Added `matchOrganisations()`, `_findOrganisationMatch()`, `_mergeOrganisationData()`; extended `createAppearances()` with organisation loop
+- `lib/services/processing/entity_extractor.dart` — Added organisation extraction step (step 5) with `OrganisationPrompt`
+
+#### Processing Stats (2 files)
+- `lib/services/processing/processing_types.dart` — Added `organisationCount` to `ProcessingResult`, `ProcessingStats`, and `EntityCounts`
+- `lib/services/processing/session_processor.dart` — Accumulate `totalOrganisations` in processing loop
+
+#### Mock LLM Service
+- `lib/services/processing/mock_llm_service.dart` — Added `extractOrganisations()` override returning mock data (The Goblin Warband, Shadowfen Temple Keepers)
+
+#### Providers (3 files)
+- `lib/providers/world_providers.dart` — Added `OrganisationWithCount` data class, `worldOrganisationsProvider`, `organisationByIdProvider`; updated `WorldDatabaseData` with `organisations` field + `totalEntities` getter; added `updateOrganisation()` and `deleteOrganisation()` to `EntityEditor`
+- `lib/providers/session_detail_providers.dart` — Added `organisations` field to `SessionDetailData` + updated `entityCount` getter; updated `sessionEntitiesProvider` to fetch organisation appearances
+- `lib/providers/editing_providers.dart` — Added `updateOrganisation()` method to `EntityEditingNotifier`
+
+#### UI — World Database Screen
+- `lib/ui/screens/world_database_screen.dart` — Changed `DefaultTabController` length from 4 to 5; added "Orgs" tab with count; added `_OrganisationsList` widget with search filtering
+
+#### UI — Session Entities Screen
+- `lib/ui/screens/session_entities_screen.dart` — Changed `DefaultTabController` length from 4 to 5; added "Orgs" tab with count; added `_OrganisationsList` widget with inline editing
+
+#### UI — Monster Detail Screen
+- `lib/ui/screens/monster_detail_screen.dart` — Replaced hardcoded 56x56 Container+Icon with `EntityImage.avatar(imagePath: monster.imagePath, fallbackIcon: Icons.pest_control_outlined)`; added `entity_image.dart` import
+
+#### Routes
+- `lib/config/routes.dart` — Added `organisationDetail` route constant, `organisationDetailPath()` helper, and `GoRoute` for `organisations/:organisationId` under world routes
+
+#### Export Service
+- `lib/services/export/export_service.dart` — Added organisations to session Markdown, session JSON, campaign JSON, and CSV exports; added `_organisationToJson()` helper, `_exportOrganisationsCsv()` method; updated `_SessionEntities` and `_resolveSessionEntities` with organisations
+
+### Database Changes
+
+| Version | Migration |
+|---------|-----------|
+| v5→v6 | `ALTER TABLE monsters ADD COLUMN image_path TEXT` |
+| v5→v6 | `CREATE TABLE organisations (...)` |
+| v5→v6 | `CREATE INDEX idx_organisations_world ON organisations(world_id)` |
+
+### Verification
+
+- `flutter analyze` — 0 issues
+- DB migration v5→v6 applies cleanly
+- 3 new files, 23 modified files, 1464 insertions
+
+---
+
 ## [0.3.0] — 2026-02-07 — Entity Image Support
 
 Adds image upload and display for all 7 entity types. Wide 16:9 banners for campaigns, square avatars for all others. Images are picked from OS file dialogs, auto-resized on import, and stored locally as JPEG.
