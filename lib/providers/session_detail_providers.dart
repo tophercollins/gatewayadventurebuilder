@@ -283,6 +283,12 @@ class SessionEditor {
     _ref.read(sessionsRevisionProvider.notifier).state++;
   }
 
+  /// Deletes a session and all related data.
+  Future<void> deleteSession(String sessionId) async {
+    await _sessionRepo.deleteSessionWithRelated(sessionId);
+    _ref.read(sessionsRevisionProvider.notifier).state++;
+  }
+
   /// Gets the world ID for a campaign.
   Future<String?> getWorldId(String campaignId) async {
     final campaignRepo = _ref.read(campaignRepositoryProvider);

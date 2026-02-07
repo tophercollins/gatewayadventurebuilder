@@ -20,6 +20,7 @@ import '../ui/screens/post_session_screen.dart';
 import '../ui/screens/recording_screen.dart';
 import '../ui/screens/session_actions_screen.dart';
 import '../ui/screens/session_detail_screen.dart';
+import '../ui/screens/sessions_list_screen.dart';
 import '../ui/screens/session_entities_screen.dart';
 import '../ui/screens/session_players_screen.dart';
 import '../ui/screens/session_setup_screen.dart';
@@ -49,6 +50,7 @@ abstract final class Routes {
   static const String campaignHome = '/campaigns/:id';
 
   // Sessions
+  static const String sessionsList = '/campaigns/:id/sessions';
   static const String newSession = '/campaigns/:id/sessions/new';
   static const String addSession = '/campaigns/:id/sessions/add';
   static const String recording = '/campaigns/:id/sessions/:sessionId/record';
@@ -78,6 +80,8 @@ abstract final class Routes {
 
   // Helper methods for building paths with parameters
   static String campaignPath(String id) => '/campaigns/$id';
+  static String sessionsListPath(String campaignId) =>
+      '/campaigns/$campaignId/sessions';
   static String newSessionPath(String campaignId) =>
       '/campaigns/$campaignId/sessions/new';
   static String addSessionPath(String campaignId) =>
@@ -391,6 +395,22 @@ final List<RouteBase> _campaignRoutes = [
         title: 'Add Character',
         showBack: true,
         child: AddCharacterScreen(campaignId: id),
+      );
+    },
+  ),
+
+  // Sessions List
+  GoRoute(
+    path: 'sessions',
+    name: 'sessionsList',
+    pageBuilder: (context, state) {
+      final id = state.pathParameters['id']!;
+      return _buildPage(
+        context: context,
+        state: state,
+        title: 'Sessions',
+        showBack: true,
+        child: SessionsListScreen(campaignId: id),
       );
     },
   ),

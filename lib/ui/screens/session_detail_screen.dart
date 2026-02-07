@@ -7,10 +7,12 @@ import '../../data/models/session.dart';
 import '../../providers/editing_providers.dart';
 import '../../providers/export_providers.dart';
 import '../../providers/playback_providers.dart';
+import '../../providers/queue_providers.dart';
 import '../../providers/session_detail_providers.dart';
 import '../../providers/transcription_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/audio_player_card.dart';
+import '../widgets/delete_confirmation_dialog.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/podcast_card.dart';
 import '../widgets/section_card.dart';
@@ -74,6 +76,9 @@ class _SessionDetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final audioAsync = ref.watch(sessionAudioProvider(sessionId));
+    final hasTranscript = ref.watch(
+      sessionHasTranscriptProvider(sessionId),
+    ).valueOrNull ?? true;
 
     return Center(
       child: ConstrainedBox(
@@ -86,6 +91,7 @@ class _SessionDetailContent extends ConsumerWidget {
               onResync: () => _handleResync(context, ref),
               onTitleUpdated: (newTitle) =>
                   _handleTitleUpdate(context, ref, newTitle),
+              onDelete: () => _handleDelete(context, ref),
             ),
             // Audio player card — shown only when audio exists for this session.
             ...audioAsync.when(
@@ -102,9 +108,11 @@ class _SessionDetailContent extends ConsumerWidget {
                 ];
               },
             ),
-            // Retry transcription banner for failed sessions
-            if (detail.session.status == SessionStatus.error ||
-                detail.session.status == SessionStatus.transcribing)
+            // Retry transcription banner — only when transcription
+            // actually needs retrying (no transcript exists yet).
+            if (!hasTranscript &&
+                (detail.session.status == SessionStatus.error ||
+                    detail.session.status == SessionStatus.transcribing))
               ...audioAsync.when(
                 loading: () => const <Widget>[],
                 error: (_, _) => const <Widget>[],
@@ -204,6 +212,36 @@ class _SessionDetailContent extends ConsumerWidget {
     }
     if (counts.isEmpty) return 'No entities extracted';
     return counts.join(', ');
+  }
+
+  Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
+    final title =
+        detail.session.title ??
+        'Session ${detail.session.sessionNumber ?? '?'}';
+    final confirmed = await showDeleteConfirmation(
+      context,
+      title: 'Delete Session',
+      message:
+          'This will permanently delete "$title" and all its data '
+          '(audio, transcripts, summaries, entities, and action items). '
+          'This cannot be undone.',
+    );
+    if (!confirmed || !context.mounted) return;
+    try {
+      await ref.read(sessionEditorProvider).deleteSession(sessionId);
+      if (context.mounted) {
+        context.go(Routes.campaignPath(campaignId));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Deleted "$title"')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete session: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _handleTitleUpdate(
@@ -450,9 +488,14 @@ class _RetryTranscriptionBanner extends ConsumerWidget {
       audioFilePath: audioFilePath,
     );
 
+    final state = ref.read(transcriptionNotifierProvider);
+    if (state.isComplete) {
+      // Enqueue for AI processing (doesn't need BuildContext)
+      await ref.read(queueNotifierProvider.notifier).enqueue(sessionId);
+    }
+
     if (!context.mounted) return;
 
-    final state = ref.read(transcriptionNotifierProvider);
     if (state.isComplete) {
       // Refresh session detail and transcript to show new data
       ref.invalidate(

@@ -13,12 +13,14 @@ class SessionHeader extends StatefulWidget {
     required this.detail,
     required this.onResync,
     this.onTitleUpdated,
+    this.onDelete,
     super.key,
   });
 
   final SessionDetailData detail;
   final VoidCallback onResync;
   final ValueChanged<String>? onTitleUpdated;
+  final VoidCallback? onDelete;
 
   @override
   State<SessionHeader> createState() => _SessionHeaderState();
@@ -85,6 +87,16 @@ class _SessionHeaderState extends State<SessionHeader> {
                   icon: const Icon(Icons.edit_outlined, size: 20),
                   onPressed: () => setState(() => _isEditingTitle = true),
                   tooltip: 'Edit title',
+                ),
+              if (widget.onDelete != null)
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: widget.onDelete,
+                  tooltip: 'Delete session',
                 ),
               StatusBadge(sessionStatus: session.status),
             ],

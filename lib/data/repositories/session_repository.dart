@@ -98,6 +98,51 @@ class SessionRepository {
     await db.delete('sessions', where: 'id = ?', whereArgs: [id]);
   }
 
+  /// Deletes a session and all related data (cascade).
+  Future<void> deleteSessionWithRelated(String id) async {
+    final db = await _db.database;
+    await db.transaction((txn) async {
+      // Get transcript IDs for segment cleanup
+      final transcripts = await txn.query(
+        'session_transcripts',
+        columns: ['id'],
+        where: 'session_id = ?',
+        whereArgs: [id],
+      );
+      for (final t in transcripts) {
+        await txn.delete(
+          'transcript_segments',
+          where: 'transcript_id = ?',
+          whereArgs: [t['id']],
+        );
+      }
+      // Delete all session-linked rows
+      for (final table in [
+        'npc_quotes',
+        'entity_appearances',
+        'player_moments',
+        'action_items',
+        'scenes',
+        'session_summaries',
+        'session_transcripts',
+        'session_audio',
+        'session_attendees',
+        'processing_queue',
+      ]) {
+        await txn.delete(table, where: 'session_id = ?', whereArgs: [id]);
+      }
+      // Null out resolved_session_id references in action_items
+      await txn.update(
+        'action_items',
+        {'resolved_session_id': null},
+        where: 'resolved_session_id = ?',
+        whereArgs: [id],
+      );
+      // Delete the session itself
+      await txn.delete('sessions', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
   // ============================================
   // SESSION ATTENDEES
   // ============================================

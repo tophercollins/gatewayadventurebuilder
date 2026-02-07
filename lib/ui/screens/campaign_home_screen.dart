@@ -434,10 +434,9 @@ class _QuickLinksSection extends StatelessWidget {
                 icon: Icons.book_outlined,
                 title: 'Sessions',
                 count: detail.sessions.length,
-                onTap: () {
-                  // Sessions are displayed in the Recent Sessions
-                  // section below on this screen.
-                },
+                onTap: () => context.go(
+                  Routes.sessionsListPath(detail.campaign.id),
+                ),
               ),
             ),
             const SizedBox(width: Spacing.md),
@@ -578,10 +577,9 @@ class _RecentSessionsSection extends StatelessWidget {
             ),
             if (detail.sessions.length > 5)
               TextButton(
-                onPressed: () {
-                  // All sessions are shown in this section;
-                  // a dedicated sessions list screen can be added later.
-                },
+                onPressed: () => context.go(
+                  Routes.sessionsListPath(detail.campaign.id),
+                ),
                 child: const Text('View all'),
               ),
           ],
