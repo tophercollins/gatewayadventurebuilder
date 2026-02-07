@@ -30,7 +30,7 @@ import '../ui/screens/session_players_screen.dart';
 import '../ui/screens/session_setup_screen.dart';
 import '../ui/screens/session_summary_screen.dart';
 import '../ui/screens/session_transcript_screen.dart';
-import '../ui/screens/stats_screen.dart';
+import '../ui/screens/stats/stats_screen.dart';
 import '../ui/screens/world_database_screen.dart';
 import '../ui/screens/worlds_screen.dart';
 import '../ui/widgets/app_shell.dart';

@@ -26,7 +26,7 @@ export 'session_players_screen.dart';
 export 'session_setup_screen.dart';
 export 'session_summary_screen.dart';
 export 'session_transcript_screen.dart';
-export 'stats_screen.dart';
+export 'stats/stats.dart';
 export 'world_database_screen.dart';
 export 'notification_settings/notification_settings.dart';
 export 'onboarding/onboarding.dart';
