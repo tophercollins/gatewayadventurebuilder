@@ -24,14 +24,12 @@ class AppSidebar extends StatelessWidget {
     required this.isCollapsed,
     required this.onToggleCollapse,
     required this.currentPath,
-    this.campaignId,
     super.key,
   });
 
   final bool isCollapsed;
   final VoidCallback onToggleCollapse;
   final String currentPath;
-  final String? campaignId;
 
   static const double expandedWidth = 240;
   static const double collapsedWidth = 64;
@@ -63,27 +61,6 @@ class AppSidebar extends StatelessWidget {
       path: Routes.stats,
     ),
   ];
-
-  List<SidebarItem> get _campaignItems {
-    if (campaignId == null) return [];
-    return [
-      SidebarItem(
-        icon: Icons.dashboard_outlined,
-        label: 'Campaign',
-        path: Routes.campaignPath(campaignId!),
-      ),
-      SidebarItem(
-        icon: Icons.public_outlined,
-        label: 'World',
-        path: Routes.worldDatabasePath(campaignId!),
-      ),
-      SidebarItem(
-        icon: Icons.people_outlined,
-        label: 'Players',
-        path: Routes.playersPath(campaignId!),
-      ),
-    ];
-  }
 
   bool _isActive(String itemPath) {
     if (itemPath == Routes.home) {
@@ -130,33 +107,6 @@ class AppSidebar extends StatelessWidget {
                   ),
                 ),
 
-                // Campaign section (if in campaign context)
-                if (_campaignItems.isNotEmpty) ...[
-                  const SizedBox(height: Spacing.sm),
-                  const Divider(height: 1),
-                  const SizedBox(height: Spacing.sm),
-                  if (!isCollapsed)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Spacing.md,
-                        vertical: Spacing.xs,
-                      ),
-                      child: Text(
-                        'CAMPAIGN',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                  ..._campaignItems.map(
-                    (item) => _SidebarNavItem(
-                      item: item,
-                      isCollapsed: isCollapsed,
-                      isActive: _isActive(item.path),
-                      onTap: () => context.go(item.path),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

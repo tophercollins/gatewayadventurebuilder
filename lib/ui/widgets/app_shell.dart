@@ -56,7 +56,6 @@ class _AppShellState extends State<AppShell> {
           isCollapsed: collapsed,
           onToggleCollapse: _toggleSidebar,
           currentPath: widget.currentPath,
-          campaignId: widget.campaignId,
         ),
         Expanded(
           child: _ContentArea(
