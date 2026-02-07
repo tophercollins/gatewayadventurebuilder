@@ -144,6 +144,7 @@ class TranscriptionNotifier extends StateNotifier<TranscriptionState> {
         progress: 1.0,
         message: 'Transcription complete',
         isActive: false,
+        clearError: true,
       );
       debugPrint('[TranscriptionNotifier] Done');
     } on TranscriptionException catch (e) {

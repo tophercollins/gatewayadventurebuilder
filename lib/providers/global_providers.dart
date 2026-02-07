@@ -33,9 +33,13 @@ class PlayerSummary {
   final int campaignCount;
 }
 
+/// Revision counter to force worlds list refresh.
+final worldsRevisionProvider = StateProvider<int>((ref) => 0);
+
 /// Provider fetching all worlds for the current user with entity counts.
 final allWorldsProvider =
     FutureProvider.autoDispose<List<WorldSummary>>((ref) async {
+  ref.watch(worldsRevisionProvider);
   final user = await ref.watch(currentUserProvider.future);
   final campaignRepo = ref.watch(campaignRepositoryProvider);
   final entityRepo = ref.watch(entityRepositoryProvider);

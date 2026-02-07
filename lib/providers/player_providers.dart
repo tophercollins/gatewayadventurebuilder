@@ -2,8 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/character.dart';
 import '../data/models/player.dart';
+import '../data/models/session.dart';
 import '../data/repositories/player_repository.dart';
+import 'image_providers.dart';
 import 'repository_providers.dart';
+
+/// Revision counter for character-related cache invalidation.
+final charactersRevisionProvider = StateProvider<int>((ref) => 0);
 
 /// Provider for players in a specific campaign.
 final campaignPlayersProvider = FutureProvider.family<List<Player>, String>((
@@ -53,6 +58,35 @@ final playersWithCharactersProvider =
       }).toList();
     });
 
+/// Provider for a single character by ID.
+final characterDetailProvider =
+    FutureProvider.autoDispose.family<Character?, String>((ref, characterId) {
+      ref.watch(charactersRevisionProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      return playerRepo.getCharacterById(characterId);
+    });
+
+/// Provider for sessions a character attended.
+final characterSessionsProvider =
+    FutureProvider.autoDispose.family<List<Session>, String>((
+      ref,
+      characterId,
+    ) {
+      ref.watch(charactersRevisionProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      return playerRepo.getSessionsByCharacter(characterId);
+    });
+
+/// Provider for the player who owns a character.
+final characterPlayerProvider =
+    FutureProvider.autoDispose.family<Player?, String>((
+      ref,
+      playerId,
+    ) {
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      return playerRepo.getPlayerById(playerId);
+    });
+
 /// Data class combining a player with their characters.
 class PlayerWithCharacters {
   const PlayerWithCharacters({required this.player, required this.characters});
@@ -69,7 +103,8 @@ class PlayerEditor {
   final Ref _ref;
 
   /// Creates a player and adds them to a campaign.
-  Future<void> createPlayer({
+  /// Returns the new player's ID.
+  Future<String> createPlayer({
     required String campaignId,
     required String name,
     String? notes,
@@ -85,10 +120,12 @@ class PlayerEditor {
       playerId: player.id,
     );
     _invalidateForCampaign(campaignId);
+    return player.id;
   }
 
   /// Creates a character for a player.
-  Future<void> createCharacter({
+  /// Returns the new character's ID.
+  Future<String> createCharacter({
     required String playerId,
     required String campaignId,
     required String name,
@@ -97,7 +134,7 @@ class PlayerEditor {
     int? level,
     String? backstory,
   }) async {
-    await _playerRepo.createCharacter(
+    final character = await _playerRepo.createCharacter(
       playerId: playerId,
       campaignId: campaignId,
       name: name,
@@ -107,6 +144,7 @@ class PlayerEditor {
       backstory: backstory,
     );
     _invalidateForCampaign(campaignId);
+    return character.id;
   }
 
   /// Updates a player.
@@ -121,8 +159,13 @@ class PlayerEditor {
     _invalidateForCampaign(campaignId);
   }
 
-  /// Removes a player from a campaign and deletes them.
+  /// Removes a player from a campaign and deletes them, including image.
   Future<void> deletePlayer(Player player, String campaignId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(
+      entityType: 'players',
+      entityId: player.id,
+    );
     await _playerRepo.removePlayerFromCampaign(
       playerId: player.id,
       campaignId: campaignId,
@@ -131,8 +174,13 @@ class PlayerEditor {
     _invalidateForCampaign(campaignId);
   }
 
-  /// Deletes a character.
+  /// Deletes a character, including image.
   Future<void> deleteCharacter(String characterId, String campaignId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(
+      entityType: 'characters',
+      entityId: characterId,
+    );
     await _playerRepo.deleteCharacter(characterId);
     _invalidateForCampaign(campaignId);
   }
@@ -141,6 +189,7 @@ class PlayerEditor {
     _ref.invalidate(playersWithCharactersProvider(campaignId));
     _ref.invalidate(campaignPlayersProvider(campaignId));
     _ref.invalidate(campaignCharactersProvider(campaignId));
+    _ref.read(charactersRevisionProvider.notifier).state++;
   }
 }
 

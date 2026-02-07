@@ -36,6 +36,10 @@ dependencies:
   # Local Transcription (macOS)
   whisper_flutter_new: ^1.0.1
 
+  # Image handling
+  file_picker: ^8.0.0
+  image: ^4.1.0
+
   # Utilities
   uuid: ^4.0.0
   flutter_secure_storage: ^9.0.0

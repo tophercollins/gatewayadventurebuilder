@@ -7,6 +7,7 @@ class World {
     required this.name,
     this.description,
     this.gameSystem,
+    this.imagePath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -16,6 +17,7 @@ class World {
   final String name;
   final String? description;
   final String? gameSystem;
+  final String? imagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,6 +28,7 @@ class World {
       name: map['name'] as String,
       description: map['description'] as String?,
       gameSystem: map['game_system'] as String?,
+      imagePath: map['image_path'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -38,6 +41,7 @@ class World {
       'name': name,
       'description': description,
       'game_system': gameSystem,
+      'image_path': imagePath,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -49,6 +53,7 @@ class World {
     String? name,
     String? description,
     String? gameSystem,
+    String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -58,6 +63,7 @@ class World {
       name: name ?? this.name,
       description: description ?? this.description,
       gameSystem: gameSystem ?? this.gameSystem,
+      imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

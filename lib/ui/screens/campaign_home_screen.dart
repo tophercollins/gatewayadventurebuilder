@@ -9,6 +9,7 @@ import '../../providers/campaign_providers.dart';
 import '../../utils/formatters.dart';
 import '../theme/spacing.dart';
 import '../widgets/delete_confirmation_dialog.dart';
+import '../widgets/entity_image.dart';
 import '../widgets/status_badge.dart';
 
 /// Campaign Home screen - dashboard for a single campaign.
@@ -190,6 +191,13 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (campaign.imagePath != null) ...[
+          EntityImage.banner(
+            imagePath: campaign.imagePath,
+            fallbackIcon: Icons.auto_stories,
+          ),
+          const SizedBox(height: Spacing.md),
+        ],
         Row(
           children: [
             Expanded(
@@ -452,11 +460,27 @@ class _QuickLinksSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Spacing.md),
-        _QuickLinkCard(
-          icon: Icons.group_outlined,
-          title: 'Players & Characters',
-          count: detail.playerCount,
-          onTap: () => context.go(Routes.playersPath(detail.campaign.id)),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickLinkCard(
+                icon: Icons.group_outlined,
+                title: 'Players',
+                count: detail.playerCount,
+                onTap: () =>
+                    context.go(Routes.playersPath(detail.campaign.id)),
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: _QuickLinkCard(
+                icon: Icons.shield_outlined,
+                title: 'Characters',
+                onTap: () =>
+                    context.go(Routes.charactersPath(detail.campaign.id)),
+              ),
+            ),
+          ],
         ),
       ],
     );

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/npc.dart';
+import '../../../providers/image_providers.dart';
+import '../../../services/image/image_storage_service.dart';
 import '../../theme/spacing.dart';
+import '../../widgets/image_picker_field.dart';
 
 /// Edit form for modifying NPC details.
-class NpcEditForm extends StatefulWidget {
+class NpcEditForm extends ConsumerStatefulWidget {
   const NpcEditForm({
     required this.npc,
     required this.onSave,
@@ -17,10 +21,10 @@ class NpcEditForm extends StatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  State<NpcEditForm> createState() => _NpcEditFormState();
+  ConsumerState<NpcEditForm> createState() => _NpcEditFormState();
 }
 
-class _NpcEditFormState extends State<NpcEditForm> {
+class _NpcEditFormState extends ConsumerState<NpcEditForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _roleController;
   late final TextEditingController _descriptionController;
@@ -28,6 +32,8 @@ class _NpcEditFormState extends State<NpcEditForm> {
   late NpcStatus _status;
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
+  String? _pendingImagePath;
+  bool _imageRemoved = false;
 
   @override
   void initState() {
@@ -50,26 +56,53 @@ class _NpcEditFormState extends State<NpcEditForm> {
     super.dispose();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSaving = true);
 
-    final updated = widget.npc.copyWith(
-      name: _nameController.text.trim(),
-      role: _roleController.text.trim().isEmpty
-          ? null
-          : _roleController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      notes: _notesController.text.trim().isEmpty
-          ? null
-          : _notesController.text.trim(),
-      status: _status,
-    );
+    try {
+      String? imagePath = widget.npc.imagePath;
+      final imageService = ref.read(imageStorageProvider);
 
-    widget.onSave(updated);
+      if (_imageRemoved && _pendingImagePath == null) {
+        await imageService.deleteImage(
+          entityType: 'npcs',
+          entityId: widget.npc.id,
+        );
+        imagePath = null;
+      } else if (_pendingImagePath != null) {
+        imagePath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'npcs',
+          entityId: widget.npc.id,
+          imageType: EntityImageType.avatar,
+        );
+      }
+
+      final updated = widget.npc.copyWith(
+        name: _nameController.text.trim(),
+        role: _roleController.text.trim().isEmpty
+            ? null
+            : _roleController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        status: _status,
+        imagePath: imagePath,
+      );
+
+      widget.onSave(updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save: $e')),
+        );
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -87,6 +120,21 @@ class _NpcEditFormState extends State<NpcEditForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ImagePickerField(
+              currentImagePath: _imageRemoved ? null : widget.npc.imagePath,
+              pendingImagePath: _pendingImagePath,
+              fallbackIcon: Icons.person_outline,
+              onImageSelected: (path) =>
+                  setState(() {
+                    _pendingImagePath = path;
+                    _imageRemoved = false;
+                  }),
+              onImageRemoved: () =>
+                  setState(() {
+                    _pendingImagePath = null;
+                    _imageRemoved = true;
+                  }),
+            ),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),

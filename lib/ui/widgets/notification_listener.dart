@@ -30,7 +30,8 @@ class _NotificationListenerState extends ConsumerState<NotificationListener> {
 
   void _showNotification(BuildContext context, InAppNotification notification) {
     final theme = Theme.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
 
     // Clear any existing snackbars
     messenger.clearSnackBars();

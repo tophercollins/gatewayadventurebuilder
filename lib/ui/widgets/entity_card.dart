@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/spacing.dart';
+import 'entity_image.dart';
 
 /// A reusable card widget for displaying entity information.
 /// Used for NPCs, locations, and items in session entities screen.
@@ -10,6 +11,7 @@ class EntityCard extends StatelessWidget {
     required this.name,
     this.subtitle,
     this.description,
+    this.imagePath,
     required this.onEdit,
     super.key,
   });
@@ -18,6 +20,7 @@ class EntityCard extends StatelessWidget {
   final String name;
   final String? subtitle;
   final String? description;
+  final String? imagePath;
   final VoidCallback onEdit;
 
   @override
@@ -34,18 +37,10 @@ class EntityCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(Spacing.sm),
-            ),
-            child: Icon(
-              icon,
-              color: theme.colorScheme.primary,
-              size: Spacing.iconSize,
-            ),
+          EntityImage.avatar(
+            imagePath: imagePath,
+            fallbackIcon: icon,
+            size: 40,
           ),
           const SizedBox(width: Spacing.md),
           Expanded(

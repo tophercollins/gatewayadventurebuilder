@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../database/database_helper.dart';
 import '../models/character.dart';
 import '../models/player.dart';
+import '../models/session.dart';
 
 /// Repository for players, characters, and campaign-player links.
 class PlayerRepository {
@@ -221,5 +222,20 @@ class PlayerRepository {
   Future<void> deleteCharacter(String id) async {
     final db = await _db.database;
     await db.delete('characters', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Returns sessions that a character attended, ordered by date descending.
+  Future<List<Session>> getSessionsByCharacter(String characterId) async {
+    final db = await _db.database;
+    final results = await db.rawQuery(
+      '''
+      SELECT s.* FROM sessions s
+      JOIN session_attendees sa ON s.id = sa.session_id
+      WHERE sa.character_id = ?
+      ORDER BY s.date DESC
+    ''',
+      [characterId],
+    );
+    return results.map((m) => Session.fromMap(m)).toList();
   }
 }

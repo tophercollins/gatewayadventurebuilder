@@ -5,6 +5,7 @@ class Player {
     required this.userId,
     required this.name,
     this.notes,
+    this.imagePath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -13,6 +14,7 @@ class Player {
   final String userId;
   final String name;
   final String? notes;
+  final String? imagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -22,6 +24,7 @@ class Player {
       userId: map['user_id'] as String,
       name: map['name'] as String,
       notes: map['notes'] as String?,
+      imagePath: map['image_path'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -33,6 +36,7 @@ class Player {
       'user_id': userId,
       'name': name,
       'notes': notes,
+      'image_path': imagePath,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -43,6 +47,7 @@ class Player {
     String? userId,
     String? name,
     String? notes,
+    String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -51,6 +56,7 @@ class Player {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       notes: notes ?? this.notes,
+      imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

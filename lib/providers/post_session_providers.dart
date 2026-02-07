@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/session.dart';
 import '../data/repositories/session_repository.dart';
 import 'campaign_providers.dart';
+import 'queue_providers.dart';
 import 'recording_providers.dart';
 import 'repository_providers.dart';
 import 'transcription_providers.dart';
@@ -134,12 +135,15 @@ class PostSessionNotifier extends StateNotifier<PostSessionState> {
       );
 
       final transcriptionState = _ref.read(transcriptionNotifierProvider);
-      if (transcriptionState.hasError) {
+      if (!transcriptionState.isComplete) {
         final detail = transcriptionState.error?.message ??
             transcriptionState.error?.details;
         final msg = transcriptionState.message ?? 'Transcription failed';
         throw Exception(detail != null ? '$msg\n$detail' : msg);
       }
+
+      // Enqueue for AI processing (summary, entities, etc.)
+      await _ref.read(queueNotifierProvider.notifier).enqueue(sessionId);
 
       final updatedSession = await _sessionRepo.getSessionById(sessionId);
 

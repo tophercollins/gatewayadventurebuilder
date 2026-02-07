@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
+import '../../providers/image_providers.dart';
 import '../../providers/player_providers.dart';
+import '../../providers/repository_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
+import '../widgets/image_picker_field.dart';
 
 /// Screen for adding a new player to a campaign.
 class AddPlayerScreen extends ConsumerStatefulWidget {
@@ -20,6 +24,7 @@ class _AddPlayerScreenState extends ConsumerState<AddPlayerScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
+  String? _pendingImagePath;
   bool _isSaving = false;
 
   @override
@@ -35,13 +40,32 @@ class _AddPlayerScreenState extends ConsumerState<AddPlayerScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await ref.read(playerEditorProvider).createPlayer(
+      final editor = ref.read(playerEditorProvider);
+      final playerId = await editor.createPlayer(
         campaignId: widget.campaignId,
         name: _nameController.text.trim(),
         notes: _notesController.text.trim().isEmpty
             ? null
             : _notesController.text.trim(),
       );
+
+      if (_pendingImagePath != null) {
+        final imageService = ref.read(imageStorageProvider);
+        final storedPath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'players',
+          entityId: playerId,
+          imageType: EntityImageType.avatar,
+        );
+        final playerRepo = ref.read(playerRepositoryProvider);
+        final player = await playerRepo.getPlayerById(playerId);
+        if (player != null) {
+          await editor.updatePlayer(
+            player.copyWith(imagePath: storedPath),
+            widget.campaignId,
+          );
+        }
+      }
 
       if (mounted) {
         context.go(Routes.playersPath(widget.campaignId));
@@ -86,6 +110,15 @@ class _AddPlayerScreenState extends ConsumerState<AddPlayerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        ImagePickerField(
+                          currentImagePath: null,
+                          pendingImagePath: _pendingImagePath,
+                          fallbackIcon: Icons.person,
+                          onImageSelected: (path) =>
+                              setState(() => _pendingImagePath = path),
+                          onImageRemoved: () =>
+                              setState(() => _pendingImagePath = null),
+                        ),
                         TextFormField(
                           controller: _nameController,
                           decoration: const InputDecoration(

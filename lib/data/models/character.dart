@@ -12,6 +12,7 @@ class Character {
     this.goals,
     this.notes,
     this.status = CharacterStatus.active,
+    this.imagePath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -27,6 +28,7 @@ class Character {
   final String? goals;
   final String? notes;
   final CharacterStatus status;
+  final String? imagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -43,6 +45,7 @@ class Character {
       goals: map['goals'] as String?,
       notes: map['notes'] as String?,
       status: CharacterStatus.fromString(map['status'] as String?),
+      imagePath: map['image_path'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -61,6 +64,7 @@ class Character {
       'goals': goals,
       'notes': notes,
       'status': status.value,
+      'image_path': imagePath,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -78,6 +82,7 @@ class Character {
     String? goals,
     String? notes,
     CharacterStatus? status,
+    String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -93,6 +98,7 @@ class Character {
       goals: goals ?? this.goals,
       notes: notes ?? this.notes,
       status: status ?? this.status,
+      imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

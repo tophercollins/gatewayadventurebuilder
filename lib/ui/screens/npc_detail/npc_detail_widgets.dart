@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/npc.dart';
 import '../../theme/spacing.dart';
+import '../../widgets/entity_image.dart';
 
 /// Header widget for NPC detail screen.
 class NpcHeader extends StatelessWidget {
@@ -16,18 +17,9 @@ class NpcHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(Spacing.sm),
-          ),
-          child: Icon(
-            Icons.person_outline,
-            color: theme.colorScheme.primary,
-            size: 32,
-          ),
+        EntityImage.avatar(
+          imagePath: npc.imagePath,
+          fallbackIcon: Icons.person_outline,
         ),
         const SizedBox(width: Spacing.md),
         Expanded(

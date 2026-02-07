@@ -6,12 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TTRPG Session Tracker — a desktop-first Flutter app for Game Masters that records tabletop RPG sessions, transcribes audio, and uses AI (Gemini Flash) to generate summaries, extract entities (NPCs, locations, items, monsters), and track campaign details. Offline-first architecture with optional Supabase cloud sync.
 
-**Status:** v0.2.0 — All 15 MVP phases complete plus 10-item post-MVP feature backlog. `flutter analyze` passes with 0 issues. DB version 4.
+**Status:** v0.3.0 — Entity image support for all 7 entity types. `flutter analyze` passes with 0 issues. DB version 5.
 
 ### Version History
 - **v0.0** — Initial 15-phase MVP (project setup through polish)
 - **v0.1** — Real transcription: Whisper on macOS (local, free), Gemini Flash-Lite on Windows/Linux (cloud)
 - **v0.2** — Feature backlog: crash recovery, reactive state, stats dashboard, export, podcast generation, email integration, manual session add, light/dark toggle, audio playback
+- **v0.3** — Entity image support: image upload/display for all 7 entity types (worlds, campaigns, players, characters, NPCs, locations, items)
 
 ## Build & Development Commands
 
@@ -42,6 +43,7 @@ dart format .                  # Format all Dart code
 - **Backend/Sync:** supabase_flutter ^2.0.0 (scaffolded, not yet active)
 - **Email:** Resend via http ^1.2.0
 - **Secure Storage:** flutter_secure_storage ^9.0.0
+- **Image Handling:** file_picker ^8.0.0 (OS file dialogs) + image ^4.1.0 (resize/compress)
 
 ## Architecture
 
@@ -68,6 +70,7 @@ lib/
     database/              # schema.dart, database_helper.dart (migrations)
   services/
     audio/                 # recording, playback, crash recovery
+    image/                 # image storage service (pick, resize, store, delete)
     transcription/         # whisper, gemini, mock, chunker, model manager
     processing/            # session processor, LLM, queue, entity matcher, podcast, prompts/
     export/                # markdown/JSON/CSV export, file saver
@@ -82,7 +85,7 @@ lib/
 ```
 
 ### Database Schema
-26 tables defined in BACKEND_STRUCTURE.md (+ `notification_settings`). DB version 4. Key relationships:
+26 tables defined in BACKEND_STRUCTURE.md (+ `notification_settings`). DB version 5. Key relationships:
 - `worlds` → `campaigns` → `sessions` (hierarchical)
 - `players` ↔ `campaigns` (many-to-many via `campaign_players`)
 - `players` → `characters` → sessions (via `session_attendees`)
@@ -94,6 +97,7 @@ lib/
 - **v1→v2:** `ALTER TABLE session_transcripts ADD COLUMN edited_text TEXT`
 - **v2→v3:** `ALTER TABLE session_summaries ADD COLUMN podcast_script TEXT`
 - **v3→v4:** `CREATE TABLE monsters` + `CREATE INDEX idx_monsters_world`
+- **v4→v5:** `ALTER TABLE {worlds,campaigns,players,characters,npcs,locations,items} ADD COLUMN image_path TEXT`
 
 #### SessionStatus Enum
 `recording`, `transcribing`, `queued`, `processing`, `complete`, `error`, `logged`, `interrupted`

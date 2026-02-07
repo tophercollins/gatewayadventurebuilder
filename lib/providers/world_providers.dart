@@ -10,6 +10,7 @@ import '../data/models/npc_quote.dart';
 import '../data/models/npc_relationship.dart';
 import '../data/models/session.dart';
 import '../data/repositories/entity_repository.dart';
+import 'image_providers.dart';
 import 'repository_providers.dart';
 
 /// Revision counter for world entity data.
@@ -343,6 +344,33 @@ class EntityEditor {
   Future<void> updateMonster(Monster monster) async {
     await _entityRepo.updateMonster(monster, markEdited: true);
     _ref.invalidate(monsterByIdProvider(monster.id));
+  }
+
+  /// Deletes an NPC and its image.
+  Future<void> deleteNpc(String npcId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(entityType: 'npcs', entityId: npcId);
+    await _entityRepo.deleteNpc(npcId);
+    _ref.read(worldEntitiesRevisionProvider.notifier).state++;
+  }
+
+  /// Deletes a location and its image.
+  Future<void> deleteLocation(String locationId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(
+      entityType: 'locations',
+      entityId: locationId,
+    );
+    await _entityRepo.deleteLocation(locationId);
+    _ref.read(worldEntitiesRevisionProvider.notifier).state++;
+  }
+
+  /// Deletes an item and its image.
+  Future<void> deleteItem(String itemId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(entityType: 'items', entityId: itemId);
+    await _entityRepo.deleteItem(itemId);
+    _ref.read(worldEntitiesRevisionProvider.notifier).state++;
   }
 }
 

@@ -10,6 +10,7 @@ class Npc {
     this.status = NpcStatus.alive,
     this.notes,
     this.isEdited = false,
+    this.imagePath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -23,6 +24,7 @@ class Npc {
   final NpcStatus status;
   final String? notes;
   final bool isEdited;
+  final String? imagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -37,6 +39,7 @@ class Npc {
       status: NpcStatus.fromString(map['status'] as String?),
       notes: map['notes'] as String?,
       isEdited: (map['is_edited'] as int?) == 1,
+      imagePath: map['image_path'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -53,6 +56,7 @@ class Npc {
       'status': status.value,
       'notes': notes,
       'is_edited': isEdited ? 1 : 0,
+      'image_path': imagePath,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -68,6 +72,7 @@ class Npc {
     NpcStatus? status,
     String? notes,
     bool? isEdited,
+    String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -81,6 +86,7 @@ class Npc {
       status: status ?? this.status,
       notes: notes ?? this.notes,
       isEdited: isEdited ?? this.isEdited,
+      imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

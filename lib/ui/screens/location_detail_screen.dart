@@ -9,7 +9,11 @@ import '../../data/models/session.dart';
 import '../../utils/formatters.dart';
 import '../../providers/world_providers.dart';
 import '../theme/spacing.dart';
+import '../../providers/image_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/entity_image.dart';
+import '../widgets/image_picker_field.dart';
 
 /// Location detail screen showing all location information and appearances.
 class LocationDetailScreen extends ConsumerStatefulWidget {
@@ -133,18 +137,9 @@ class _LocationHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(Spacing.sm),
-          ),
-          child: Icon(
-            Icons.place_outlined,
-            color: theme.colorScheme.primary,
-            size: 32,
-          ),
+        EntityImage.avatar(
+          imagePath: location.imagePath,
+          fallbackIcon: Icons.place_outlined,
         ),
         const SizedBox(width: Spacing.md),
         Expanded(
@@ -356,7 +351,7 @@ class _SessionCard extends StatelessWidget {
 
 }
 
-class _LocationEditForm extends StatefulWidget {
+class _LocationEditForm extends ConsumerStatefulWidget {
   const _LocationEditForm({
     required this.location,
     required this.onSave,
@@ -368,16 +363,18 @@ class _LocationEditForm extends StatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  State<_LocationEditForm> createState() => _LocationEditFormState();
+  ConsumerState<_LocationEditForm> createState() => _LocationEditFormState();
 }
 
-class _LocationEditFormState extends State<_LocationEditForm> {
+class _LocationEditFormState extends ConsumerState<_LocationEditForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _typeController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _notesController;
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
+  String? _pendingImagePath;
+  bool _imageRemoved = false;
 
   @override
   void initState() {
@@ -401,25 +398,52 @@ class _LocationEditFormState extends State<_LocationEditForm> {
     super.dispose();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSaving = true);
 
-    final updated = widget.location.copyWith(
-      name: _nameController.text.trim(),
-      locationType: _typeController.text.trim().isEmpty
-          ? null
-          : _typeController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      notes: _notesController.text.trim().isEmpty
-          ? null
-          : _notesController.text.trim(),
-    );
+    try {
+      String? imagePath = widget.location.imagePath;
+      final imageService = ref.read(imageStorageProvider);
 
-    widget.onSave(updated);
+      if (_imageRemoved && _pendingImagePath == null) {
+        await imageService.deleteImage(
+          entityType: 'locations',
+          entityId: widget.location.id,
+        );
+        imagePath = null;
+      } else if (_pendingImagePath != null) {
+        imagePath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'locations',
+          entityId: widget.location.id,
+          imageType: EntityImageType.avatar,
+        );
+      }
+
+      final updated = widget.location.copyWith(
+        name: _nameController.text.trim(),
+        locationType: _typeController.text.trim().isEmpty
+            ? null
+            : _typeController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        imagePath: imagePath,
+      );
+
+      widget.onSave(updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save: $e')),
+        );
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -437,6 +461,22 @@ class _LocationEditFormState extends State<_LocationEditForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ImagePickerField(
+              currentImagePath:
+                  _imageRemoved ? null : widget.location.imagePath,
+              pendingImagePath: _pendingImagePath,
+              fallbackIcon: Icons.place_outlined,
+              onImageSelected: (path) =>
+                  setState(() {
+                    _pendingImagePath = path;
+                    _imageRemoved = false;
+                  }),
+              onImageRemoved: () =>
+                  setState(() {
+                    _pendingImagePath = null;
+                    _imageRemoved = true;
+                  }),
+            ),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),

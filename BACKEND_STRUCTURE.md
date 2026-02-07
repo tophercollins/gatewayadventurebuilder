@@ -94,6 +94,7 @@ Auto-created when first campaign is made. Hidden in UI until user has multiple c
 | name | TEXT | NOT NULL | World name (defaults to first campaign name) |
 | description | TEXT | | World description |
 | game_system | TEXT | | Default game system (D&D 5e, etc.) |
+| image_path | TEXT | | Local path to world avatar image |
 | created_at | TEXT (ISO 8601) | NOT NULL | When the world idea was born |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 
@@ -110,6 +111,7 @@ Auto-created when first campaign is made. Hidden in UI until user has multiple c
 | game_system | TEXT | | Game system (inherits from world if blank) |
 | status | TEXT | DEFAULT 'active' | active, paused, completed |
 | start_date | TEXT (ISO 8601) | | First session date (backdatable) |
+| image_path | TEXT | | Local path to campaign banner image |
 | created_at | TEXT (ISO 8601) | NOT NULL | Record creation timestamp |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 
@@ -125,6 +127,7 @@ Global/user-level. Real people who can play across campaigns.
 | user_id | TEXT (UUID) | FK → users.id, NOT NULL | Owner (the GM) |
 | name | TEXT | NOT NULL | Player's real name |
 | notes | TEXT | | GM notes about play style, preferences |
+| image_path | TEXT | | Local path to player avatar image |
 | created_at | TEXT (ISO 8601) | NOT NULL | Record creation |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 
@@ -162,6 +165,7 @@ Fictional characters. Belong to a player within a campaign.
 | goals | TEXT | | Character goals/motivations |
 | notes | TEXT | | GM notes on arc, progression |
 | status | TEXT | DEFAULT 'active' | active, retired, dead |
+| image_path | TEXT | | Local path to character avatar image |
 | created_at | TEXT (ISO 8601) | NOT NULL | Record creation |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 
@@ -317,6 +321,7 @@ World-level entities. Shared across campaigns in the same world.
 | status | TEXT | DEFAULT 'alive' | alive, dead, unknown, missing |
 | notes | TEXT | | GM notes |
 | is_edited | INTEGER | DEFAULT 0 | Whether GM has edited |
+| image_path | TEXT | | Local path to NPC avatar image |
 | created_at | TEXT (ISO 8601) | NOT NULL | When first extracted |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 
@@ -337,6 +342,7 @@ World-level entities.
 | parent_location_id | TEXT (UUID) | FK → locations.id | Connected/parent location |
 | notes | TEXT | | GM notes |
 | is_edited | INTEGER | DEFAULT 0 | Whether GM has edited |
+| image_path | TEXT | | Local path to location avatar image |
 | created_at | TEXT (ISO 8601) | NOT NULL | When first extracted |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 
@@ -359,6 +365,7 @@ World-level entities.
 | current_owner_id | TEXT (UUID) | | FK to character, NPC, or location |
 | notes | TEXT | | GM notes |
 | is_edited | INTEGER | DEFAULT 0 | Whether GM has edited |
+| image_path | TEXT | | Local path to item avatar image |
 | created_at | TEXT (ISO 8601) | NOT NULL | When first extracted |
 | updated_at | TEXT (ISO 8601) | NOT NULL | Last update |
 

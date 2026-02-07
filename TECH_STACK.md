@@ -139,10 +139,22 @@ transcriptionServiceProvider (Platform.isMacOS?)
 
 ---
 
+## Image Handling
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **file_picker** | ^8.0.0 | Native OS file dialogs for image selection |
+| **image** | ^4.1.0 | Pure Dart image resize/compress (no platform channels) |
+
+**Storage:** Entity images stored locally at `{app_docs}/ttrpg_tracker/images/{entityType}/{entityId}.jpg`. Banners (campaigns) resized to max 1200px wide; avatars (all others) cropped to square and resized to max 512px. JPEG quality 85.
+
+---
+
 ## File Storage
 
 ### Local (MVP)
 - Audio files stored locally via `path_provider`
+- Entity images stored locally via `path_provider` + `image` package
 - SQLite for structured data
 - Raw transcripts as text files or in DB
 

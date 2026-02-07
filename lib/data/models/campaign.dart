@@ -8,6 +8,7 @@ class Campaign {
     this.gameSystem,
     this.status = CampaignStatus.active,
     this.startDate,
+    this.imagePath,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -19,6 +20,7 @@ class Campaign {
   final String? gameSystem;
   final CampaignStatus status;
   final DateTime? startDate;
+  final String? imagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -33,6 +35,7 @@ class Campaign {
       startDate: map['start_date'] != null
           ? DateTime.parse(map['start_date'] as String)
           : null,
+      imagePath: map['image_path'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -47,6 +50,7 @@ class Campaign {
       'game_system': gameSystem,
       'status': status.value,
       'start_date': startDate?.toIso8601String(),
+      'image_path': imagePath,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -60,6 +64,7 @@ class Campaign {
     String? gameSystem,
     CampaignStatus? status,
     DateTime? startDate,
+    String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -71,6 +76,7 @@ class Campaign {
       gameSystem: gameSystem ?? this.gameSystem,
       status: status ?? this.status,
       startDate: startDate ?? this.startDate,
+      imagePath: imagePath ?? this.imagePath,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

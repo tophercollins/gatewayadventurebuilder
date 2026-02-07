@@ -8,8 +8,12 @@ import '../../data/models/item.dart';
 import '../../data/models/session.dart';
 import '../../utils/formatters.dart';
 import '../../providers/world_providers.dart';
+import '../../providers/image_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/entity_image.dart';
+import '../widgets/image_picker_field.dart';
 
 /// Item detail screen showing all item information and appearances.
 class ItemDetailScreen extends ConsumerStatefulWidget {
@@ -129,18 +133,9 @@ class _ItemHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(Spacing.sm),
-          ),
-          child: Icon(
-            Icons.inventory_2_outlined,
-            color: theme.colorScheme.primary,
-            size: 32,
-          ),
+        EntityImage.avatar(
+          imagePath: item.imagePath,
+          fallbackIcon: Icons.inventory_2_outlined,
         ),
         const SizedBox(width: Spacing.md),
         Expanded(
@@ -364,7 +359,7 @@ class _SessionCard extends StatelessWidget {
 
 }
 
-class _ItemEditForm extends StatefulWidget {
+class _ItemEditForm extends ConsumerStatefulWidget {
   const _ItemEditForm({
     required this.item,
     required this.onSave,
@@ -376,10 +371,10 @@ class _ItemEditForm extends StatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  State<_ItemEditForm> createState() => _ItemEditFormState();
+  ConsumerState<_ItemEditForm> createState() => _ItemEditFormState();
 }
 
-class _ItemEditFormState extends State<_ItemEditForm> {
+class _ItemEditFormState extends ConsumerState<_ItemEditForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _typeController;
   late final TextEditingController _descriptionController;
@@ -387,6 +382,8 @@ class _ItemEditFormState extends State<_ItemEditForm> {
   late final TextEditingController _notesController;
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
+  String? _pendingImagePath;
+  bool _imageRemoved = false;
 
   @override
   void initState() {
@@ -412,28 +409,55 @@ class _ItemEditFormState extends State<_ItemEditForm> {
     super.dispose();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSaving = true);
 
-    final updated = widget.item.copyWith(
-      name: _nameController.text.trim(),
-      itemType: _typeController.text.trim().isEmpty
-          ? null
-          : _typeController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      properties: _propertiesController.text.trim().isEmpty
-          ? null
-          : _propertiesController.text.trim(),
-      notes: _notesController.text.trim().isEmpty
-          ? null
-          : _notesController.text.trim(),
-    );
+    try {
+      String? imagePath = widget.item.imagePath;
+      final imageService = ref.read(imageStorageProvider);
 
-    widget.onSave(updated);
+      if (_imageRemoved && _pendingImagePath == null) {
+        await imageService.deleteImage(
+          entityType: 'items',
+          entityId: widget.item.id,
+        );
+        imagePath = null;
+      } else if (_pendingImagePath != null) {
+        imagePath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'items',
+          entityId: widget.item.id,
+          imageType: EntityImageType.avatar,
+        );
+      }
+
+      final updated = widget.item.copyWith(
+        name: _nameController.text.trim(),
+        itemType: _typeController.text.trim().isEmpty
+            ? null
+            : _typeController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        properties: _propertiesController.text.trim().isEmpty
+            ? null
+            : _propertiesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        imagePath: imagePath,
+      );
+
+      widget.onSave(updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save: $e')),
+        );
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -451,6 +475,21 @@ class _ItemEditFormState extends State<_ItemEditForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ImagePickerField(
+              currentImagePath: _imageRemoved ? null : widget.item.imagePath,
+              pendingImagePath: _pendingImagePath,
+              fallbackIcon: Icons.inventory_2_outlined,
+              onImageSelected: (path) =>
+                  setState(() {
+                    _pendingImagePath = path;
+                    _imageRemoved = false;
+                  }),
+              onImageRemoved: () =>
+                  setState(() {
+                    _pendingImagePath = null;
+                    _imageRemoved = true;
+                  }),
+            ),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),

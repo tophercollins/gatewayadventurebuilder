@@ -14,15 +14,18 @@ class HistoryCheckApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
 
-    return app_notifications.NotificationListener(
-      child: MaterialApp.router(
-        title: 'History Check',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: themeMode,
-        routerConfig: appRouter,
-        debugShowCheckedModeBanner: false,
-      ),
+    return MaterialApp.router(
+      title: 'History Check',
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
+      routerConfig: appRouter,
+      debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return app_notifications.NotificationListener(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

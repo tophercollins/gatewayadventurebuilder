@@ -4,6 +4,8 @@ import '../data/models/campaign.dart';
 import '../data/models/session.dart';
 import '../data/models/world.dart';
 import '../data/repositories/campaign_repository.dart';
+import 'global_providers.dart';
+import 'image_providers.dart';
 import 'processing_providers.dart';
 import 'repository_providers.dart';
 
@@ -108,9 +110,11 @@ class CampaignEditor {
   final Ref _ref;
 
   /// Creates a campaign with an optional import text.
+  /// If [worldId] is provided, uses that world. Otherwise auto-creates one.
   /// Returns the new campaign's ID.
   Future<String> createCampaign({
     required String name,
+    String? worldId,
     String? gameSystem,
     String? description,
     String? importText,
@@ -119,6 +123,7 @@ class CampaignEditor {
     final campaign = await _campaignRepo.createCampaign(
       userId: user.id,
       name: name,
+      worldId: worldId,
       gameSystem: gameSystem,
       description: description,
     );
@@ -129,6 +134,7 @@ class CampaignEditor {
     }
 
     _ref.read(campaignsRevisionProvider.notifier).state++;
+    _ref.read(worldsRevisionProvider.notifier).state++;
     return campaign.id;
   }
 
@@ -138,8 +144,13 @@ class CampaignEditor {
     _ref.read(campaignsRevisionProvider.notifier).state++;
   }
 
-  /// Deletes a campaign and all its data.
+  /// Deletes a campaign and all its data, including image.
   Future<void> deleteCampaign(String campaignId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(
+      entityType: 'campaigns',
+      entityId: campaignId,
+    );
     await _campaignRepo.deleteCampaign(campaignId);
     _ref.read(campaignsRevisionProvider.notifier).state++;
   }
@@ -149,4 +160,53 @@ class CampaignEditor {
 final campaignEditorProvider = Provider<CampaignEditor>((ref) {
   final campaignRepo = ref.watch(campaignRepositoryProvider);
   return CampaignEditor(campaignRepo, ref);
+});
+
+/// Service for world CRUD operations.
+class WorldEditor {
+  WorldEditor(this._campaignRepo, this._ref);
+
+  final CampaignRepository _campaignRepo;
+  final Ref _ref;
+
+  /// Creates a standalone world. Returns the new world.
+  Future<World> createWorld({
+    required String name,
+    String? description,
+    String? gameSystem,
+  }) async {
+    final user = await _ref.read(currentUserProvider.future);
+    final world = await _campaignRepo.createWorld(
+      userId: user.id,
+      name: name,
+      description: description,
+      gameSystem: gameSystem,
+    );
+    _ref.read(worldsRevisionProvider.notifier).state++;
+    return world;
+  }
+
+  /// Updates a world's name, description, or game system.
+  Future<void> updateWorld(World updated) async {
+    await _campaignRepo.updateWorld(updated);
+    _ref.read(worldsRevisionProvider.notifier).state++;
+  }
+
+  /// Deletes a world and its campaigns, including image.
+  Future<void> deleteWorld(String worldId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(
+      entityType: 'worlds',
+      entityId: worldId,
+    );
+    await _campaignRepo.deleteWorld(worldId);
+    _ref.read(worldsRevisionProvider.notifier).state++;
+    _ref.read(campaignsRevisionProvider.notifier).state++;
+  }
+}
+
+/// Provider for world editor operations.
+final worldEditorProvider = Provider<WorldEditor>((ref) {
+  final campaignRepo = ref.watch(campaignRepositoryProvider);
+  return WorldEditor(campaignRepo, ref);
 });

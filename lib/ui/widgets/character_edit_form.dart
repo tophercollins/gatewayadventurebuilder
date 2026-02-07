@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/character.dart';
+import '../../providers/image_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
+import 'image_picker_field.dart';
 
 /// Inline form for editing character details.
-class CharacterEditForm extends StatefulWidget {
+class CharacterEditForm extends ConsumerStatefulWidget {
   const CharacterEditForm({
     required this.character,
     required this.onSave,
@@ -17,10 +21,10 @@ class CharacterEditForm extends StatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  State<CharacterEditForm> createState() => _CharacterEditFormState();
+  ConsumerState<CharacterEditForm> createState() => _CharacterEditFormState();
 }
 
-class _CharacterEditFormState extends State<CharacterEditForm> {
+class _CharacterEditFormState extends ConsumerState<CharacterEditForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _classController;
   late final TextEditingController _raceController;
@@ -30,6 +34,8 @@ class _CharacterEditFormState extends State<CharacterEditForm> {
   late final TextEditingController _notesController;
   late CharacterStatus _status;
   final _formKey = GlobalKey<FormState>();
+  String? _pendingImagePath;
+  bool _imageRemoved = false;
   bool _isSaving = false;
 
   @override
@@ -72,6 +78,24 @@ class _CharacterEditFormState extends State<CharacterEditForm> {
 
     setState(() => _isSaving = true);
 
+    final imageService = ref.read(imageStorageProvider);
+    String? imagePath = widget.character.imagePath;
+
+    if (_imageRemoved && _pendingImagePath == null) {
+      await imageService.deleteImage(
+        entityType: 'characters',
+        entityId: widget.character.id,
+      );
+      imagePath = null;
+    } else if (_pendingImagePath != null) {
+      imagePath = await imageService.storeImage(
+        sourcePath: _pendingImagePath!,
+        entityType: 'characters',
+        entityId: widget.character.id,
+        imageType: EntityImageType.avatar,
+      );
+    }
+
     final updatedCharacter = widget.character.copyWith(
       name: _nameController.text.trim(),
       characterClass: _classController.text.trim().isEmpty
@@ -93,6 +117,7 @@ class _CharacterEditFormState extends State<CharacterEditForm> {
           ? null
           : _notesController.text.trim(),
       status: _status,
+      imagePath: imagePath,
     );
 
     widget.onSave(updatedCharacter);
@@ -105,6 +130,18 @@ class _CharacterEditFormState extends State<CharacterEditForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ImagePickerField(
+            currentImagePath:
+                _imageRemoved ? null : widget.character.imagePath,
+            pendingImagePath: _pendingImagePath,
+            fallbackIcon: Icons.face,
+            onImageSelected: (path) =>
+                setState(() => _pendingImagePath = path),
+            onImageRemoved: () => setState(() {
+              _pendingImagePath = null;
+              _imageRemoved = true;
+            }),
+          ),
           TextFormField(
             controller: _nameController,
             decoration: const InputDecoration(

@@ -4,6 +4,95 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.3.0] — 2026-02-07 — Entity Image Support
+
+Adds image upload and display for all 7 entity types. Wide 16:9 banners for campaigns, square avatars for all others. Images are picked from OS file dialogs, auto-resized on import, and stored locally as JPEG.
+
+### Added
+
+#### New Packages
+- **`file_picker: ^8.0.0`** — Native OS file dialogs for image selection
+- **`image: ^4.1.0`** — Pure Dart image resize/compress (no platform channels)
+
+#### Image Storage Service
+- **New: `lib/services/image/image_storage_service.dart`** — Core image service
+  - `pickImageFile()` — Opens OS file picker filtered to png/jpg/jpeg/webp
+  - `storeImage()` — Reads, resizes (banners max 1200px wide, avatars cropped to square max 512px), encodes as JPEG quality 85, stores locally
+  - `deleteImage()` — Removes stored image file
+  - `getImagePath()` — Returns expected storage path for an entity
+  - Storage path: `{app_docs}/ttrpg_tracker/images/{entityType}/{entityId}.jpg`
+
+#### Image Provider
+- **New: `lib/providers/image_providers.dart`** — `imageStorageProvider` for DI access to `ImageStorageService`
+
+#### Reusable UI Widgets
+- **New: `lib/ui/widgets/entity_image.dart`** — Display widget with two constructors:
+  - `EntityImage.avatar(imagePath, fallbackIcon, {size, borderRadius, fallbackChild})` — Square with rounded corners
+  - `EntityImage.banner(imagePath, fallbackIcon)` — 16:9 aspect ratio
+  - Uses `Image.file()` with `errorBuilder` for graceful fallback
+- **New: `lib/ui/widgets/image_picker_field.dart`** — Form picker widget
+  - Shows current/pending image with pick and remove overlay buttons
+  - Callbacks: `onImageSelected(sourcePath)`, `onImageRemoved()`
+  - Supports both banner and avatar modes
+
+#### macOS Entitlements
+- Added `com.apple.security.files.user-selected.read-write` to both `DebugProfile.entitlements` and `Release.entitlements`
+
+### Changed
+
+#### Database Migration v4→v5
+- Added `image_path TEXT` column to 7 tables: `worlds`, `campaigns`, `players`, `characters`, `npcs`, `locations`, `items`
+- Modified: `lib/data/database/database_helper.dart` — version bump from 4 to 5
+- Modified: `lib/data/database/schema.dart` — added column to all 7 CREATE TABLE statements
+
+#### Model Updates (7 files)
+- `lib/data/models/world.dart` — added `String? imagePath` field, `fromMap`, `toMap`, `copyWith`
+- `lib/data/models/campaign.dart` — same pattern
+- `lib/data/models/player.dart` — same pattern
+- `lib/data/models/character.dart` — same pattern
+- `lib/data/models/npc.dart` — same pattern
+- `lib/data/models/location.dart` — same pattern
+- `lib/data/models/item.dart` — same pattern
+
+#### Display Integration
+- `lib/ui/screens/npc_detail/npc_detail_widgets.dart` — 56x56 icon → `EntityImage.avatar`
+- `lib/ui/screens/location_detail_screen.dart` — header icon → `EntityImage.avatar`
+- `lib/ui/screens/item_detail_screen.dart` — header icon → `EntityImage.avatar`
+- `lib/ui/screens/worlds_screen.dart` — world card icon → `EntityImage.avatar(size: 40)`
+- `lib/ui/widgets/player_card.dart` — `CircleAvatar` → `EntityImage.avatar` with initial-letter `fallbackChild`
+- `lib/ui/widgets/entity_card.dart` — added `imagePath` param, icon → `EntityImage.avatar(size: 40)`
+- `lib/ui/screens/campaign_home_screen.dart` — added `EntityImage.banner` above header when image exists
+
+#### Form Integration (image picker added to all entity forms)
+- `lib/ui/screens/npc_detail/npc_edit_form.dart` — converted to `ConsumerStatefulWidget`, added `ImagePickerField`
+- `lib/ui/screens/location_detail_screen.dart` — edit form converted, added image picker
+- `lib/ui/screens/item_detail_screen.dart` — edit form converted, added image picker
+- `lib/ui/screens/worlds_screen.dart` — form dialog updated with image picker
+- `lib/ui/screens/new_campaign_screen.dart` — added banner image picker
+- `lib/ui/screens/add_player_screen.dart` — added avatar image picker
+- `lib/ui/widgets/player_edit_form.dart` — converted to `ConsumerStatefulWidget`, added image picker
+- `lib/ui/screens/add_character_screen.dart` — added avatar image picker
+- `lib/ui/widgets/character_edit_form.dart` — converted to `ConsumerStatefulWidget`, added image picker
+
+#### Image Cleanup on Delete
+- `lib/providers/campaign_providers.dart` — `CampaignEditor.deleteCampaign()` and `WorldEditor.deleteWorld()` now delete associated images
+- `lib/providers/player_providers.dart` — `PlayerEditor.deletePlayer()` and `deleteCharacter()` now delete images; `createPlayer()` and `createCharacter()` return `Future<String>` (entity ID) instead of `Future<void>`
+- `lib/providers/world_providers.dart` — `EntityEditor` gained `deleteNpc()`, `deleteLocation()`, `deleteItem()` methods with image cleanup
+
+### Database Changes
+
+| Version | Migration |
+|---------|-----------|
+| v4→v5 | `ALTER TABLE {worlds,campaigns,players,characters,npcs,locations,items} ADD COLUMN image_path TEXT` |
+
+### Verification
+
+- `flutter analyze` — 0 issues
+- DB migration v4→v5 applies cleanly
+- All 7 entity types support image pick, display, and cleanup on delete
+
+---
+
 ## [0.2.0] — 2026-02-06 — Feature Backlog (Post-MVP Enhancements)
 
 Major feature expansion across 10 backlog items: crash recovery, reactive state, new screens, export, podcast generation, stats, email integration, and UI polish.

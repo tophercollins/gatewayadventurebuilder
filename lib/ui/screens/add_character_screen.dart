@@ -4,8 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/player.dart';
+import '../../providers/image_providers.dart';
 import '../../providers/player_providers.dart';
+import '../../providers/repository_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
+import '../widgets/image_picker_field.dart';
 
 /// Screen for adding a new character to a campaign.
 class AddCharacterScreen extends ConsumerStatefulWidget {
@@ -25,6 +29,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
   final _levelController = TextEditingController();
   final _backstoryController = TextEditingController();
   String? _selectedPlayerId;
+  String? _pendingImagePath;
   bool _isSaving = false;
 
   @override
@@ -52,7 +57,8 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await ref.read(playerEditorProvider).createCharacter(
+      final editor = ref.read(playerEditorProvider);
+      final characterId = await editor.createCharacter(
         playerId: _selectedPlayerId!,
         campaignId: widget.campaignId,
         name: _nameController.text.trim(),
@@ -69,6 +75,24 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
             ? null
             : _backstoryController.text.trim(),
       );
+
+      if (_pendingImagePath != null) {
+        final imageService = ref.read(imageStorageProvider);
+        final storedPath = await imageService.storeImage(
+          sourcePath: _pendingImagePath!,
+          entityType: 'characters',
+          entityId: characterId,
+          imageType: EntityImageType.avatar,
+        );
+        final playerRepo = ref.read(playerRepositoryProvider);
+        final character = await playerRepo.getCharacterById(characterId);
+        if (character != null) {
+          await editor.updateCharacter(
+            character.copyWith(imagePath: storedPath),
+            widget.campaignId,
+          );
+        }
+      }
 
       if (mounted) {
         context.go(Routes.playersPath(widget.campaignId));
@@ -241,6 +265,15 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
               children: [
                 Text('Character Details', style: theme.textTheme.titleSmall),
                 const SizedBox(height: Spacing.md),
+                ImagePickerField(
+                  currentImagePath: null,
+                  pendingImagePath: _pendingImagePath,
+                  fallbackIcon: Icons.face,
+                  onImageSelected: (path) =>
+                      setState(() => _pendingImagePath = path),
+                  onImageRemoved: () =>
+                      setState(() => _pendingImagePath = null),
+                ),
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(

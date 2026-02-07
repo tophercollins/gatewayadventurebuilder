@@ -5,6 +5,7 @@ import '../../data/models/player.dart';
 import '../theme/spacing.dart';
 import 'character_detail_card.dart';
 import 'delete_confirmation_dialog.dart';
+import 'entity_image.dart';
 import 'player_edit_form.dart';
 
 /// Card widget displaying a player with their characters.
@@ -63,13 +64,19 @@ class _PlayerCardState extends State<PlayerCard> {
         padding: const EdgeInsets.all(Spacing.cardPadding),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: theme.colorScheme.primary,
-              child: Text(
-                widget.player.name.isNotEmpty
-                    ? widget.player.name[0].toUpperCase()
-                    : '?',
-                style: TextStyle(color: theme.colorScheme.onPrimary),
+            EntityImage.avatar(
+              imagePath: widget.player.imagePath,
+              fallbackIcon: Icons.person,
+              size: 40,
+              borderRadius: 20,
+              fallbackChild: CircleAvatar(
+                backgroundColor: theme.colorScheme.primary,
+                child: Text(
+                  widget.player.name.isNotEmpty
+                      ? widget.player.name[0].toUpperCase()
+                      : '?',
+                  style: TextStyle(color: theme.colorScheme.onPrimary),
+                ),
               ),
             ),
             const SizedBox(width: Spacing.md),

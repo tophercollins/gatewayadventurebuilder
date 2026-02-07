@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/player.dart';
+import '../../providers/image_providers.dart';
+import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
+import 'image_picker_field.dart';
 
 /// Inline form for editing player details.
-class PlayerEditForm extends StatefulWidget {
+class PlayerEditForm extends ConsumerStatefulWidget {
   const PlayerEditForm({
     required this.player,
     required this.onSave,
@@ -17,13 +21,15 @@ class PlayerEditForm extends StatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  State<PlayerEditForm> createState() => _PlayerEditFormState();
+  ConsumerState<PlayerEditForm> createState() => _PlayerEditFormState();
 }
 
-class _PlayerEditFormState extends State<PlayerEditForm> {
+class _PlayerEditFormState extends ConsumerState<PlayerEditForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _notesController;
   final _formKey = GlobalKey<FormState>();
+  String? _pendingImagePath;
+  bool _imageRemoved = false;
   bool _isSaving = false;
 
   @override
@@ -45,11 +51,30 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
 
     setState(() => _isSaving = true);
 
+    final imageService = ref.read(imageStorageProvider);
+    String? imagePath = widget.player.imagePath;
+
+    if (_imageRemoved && _pendingImagePath == null) {
+      await imageService.deleteImage(
+        entityType: 'players',
+        entityId: widget.player.id,
+      );
+      imagePath = null;
+    } else if (_pendingImagePath != null) {
+      imagePath = await imageService.storeImage(
+        sourcePath: _pendingImagePath!,
+        entityType: 'players',
+        entityId: widget.player.id,
+        imageType: EntityImageType.avatar,
+      );
+    }
+
     final updatedPlayer = widget.player.copyWith(
       name: _nameController.text.trim(),
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
+      imagePath: imagePath,
     );
 
     widget.onSave(updatedPlayer);
@@ -62,6 +87,18 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ImagePickerField(
+            currentImagePath:
+                _imageRemoved ? null : widget.player.imagePath,
+            pendingImagePath: _pendingImagePath,
+            fallbackIcon: Icons.person,
+            onImageSelected: (path) =>
+                setState(() => _pendingImagePath = path),
+            onImageRemoved: () => setState(() {
+              _pendingImagePath = null;
+              _imageRemoved = true;
+            }),
+          ),
           TextFormField(
             controller: _nameController,
             decoration: const InputDecoration(
