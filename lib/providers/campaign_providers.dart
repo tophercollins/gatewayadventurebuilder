@@ -30,9 +30,21 @@ final campaignsListProvider =
           CampaignWithSessionCount(
             campaign: campaign,
             sessionCount: sessions.length,
+            lastSessionDate: sessions.isNotEmpty ? sessions.first.date : null,
           ),
         );
       }
+
+      // Sort by most recent session activity (campaigns with sessions first)
+      result.sort((a, b) {
+        if (a.lastSessionDate != null && b.lastSessionDate != null) {
+          return b.lastSessionDate!.compareTo(a.lastSessionDate!);
+        }
+        if (a.lastSessionDate != null) return -1;
+        if (b.lastSessionDate != null) return 1;
+        return b.campaign.updatedAt.compareTo(a.campaign.updatedAt);
+      });
+
       return result;
     });
 
@@ -41,10 +53,12 @@ class CampaignWithSessionCount {
   const CampaignWithSessionCount({
     required this.campaign,
     required this.sessionCount,
+    this.lastSessionDate,
   });
 
   final Campaign campaign;
   final int sessionCount;
+  final DateTime? lastSessionDate;
 }
 
 /// Provider for campaign details.
