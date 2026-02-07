@@ -95,7 +95,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
       }
 
       if (mounted) {
-        context.go(Routes.playersPath(widget.campaignId));
+        context.go(Routes.charactersPath(widget.campaignId));
       }
     } catch (e) {
       if (mounted) {
@@ -365,7 +365,7 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
             OutlinedButton(
               onPressed: _isSaving
                   ? null
-                  : () => context.go(Routes.playersPath(widget.campaignId)),
+                  : () => context.go(Routes.charactersPath(widget.campaignId)),
               child: const Text('Cancel'),
             ),
             const SizedBox(width: Spacing.sm),
