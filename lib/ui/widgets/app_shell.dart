@@ -97,7 +97,13 @@ class _ContentArea extends ConsumerWidget {
         leading: parentPath != null
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.go(parentPath),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(parentPath);
+                  }
+                },
                 tooltip: 'Back',
               )
             : null,

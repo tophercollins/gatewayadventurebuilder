@@ -97,7 +97,7 @@ class _CharacterCard extends StatelessWidget {
     final character = summary.character;
 
     return GestureDetector(
-      onTap: () => context.go(
+      onTap: () => context.push(
         Routes.characterDetailPath(character.campaignId, character.id),
       ),
       child: Container(
