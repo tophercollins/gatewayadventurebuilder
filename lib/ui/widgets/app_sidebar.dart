@@ -56,7 +56,7 @@ class AppSidebar extends StatelessWidget {
       path: Routes.allPlayers,
     ),
     const SidebarItem(
-      icon: Icons.person_outline,
+      icon: Icons.shield_outlined,
       label: 'Characters',
       path: Routes.allCharacters,
     ),
