@@ -69,10 +69,7 @@ final allWorldsProvider = FutureProvider.autoDispose<List<WorldSummary>>((
 
 /// Data class for a character with its campaign name.
 class CharacterSummary {
-  const CharacterSummary({
-    required this.character,
-    required this.campaignName,
-  });
+  const CharacterSummary({required this.character, required this.campaignName});
 
   final Character character;
   final String campaignName;
@@ -81,23 +78,23 @@ class CharacterSummary {
 /// Provider fetching all characters for the current user with campaign names.
 final allCharactersProvider =
     FutureProvider.autoDispose<List<CharacterSummary>>((ref) async {
-  final user = await ref.watch(currentUserProvider.future);
-  final playerRepo = ref.watch(playerRepositoryProvider);
-  final campaignRepo = ref.watch(campaignRepositoryProvider);
+      final user = await ref.watch(currentUserProvider.future);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      final campaignRepo = ref.watch(campaignRepositoryProvider);
 
-  final characters = await playerRepo.getCharactersByUser(user.id);
-  final campaigns = await campaignRepo.getCampaignsByUser(user.id);
-  final campaignMap = {for (final c in campaigns) c.id: c.name};
+      final characters = await playerRepo.getCharactersByUser(user.id);
+      final campaigns = await campaignRepo.getCampaignsByUser(user.id);
+      final campaignMap = {for (final c in campaigns) c.id: c.name};
 
-  return characters
-      .map(
-        (ch) => CharacterSummary(
-          character: ch,
-          campaignName: campaignMap[ch.campaignId] ?? 'Unknown',
-        ),
-      )
-      .toList();
-});
+      return characters
+          .map(
+            (ch) => CharacterSummary(
+              character: ch,
+              campaignName: campaignMap[ch.campaignId] ?? 'Unknown',
+            ),
+          )
+          .toList();
+    });
 
 /// Provider fetching all players for the current user with campaign counts.
 final allPlayersProvider = FutureProvider.autoDispose<List<PlayerSummary>>((

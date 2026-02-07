@@ -338,16 +338,16 @@ final sessionAttendeesProvider = FutureProvider.autoDispose
 
         Character? character;
         if (attendee.characterId != null) {
-          character = await playerRepo.getCharacterById(
-            attendee.characterId!,
-          );
+          character = await playerRepo.getCharacterById(attendee.characterId!);
         }
 
-        details.add(AttendeeDetail(
-          attendee: attendee,
-          player: player,
-          character: character,
-        ));
+        details.add(
+          AttendeeDetail(
+            attendee: attendee,
+            player: player,
+            character: character,
+          ),
+        );
       }
 
       return details;

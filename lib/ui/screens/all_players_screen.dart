@@ -247,9 +247,7 @@ class _PlayerFormDialogState extends ConsumerState<_PlayerFormDialog> {
         final playerRepo = ref.read(playerRepositoryProvider);
         final player = await playerRepo.getPlayerById(playerId);
         if (player != null) {
-          await playerRepo.updatePlayer(
-            player.copyWith(imagePath: storedPath),
-          );
+          await playerRepo.updatePlayer(player.copyWith(imagePath: storedPath));
           widget.ref.read(playersRevisionProvider.notifier).state++;
         }
       }
@@ -287,8 +285,7 @@ class _PlayerFormDialogState extends ConsumerState<_PlayerFormDialog> {
                 isBanner: false,
                 onImageSelected: (path) =>
                     setState(() => _pendingImagePath = path),
-                onImageRemoved: () =>
-                    setState(() => _pendingImagePath = null),
+                onImageRemoved: () => setState(() => _pendingImagePath = null),
               ),
               TextFormField(
                 controller: _nameController,

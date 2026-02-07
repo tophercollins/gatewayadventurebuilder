@@ -185,9 +185,7 @@ class AttendeeSelectionState {
   int get selectedCount => selections.length;
 
   AttendeeSelectionState copyWith({Map<String, String?>? selections}) {
-    return AttendeeSelectionState(
-      selections: selections ?? this.selections,
-    );
+    return AttendeeSelectionState(selections: selections ?? this.selections);
   }
 }
 
@@ -231,7 +229,9 @@ class AttendeeSelectionNotifier extends StateNotifier<AttendeeSelectionState> {
   }
 
   /// Initialize from existing attendees (for edit mode).
-  void initializeFrom(List<({String playerId, String? characterId})> attendees) {
+  void initializeFrom(
+    List<({String playerId, String? characterId})> attendees,
+  ) {
     final updated = <String, String?>{};
     for (final a in attendees) {
       updated[a.playerId] = a.characterId;

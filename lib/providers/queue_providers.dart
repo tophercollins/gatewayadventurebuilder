@@ -71,12 +71,9 @@ final queueManagerProvider = Provider<QueueManager>((ref) {
             final campaign = await campaignRepo.getCampaignById(
               session.campaignId,
             );
-            final transcript = await sessionRepo.getLatestTranscript(
-              sessionId,
-            );
+            final transcript = await sessionRepo.getLatestTranscript(sessionId);
             if (campaign != null) {
-              final title =
-                  session.title ?? 'Session ${session.sessionNumber}';
+              final title = session.title ?? 'Session ${session.sessionNumber}';
               await notificationService.notifySessionComplete(
                 settings: settings,
                 campaignName: campaign.name,

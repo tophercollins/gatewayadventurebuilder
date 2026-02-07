@@ -39,9 +39,7 @@ class _EditAttendeesDialogState extends ConsumerState<EditAttendeesDialog> {
 
   Future<void> _initializeFromExisting() async {
     final sessionRepo = ref.read(sessionRepositoryProvider);
-    final attendees = await sessionRepo.getAttendeesBySession(
-      widget.sessionId,
-    );
+    final attendees = await sessionRepo.getAttendeesBySession(widget.sessionId);
     final mapped = attendees
         .map((a) => (playerId: a.playerId, characterId: a.characterId))
         .toList();
@@ -60,9 +58,7 @@ class _EditAttendeesDialogState extends ConsumerState<EditAttendeesDialog> {
         height: 400,
         child: _initialized
             ? SingleChildScrollView(
-                child: AttendeeSelectionList(
-                  campaignId: widget.campaignId,
-                ),
+                child: AttendeeSelectionList(campaignId: widget.campaignId),
               )
             : const Center(child: CircularProgressIndicator()),
       ),
@@ -107,9 +103,9 @@ class _EditAttendeesDialogState extends ConsumerState<EditAttendeesDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save attendees: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save attendees: $e')));
         setState(() => _isSaving = false);
       }
     }

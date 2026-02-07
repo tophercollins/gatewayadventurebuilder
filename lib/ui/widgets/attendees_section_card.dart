@@ -112,10 +112,8 @@ class AttendeesSectionCard extends ConsumerWidget {
   void _showEditDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => EditAttendeesDialog(
-        sessionId: sessionId,
-        campaignId: campaignId,
-      ),
+      builder: (_) =>
+          EditAttendeesDialog(sessionId: sessionId, campaignId: campaignId),
     );
   }
 }

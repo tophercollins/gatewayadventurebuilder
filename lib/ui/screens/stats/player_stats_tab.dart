@@ -65,14 +65,8 @@ class _PlayerStatCard extends StatelessWidget {
             runSpacing: Spacing.sm,
             children: [
               InlineStat(label: 'Attendance', value: '$attendancePct%'),
-              InlineStat(
-                label: 'Sessions',
-                value: '${stats.sessionsAttended}',
-              ),
-              InlineStat(
-                label: 'Campaigns',
-                value: '${stats.campaignsPlayed}',
-              ),
+              InlineStat(label: 'Sessions', value: '${stats.sessionsAttended}'),
+              InlineStat(label: 'Campaigns', value: '${stats.campaignsPlayed}'),
               InlineStat(label: 'Moments', value: '${stats.momentsCount}'),
             ],
           ),

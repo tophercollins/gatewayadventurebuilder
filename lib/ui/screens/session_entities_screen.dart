@@ -626,8 +626,7 @@ class _OrganisationsList extends ConsumerStatefulWidget {
   final String sessionId;
 
   @override
-  ConsumerState<_OrganisationsList> createState() =>
-      _OrganisationsListState();
+  ConsumerState<_OrganisationsList> createState() => _OrganisationsListState();
 }
 
 class _OrganisationsListState extends ConsumerState<_OrganisationsList> {

@@ -40,8 +40,7 @@ class _CharactersContent extends ConsumerWidget {
           children: [
             characters.isEmpty
                 ? _EmptyState(
-                    onCreateCharacter: () =>
-                        _showCampaignPicker(context, ref),
+                    onCreateCharacter: () => _showCampaignPicker(context, ref),
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(Spacing.lg),
@@ -288,9 +287,7 @@ class _CampaignPickerDialogState extends ConsumerState<_CampaignPickerDialog> {
               ? null
               : () {
                   Navigator.pop(context);
-                  context.go(
-                    Routes.newCharacterPath(_selectedCampaignId!),
-                  );
+                  context.go(Routes.newCharacterPath(_selectedCampaignId!));
                 },
           child: const Text('Continue'),
         ),
@@ -314,10 +311,7 @@ class _ErrorState extends StatelessWidget {
         children: [
           Icon(Icons.error_outline, size: 64, color: theme.colorScheme.error),
           const SizedBox(height: Spacing.md),
-          Text(
-            'Failed to load characters',
-            style: theme.textTheme.titleLarge,
-          ),
+          Text('Failed to load characters', style: theme.textTheme.titleLarge),
           const SizedBox(height: Spacing.sm),
           Text(
             error,

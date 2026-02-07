@@ -83,10 +83,7 @@ class _CharacterStatCard extends StatelessWidget {
                 InlineStat(label: 'Race', value: stats.race!),
               if (stats.level != null)
                 InlineStat(label: 'Level', value: '${stats.level}'),
-              InlineStat(
-                label: 'Sessions',
-                value: '${stats.sessionsAttended}',
-              ),
+              InlineStat(label: 'Sessions', value: '${stats.sessionsAttended}'),
             ],
           ),
         ],

@@ -128,10 +128,7 @@ class _SessionDetailContent extends ConsumerWidget {
                 },
               ),
             const SizedBox(height: Spacing.md),
-            AttendeesSectionCard(
-              sessionId: sessionId,
-              campaignId: campaignId,
-            ),
+            AttendeesSectionCard(sessionId: sessionId, campaignId: campaignId),
             const SizedBox(height: Spacing.xl),
             _TranscriptSectionCard(
               campaignId: campaignId,

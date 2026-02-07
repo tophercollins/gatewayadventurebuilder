@@ -110,7 +110,9 @@ class ExportService {
         'locations': entities.locations.map(_locationToJson).toList(),
         'items': entities.items.map(_itemToJson).toList(),
         'monsters': entities.monsters.map(_monsterToJson).toList(),
-        'organisations': entities.organisations.map(_organisationToJson).toList(),
+        'organisations': entities.organisations
+            .map(_organisationToJson)
+            .toList(),
       },
       'actionItems': actionItems
           .map(

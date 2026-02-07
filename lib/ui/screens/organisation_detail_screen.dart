@@ -33,9 +33,7 @@ class _OrganisationDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final orgAsync = ref.watch(
-      organisationByIdProvider(widget.organisationId),
-    );
+    final orgAsync = ref.watch(organisationByIdProvider(widget.organisationId));
     final sessionsAsync = ref.watch(
       entitySessionsProvider((
         type: EntityType.organisation,
@@ -66,9 +64,9 @@ class _OrganisationDetailScreenState
     await ref.read(entityEditorProvider).updateOrganisation(updated);
     setState(() => _isEditing = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Organisation updated')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Organisation updated')));
     }
   }
 }
@@ -128,10 +126,7 @@ class _OrganisationDetailContent extends StatelessWidget {
 }
 
 class _OrganisationHeader extends StatelessWidget {
-  const _OrganisationHeader({
-    required this.organisation,
-    required this.onEdit,
-  });
+  const _OrganisationHeader({required this.organisation, required this.onEdit});
 
   final Organisation organisation;
   final VoidCallback onEdit;
@@ -229,10 +224,7 @@ class _OrganisationInfoSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Spacing.xs),
-            Text(
-              organisation.description!,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(organisation.description!, style: theme.textTheme.bodyMedium),
           ],
           if (organisation.notes != null) ...[
             if (organisation.description != null)
@@ -343,8 +335,7 @@ class _SessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.title ??
-                          'Session ${session.sessionNumber ?? ""}',
+                      session.title ?? 'Session ${session.sessionNumber ?? ""}',
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(

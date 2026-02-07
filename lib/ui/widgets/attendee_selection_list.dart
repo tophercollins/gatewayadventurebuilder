@@ -16,9 +16,7 @@ class AttendeeSelectionList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playersAsync = ref.watch(
-      playersWithCharactersProvider(campaignId),
-    );
+    final playersAsync = ref.watch(playersWithCharactersProvider(campaignId));
     final selection = ref.watch(attendeeSelectionProvider);
 
     return playersAsync.when(
@@ -106,10 +104,7 @@ class _AttendeeList extends ConsumerWidget {
 
         // Player rows
         ...players.map(
-          (pwc) => _PlayerRow(
-            playerWithCharacters: pwc,
-            selection: selection,
-          ),
+          (pwc) => _PlayerRow(playerWithCharacters: pwc, selection: selection),
         ),
       ],
     );
@@ -264,21 +259,23 @@ class _CharacterDropdown extends ConsumerWidget {
             ),
           ),
         ),
-        ...characters.map((c) => DropdownMenuItem<String?>(
-              value: c.id,
-              child: Row(
-                children: [
-                  _StatusDot(status: c.status),
-                  const SizedBox(width: Spacing.xs),
-                  Expanded(
-                    child: Text(
-                      _formatCharacterLabel(c),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+        ...characters.map(
+          (c) => DropdownMenuItem<String?>(
+            value: c.id,
+            child: Row(
+              children: [
+                _StatusDot(status: c.status),
+                const SizedBox(width: Spacing.xs),
+                Expanded(
+                  child: Text(
+                    _formatCharacterLabel(c),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-            )),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
       onChanged: (charId) {
         ref

@@ -86,14 +86,8 @@ class _WorldStatCard extends StatelessWidget {
             spacing: Spacing.lg,
             runSpacing: Spacing.sm,
             children: [
-              InlineStat(
-                label: 'Campaigns',
-                value: '${stats.campaignCount}',
-              ),
-              InlineStat(
-                label: 'Sessions',
-                value: '${stats.totalSessions}',
-              ),
+              InlineStat(label: 'Campaigns', value: '${stats.campaignCount}'),
+              InlineStat(label: 'Sessions', value: '${stats.totalSessions}'),
               InlineStat(label: 'Players', value: '${stats.totalPlayers}'),
               InlineStat(
                 label: 'Characters',
@@ -107,10 +101,7 @@ class _WorldStatCard extends StatelessWidget {
             runSpacing: Spacing.sm,
             children: [
               InlineStat(label: 'NPCs', value: '${stats.npcCount}'),
-              InlineStat(
-                label: 'Locations',
-                value: '${stats.locationCount}',
-              ),
+              InlineStat(label: 'Locations', value: '${stats.locationCount}'),
               InlineStat(label: 'Items', value: '${stats.itemCount}'),
               InlineStat(label: 'Monsters', value: '${stats.monsterCount}'),
             ],

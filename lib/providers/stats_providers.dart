@@ -272,56 +272,56 @@ class WorldStats {
 }
 
 /// Provider for per-world stats.
-final worldStatsListProvider =
-    FutureProvider.autoDispose<List<WorldStats>>((ref) async {
-      final user = await ref.watch(currentUserProvider.future);
-      final campaignRepo = ref.watch(campaignRepositoryProvider);
-      final sessionRepo = ref.watch(sessionRepositoryProvider);
-      final playerRepo = ref.watch(playerRepositoryProvider);
-      final entityRepo = ref.watch(entityRepositoryProvider);
+final worldStatsListProvider = FutureProvider.autoDispose<List<WorldStats>>((
+  ref,
+) async {
+  final user = await ref.watch(currentUserProvider.future);
+  final campaignRepo = ref.watch(campaignRepositoryProvider);
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  final playerRepo = ref.watch(playerRepositoryProvider);
+  final entityRepo = ref.watch(entityRepositoryProvider);
 
-      final worlds = await campaignRepo.getWorldsByUser(user.id);
-      final result = <WorldStats>[];
+  final worlds = await campaignRepo.getWorldsByUser(user.id);
+  final result = <WorldStats>[];
 
-      for (final world in worlds) {
-        final campaigns = await campaignRepo.getCampaignsByWorld(world.id);
-        final npcs = await entityRepo.getNpcsByWorld(world.id);
-        final locations = await entityRepo.getLocationsByWorld(world.id);
-        final items = await entityRepo.getItemsByWorld(world.id);
-        final monsters = await entityRepo.getMonstersByWorld(world.id);
+  for (final world in worlds) {
+    final campaigns = await campaignRepo.getCampaignsByWorld(world.id);
+    final npcs = await entityRepo.getNpcsByWorld(world.id);
+    final locations = await entityRepo.getLocationsByWorld(world.id);
+    final items = await entityRepo.getItemsByWorld(world.id);
+    final monsters = await entityRepo.getMonstersByWorld(world.id);
 
-        var totalSessions = 0;
-        final playerIds = <String>{};
-        var totalCharacters = 0;
+    var totalSessions = 0;
+    final playerIds = <String>{};
+    var totalCharacters = 0;
 
-        for (final campaign in campaigns) {
-          final sessions =
-              await sessionRepo.getSessionsByCampaign(campaign.id);
-          totalSessions += sessions.length;
-          final players =
-              await playerRepo.getPlayersByCampaign(campaign.id);
-          playerIds.addAll(players.map((p) => p.id));
-          final characters =
-              await playerRepo.getCharactersByCampaign(campaign.id);
-          totalCharacters += characters.length;
-        }
+    for (final campaign in campaigns) {
+      final sessions = await sessionRepo.getSessionsByCampaign(campaign.id);
+      totalSessions += sessions.length;
+      final players = await playerRepo.getPlayersByCampaign(campaign.id);
+      playerIds.addAll(players.map((p) => p.id));
+      final characters = await playerRepo.getCharactersByCampaign(campaign.id);
+      totalCharacters += characters.length;
+    }
 
-        result.add(WorldStats(
-          worldName: world.name,
-          gameSystem: world.gameSystem,
-          campaignCount: campaigns.length,
-          totalSessions: totalSessions,
-          totalPlayers: playerIds.length,
-          totalCharacters: totalCharacters,
-          npcCount: npcs.length,
-          locationCount: locations.length,
-          itemCount: items.length,
-          monsterCount: monsters.length,
-        ));
-      }
+    result.add(
+      WorldStats(
+        worldName: world.name,
+        gameSystem: world.gameSystem,
+        campaignCount: campaigns.length,
+        totalSessions: totalSessions,
+        totalPlayers: playerIds.length,
+        totalCharacters: totalCharacters,
+        npcCount: npcs.length,
+        locationCount: locations.length,
+        itemCount: items.length,
+        monsterCount: monsters.length,
+      ),
+    );
+  }
 
-      return result;
-    });
+  return result;
+});
 
 /// Stats for a single character.
 class CharacterStats {
@@ -358,23 +358,24 @@ final characterStatsListProvider =
 
       for (final character in characters) {
         final player = await playerRepo.getPlayerById(character.playerId);
-        final campaignWithWorld =
-            await campaignRepo.getCampaignWithWorld(character.campaignId);
-        final sessions =
-            await playerRepo.getSessionsByCharacter(character.id);
+        final campaignWithWorld = await campaignRepo.getCampaignWithWorld(
+          character.campaignId,
+        );
+        final sessions = await playerRepo.getSessionsByCharacter(character.id);
 
-        result.add(CharacterStats(
-          characterName: character.name,
-          playerName: player?.name ?? 'Unknown',
-          campaignName: campaignWithWorld?.campaign.name ?? 'Unknown',
-          characterClass: character.characterClass,
-          race: character.race,
-          level: character.level,
-          status: character.status.name,
-          sessionsAttended: sessions.length,
-        ));
+        result.add(
+          CharacterStats(
+            characterName: character.name,
+            playerName: player?.name ?? 'Unknown',
+            campaignName: campaignWithWorld?.campaign.name ?? 'Unknown',
+            characterClass: character.characterClass,
+            race: character.race,
+            level: character.level,
+            status: character.status.name,
+            sessionsAttended: sessions.length,
+          ),
+        );
       }
 
-      return result
-        ..sort((a, b) => a.characterName.compareTo(b.characterName));
+      return result..sort((a, b) => a.characterName.compareTo(b.characterName));
     });

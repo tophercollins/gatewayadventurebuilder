@@ -118,9 +118,7 @@ class DatabaseHelper {
       }
     }
     if (oldVersion < 6) {
-      await db.execute(
-        'ALTER TABLE monsters ADD COLUMN image_path TEXT',
-      );
+      await db.execute('ALTER TABLE monsters ADD COLUMN image_path TEXT');
       await db.execute('''
         CREATE TABLE organisations (
           id TEXT PRIMARY KEY,

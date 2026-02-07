@@ -465,10 +465,7 @@ class _OrganisationsList extends StatelessWidget {
             description: item.organisation.description,
             appearanceCount: item.appearanceCount,
             onTap: () => context.push(
-              Routes.organisationDetailPath(
-                campaignId,
-                item.organisation.id,
-              ),
+              Routes.organisationDetailPath(campaignId, item.organisation.id),
             ),
           ),
         );
