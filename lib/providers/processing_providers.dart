@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/repositories/campaign_import_repository.dart';
@@ -208,11 +209,14 @@ final processingStateProvider =
                   sessionId,
                 );
                 if (campaign != null) {
-                  await notificationService.notifySessionProcessed(
+                  final title =
+                      session.title ?? 'Session ${session.sessionNumber}';
+                  await notificationService.notifySessionComplete(
                     settings: settings,
-                    campaign: campaign,
-                    session: session,
-                    summary: summary,
+                    campaignName: campaign.name,
+                    sessionTitle: title,
+                    sessionDate: session.date,
+                    summaryText: summary.overallSummary,
                     durationSeconds: session.durationSeconds,
                     sceneCount: result.sceneCount,
                     npcCount: result.npcCount,
@@ -224,8 +228,8 @@ final processingStateProvider =
                   );
                 }
               }
-            } catch (_) {
-              // Email failures should not block the user
+            } catch (e) {
+              debugPrint('[Processing] Email notification failed: $e');
             }
           }
         },
@@ -256,5 +260,5 @@ final importProcessorProvider = Provider<ImportProcessor>((ref) {
 
 /// Provider for NotificationService.
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService(emailService: ref.watch(emailServiceProvider));
+  return NotificationService(ref.watch(emailServiceProvider));
 });

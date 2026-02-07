@@ -65,28 +65,37 @@ final queueManagerProvider = Provider<QueueManager>((ref) {
 
       // Send email notification if configured
       if (settings.isConfigured) {
-        final summary = await summaryRepo.getSummaryBySession(sessionId);
-        if (session != null && summary != null) {
-          final campaign = await campaignRepo.getCampaignById(
-            session.campaignId,
-          );
-          final transcript = await sessionRepo.getLatestTranscript(sessionId);
-          if (campaign != null) {
-            await notificationService.notifySessionProcessed(
-              settings: settings,
-              campaign: campaign,
-              session: session,
-              summary: summary,
-              durationSeconds: session.durationSeconds,
-              sceneCount: result.sceneCount,
-              npcCount: result.npcCount,
-              locationCount: result.locationCount,
-              itemCount: result.itemCount,
-              actionItemCount: result.actionItemCount,
-              momentCount: result.momentCount,
-              transcript: transcript?.displayText,
+        try {
+          final summary = await summaryRepo.getSummaryBySession(sessionId);
+          if (session != null && summary != null) {
+            final campaign = await campaignRepo.getCampaignById(
+              session.campaignId,
             );
+            final transcript = await sessionRepo.getLatestTranscript(
+              sessionId,
+            );
+            if (campaign != null) {
+              final title =
+                  session.title ?? 'Session ${session.sessionNumber}';
+              await notificationService.notifySessionComplete(
+                settings: settings,
+                campaignName: campaign.name,
+                sessionTitle: title,
+                sessionDate: session.date,
+                summaryText: summary.overallSummary,
+                durationSeconds: session.durationSeconds,
+                sceneCount: result.sceneCount,
+                npcCount: result.npcCount,
+                locationCount: result.locationCount,
+                itemCount: result.itemCount,
+                actionItemCount: result.actionItemCount,
+                momentCount: result.momentCount,
+                transcript: transcript?.displayText,
+              );
+            }
           }
+        } catch (_) {
+          // Email failures should not block queue processing
         }
       }
     },

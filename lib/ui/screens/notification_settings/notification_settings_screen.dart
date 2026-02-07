@@ -20,6 +20,7 @@ class _NotificationSettingsScreenState
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isEditing = false;
+  bool _isSendingTest = false;
 
   @override
   void initState() {
@@ -113,6 +114,10 @@ class _NotificationSettingsScreenState
                     if (settings.emailEnabled) ...[
                       const Divider(height: Spacing.lg),
                       _buildEmailInput(context, settings.emailAddress),
+                      if (settings.isConfigured) ...[
+                        const SizedBox(height: Spacing.sm),
+                        _buildTestEmailButton(context),
+                      ],
                       const Divider(height: Spacing.lg),
                       NotificationToggleRow(
                         title: 'Session processing complete',
@@ -242,6 +247,60 @@ class _NotificationSettingsScreenState
         ],
       ),
     );
+  }
+
+  Widget _buildTestEmailButton(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: OutlinedButton.icon(
+        onPressed: _isSendingTest ? null : () => _sendTestEmail(context),
+        icon: _isSendingTest
+            ? SizedBox(
+                width: Spacing.iconSizeCompact,
+                height: Spacing.iconSizeCompact,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: theme.colorScheme.primary,
+                ),
+              )
+            : const Icon(Icons.send, size: Spacing.iconSizeCompact),
+        label: Text(_isSendingTest ? 'Sending...' : 'Send Test Email'),
+      ),
+    );
+  }
+
+  Future<void> _sendTestEmail(BuildContext context) async {
+    final settings = ref.read(notificationSettingsProvider);
+    if (!settings.isConfigured) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _isSendingTest = true);
+
+    try {
+      final emailService = ref.read(emailServiceProvider);
+      final success = await emailService.sendTestEmail(
+        toEmail: settings.emailAddress!,
+      );
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Test email sent! Check your inbox.'
+                : 'Failed to send test email. Check your API key.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSendingTest = false);
+      }
+    }
   }
 }
 

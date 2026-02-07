@@ -1,6 +1,19 @@
 import 'package:intl/intl.dart';
 
-import 'email_service.dart';
+/// Simple email content structure used by templates.
+class EmailContent {
+  const EmailContent({
+    required this.to,
+    required this.subject,
+    required this.htmlBody,
+    this.textBody,
+  });
+
+  final String to;
+  final String subject;
+  final String htmlBody;
+  final String? textBody;
+}
 
 /// Generates email content for session processing notifications.
 abstract final class EmailTemplates {

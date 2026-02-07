@@ -11,7 +11,6 @@ import 'package:ttrpg_tracker/providers/processing_providers.dart';
 import 'package:ttrpg_tracker/providers/queue_providers.dart';
 import 'package:ttrpg_tracker/providers/repository_providers.dart';
 import 'package:ttrpg_tracker/providers/transcription_providers.dart';
-import 'package:ttrpg_tracker/services/notifications/email_service.dart';
 import 'package:ttrpg_tracker/services/processing/mock_llm_service.dart';
 import 'package:ttrpg_tracker/services/transcription/mock_transcription_service.dart';
 
@@ -22,12 +21,13 @@ void main() {
   late Database db;
   late ProviderContainer container;
   late String wavPath;
-  late MockEmailService mockEmail;
+  late MockHttpClient mockHttpClient;
 
   setUp(() async {
     db = await setUpTestEnvironment();
 
-    mockEmail = MockEmailService();
+    mockHttpClient = MockHttpClient();
+    final mockEmailService = createMockEmailService(mockHttpClient);
 
     container = buildTestContainer(
       overrides: [
@@ -37,7 +37,7 @@ void main() {
         llmServiceProvider.overrideWithValue(
           MockLLMService(simulateDelay: false),
         ),
-        emailServiceProvider.overrideWithValue(mockEmail),
+        emailServiceProvider.overrideWithValue(mockEmailService),
         connectivityServiceProvider.overrideWithValue(
           MockConnectivityService(),
         ),
@@ -185,11 +185,11 @@ void main() {
 
       // 15. Verify email was sent
       expect(
-        mockEmail.sentEmails.length,
+        mockHttpClient.sentEmails.length,
         equals(1),
         reason: 'Exactly one email should be sent',
       );
-      final email = mockEmail.sentEmails.first;
+      final email = mockHttpClient.sentEmails.first;
       expect(email.to, equals('gm@test.com'));
       expect(email.subject, contains('Curse of Strahd'));
       expect(email.htmlBody, contains('Curse of Strahd'));

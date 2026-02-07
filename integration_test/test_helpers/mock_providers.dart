@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:ttrpg_tracker/data/models/notification_settings.dart';
 import 'package:ttrpg_tracker/providers/notification_providers.dart';
 import 'package:ttrpg_tracker/services/connectivity/connectivity_service.dart';
+import 'package:ttrpg_tracker/services/notifications/email_service.dart';
 import 'package:ttrpg_tracker/providers/repository_providers.dart';
 
 /// Mock connectivity service that always reports online.
@@ -120,6 +123,42 @@ class TestNotificationSettingsNotifier
   Future<void> updateSettings(NotificationSettings settings) async {
     state = settings;
   }
+}
+
+/// Captured email request from [MockHttpClient].
+class CapturedEmail {
+  CapturedEmail(this.body);
+
+  final Map<String, dynamic> body;
+
+  String get to => (body['to'] as List).first as String;
+  String get subject => body['subject'] as String;
+  String get htmlBody => body['html'] as String;
+  String? get textBody => body['text'] as String?;
+}
+
+/// HTTP client that captures POST requests and returns success responses.
+class MockHttpClient extends http.BaseClient {
+  final List<CapturedEmail> sentEmails = [];
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    if (request is http.Request && request.method == 'POST') {
+      final bodyMap = jsonDecode(request.body) as Map<String, dynamic>;
+      sentEmails.add(CapturedEmail(bodyMap));
+    }
+    final response = http.StreamedResponse(
+      Stream.value(utf8.encode('{"id":"mock-id-${sentEmails.length}"}')),
+      200,
+    );
+    return response;
+  }
+}
+
+/// Creates a [ResendEmailService] backed by a [MockHttpClient].
+/// The [mockClient] can be inspected to verify sent emails.
+ResendEmailService createMockEmailService(MockHttpClient mockClient) {
+  return ResendEmailService(httpClient: mockClient);
 }
 
 /// Seed data returned by [seedSessionData].

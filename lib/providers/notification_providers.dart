@@ -8,8 +8,8 @@ import '../services/notifications/email_service.dart';
 
 const _settingsKey = 'notification_settings';
 
-/// Provider for EmailService.
-final emailServiceProvider = Provider<EmailService>((ref) {
+/// Provider for ResendEmailService.
+final emailServiceProvider = Provider<ResendEmailService>((ref) {
   return ResendEmailService();
 });
 
