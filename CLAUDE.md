@@ -152,7 +152,7 @@ Sessions flow through a `processing_queue` table with statuses: `pending` → `p
 
 ## Constraints
 
-- 300-line maximum per file (split large screens into subdirectories)
+- 500-line maximum per file (split large screens into subdirectories)
 - Must handle 10+ hour recordings reliably (streaming flush for crash recovery)
 - Must support 6-7 people in room or online audio
 - Raw audio and transcripts are never auto-deleted

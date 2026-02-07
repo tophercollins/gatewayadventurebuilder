@@ -74,7 +74,7 @@ Verify these rules are not violated anywhere in the codebase:
 Report these metrics:
 - Total Dart files (in `lib/` and `test/` separately)
 - Average file length (lines)
-- Files exceeding 300-line limit (list them)
+- Files exceeding 500-line limit (list them)
 - Test-to-source file ratio
 - Unused dependencies in `pubspec.yaml`
 
@@ -103,7 +103,7 @@ Fix everything found in Steps 1-4. For each fix:
 ### Code Metrics
 - Source files: [N] | Test files: [N] | Ratio: [X:1]
 - Avg file length: [N] lines
-- Files over 300 lines: [list or "None"]
+- Files over 500 lines: [list or "None"]
 - Unused dependencies: [list or "None"]
 
 ### Remaining Issues

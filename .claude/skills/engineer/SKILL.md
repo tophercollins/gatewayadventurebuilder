@@ -76,7 +76,7 @@ When implementing a feature, build in dependency order:
 - `ListView.builder` for any list that could grow
 
 ### General
-- **300-line file limit** — split into smaller files if exceeded
+- **500-line file limit** — split into smaller files if exceeded
 - **No `print()` statements** — use proper logging
 - **No hardcoded API keys** — use `flutter_secure_storage`
 - Import ordering: `dart:` → `package:flutter/` → `package:` → project relative
