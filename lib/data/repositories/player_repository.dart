@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 
 import '../database/database_helper.dart';
+import '../models/campaign.dart';
 import '../models/character.dart';
 import '../models/player.dart';
 import '../models/session.dart';
@@ -111,6 +112,20 @@ class PlayerRepository {
       where: 'campaign_id = ? AND player_id = ?',
       whereArgs: [campaignId, playerId],
     );
+  }
+
+  Future<List<Campaign>> getCampaignsByPlayer(String playerId) async {
+    final db = await _db.database;
+    final results = await db.rawQuery(
+      '''
+      SELECT c.* FROM campaigns c
+      JOIN campaign_players cp ON c.id = cp.campaign_id
+      WHERE cp.player_id = ?
+      ORDER BY c.name ASC
+    ''',
+      [playerId],
+    );
+    return results.map((m) => Campaign.fromMap(m)).toList();
   }
 
   Future<bool> isPlayerInCampaign({

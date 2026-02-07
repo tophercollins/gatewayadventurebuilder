@@ -55,14 +55,25 @@ class _CampaignsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return ListView.builder(
-      padding: const EdgeInsets.all(Spacing.md),
-      itemCount: campaigns.length,
+      padding: const EdgeInsets.all(Spacing.lg),
+      itemCount: campaigns.length + 1,
       itemBuilder: (context, index) {
-        final item = campaigns[index];
+        if (index == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: Spacing.lg),
+            child: Text(
+              'Campaigns',
+              style: theme.textTheme.headlineSmall,
+            ),
+          );
+        }
+        final item = campaigns[index - 1];
         return Padding(
           padding: EdgeInsets.only(
-            bottom: index < campaigns.length - 1 ? Spacing.sm : 0,
+            bottom: index < campaigns.length ? Spacing.sm : 0,
           ),
           child: _CampaignCard(
             campaign: item.campaign,

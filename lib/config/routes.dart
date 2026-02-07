@@ -19,6 +19,7 @@ import '../ui/screens/new_campaign_screen.dart';
 import '../ui/screens/notification_settings/notification_settings_screen.dart';
 import '../ui/screens/npc_detail/npc_detail_screen.dart';
 import '../ui/screens/onboarding/onboarding_screen.dart';
+import '../ui/screens/player_detail/player_detail_screen.dart';
 import '../ui/screens/players_screen.dart';
 import '../ui/screens/startup_screen.dart';
 import '../ui/screens/post_session_screen.dart';
@@ -49,6 +50,7 @@ abstract final class Routes {
   static const String worlds = '/worlds';
   static const String allPlayers = '/players';
   static const String allCharacters = '/characters';
+  static const String playerDetail = '/players/:playerId';
 
   // Campaigns
   static const String campaigns = '/campaigns';
@@ -133,6 +135,7 @@ abstract final class Routes {
       '/campaigns/$campaignId/players';
   static String newPlayerPath(String campaignId) =>
       '/campaigns/$campaignId/players/new';
+  static String playerDetailPath(String playerId) => '/players/$playerId';
   static String charactersPath(String campaignId) =>
       '/campaigns/$campaignId/characters';
   static String newCharacterPath(String campaignId) =>
@@ -276,6 +279,22 @@ GoRouter createAppRouter({String initialLocation = Routes.startup}) {
               showBack: true,
               child: const AllPlayersScreen(),
             ),
+          ),
+
+          // Player Detail
+          GoRoute(
+            path: Routes.playerDetail,
+            name: 'playerDetail',
+            pageBuilder: (context, state) {
+              final playerId = state.pathParameters['playerId']!;
+              return _buildPage(
+                context: context,
+                state: state,
+                title: 'Player',
+                showBack: true,
+                child: PlayerDetailScreen(playerId: playerId),
+              );
+            },
           ),
 
           // Global Characters

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/models/campaign.dart';
 import '../data/models/character.dart';
 import '../data/models/player.dart';
 import '../data/models/session.dart';
@@ -36,6 +37,22 @@ final playerCharactersProvider = FutureProvider.family<List<Character>, String>(
     return playerRepo.getCharactersByPlayer(playerId);
   },
 );
+
+/// Provider for a single player by ID.
+final playerDetailProvider = FutureProvider.autoDispose
+    .family<Player?, String>((ref, playerId) {
+      ref.watch(playersRevisionProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      return playerRepo.getPlayerById(playerId);
+    });
+
+/// Provider for campaigns a player belongs to.
+final playerCampaignsProvider = FutureProvider.autoDispose
+    .family<List<Campaign>, String>((ref, playerId) {
+      ref.watch(playersRevisionProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      return playerRepo.getCampaignsByPlayer(playerId);
+    });
 
 /// Combined provider that returns players with their characters for a campaign.
 final playersWithCharactersProvider =
@@ -178,6 +195,27 @@ class PlayerEditor {
     );
     _invalidateForCampaign(campaignId);
     return character.id;
+  }
+
+  /// Updates a player (global context, no campaign).
+  Future<void> updatePlayerGlobal(Player player) async {
+    await _playerRepo.updatePlayer(player);
+    _ref.read(playersRevisionProvider.notifier).state++;
+  }
+
+  /// Deletes a player globally: removes all campaign links, image, then player.
+  Future<void> deletePlayerGlobal(String playerId) async {
+    final campaigns = await _playerRepo.getCampaignsByPlayer(playerId);
+    for (final campaign in campaigns) {
+      await _playerRepo.removePlayerFromCampaign(
+        campaignId: campaign.id,
+        playerId: playerId,
+      );
+    }
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(entityType: 'players', entityId: playerId);
+    await _playerRepo.deletePlayer(playerId);
+    _ref.read(playersRevisionProvider.notifier).state++;
   }
 
   /// Updates a player.

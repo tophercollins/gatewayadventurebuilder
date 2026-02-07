@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../config/routes.dart';
 import '../../providers/global_providers.dart';
 import '../../providers/image_providers.dart';
 import '../../providers/player_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../../services/image/image_storage_service.dart';
 import '../theme/spacing.dart';
+import '../widgets/entity_image.dart';
 import '../widgets/image_picker_field.dart';
 
 /// Global screen listing all players across all campaigns.
@@ -96,56 +99,61 @@ class _PlayerCard extends StatelessWidget {
     final theme = Theme.of(context);
     final player = summary.player;
 
-    return Container(
-      padding: const EdgeInsets.all(Spacing.cardPadding),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline),
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(Spacing.cardRadius),
+      child: InkWell(
+        onTap: () => context.push(Routes.playerDetailPath(player.id)),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: theme.colorScheme.primary,
-            child: Text(
-              player.name.isNotEmpty ? player.name[0].toUpperCase() : '?',
-              style: TextStyle(color: theme.colorScheme.onPrimary),
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(Spacing.cardPadding),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.colorScheme.outline),
+            borderRadius: BorderRadius.circular(Spacing.cardRadius),
           ),
-          const SizedBox(width: Spacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player.name,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: Spacing.xxs),
-                Text(
-                  '${summary.campaignCount} '
-                  'campaign${summary.campaignCount == 1 ? '' : 's'}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                if (player.notes != null && player.notes!.isNotEmpty) ...[
-                  const SizedBox(height: Spacing.xs),
-                  Text(
-                    player.notes!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+          child: Row(
+            children: [
+              EntityImage.avatar(
+                imagePath: player.imagePath,
+                fallbackIcon: Icons.person,
+                size: 40,
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      player.name,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
+                    const SizedBox(height: Spacing.xxs),
+                    Text(
+                      '${summary.campaignCount} '
+                      'campaign${summary.campaignCount == 1 ? '' : 's'}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    if (player.notes != null && player.notes!.isNotEmpty) ...[
+                      const SizedBox(height: Spacing.xs),
+                      Text(
+                        player.notes!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

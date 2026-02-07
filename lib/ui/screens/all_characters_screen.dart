@@ -96,18 +96,21 @@ class _CharacterCard extends StatelessWidget {
     final theme = Theme.of(context);
     final character = summary.character;
 
-    return GestureDetector(
-      onTap: () => context.push(
-        Routes.characterDetailPath(character.campaignId, character.id),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(Spacing.cardPadding),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border.all(color: theme.colorScheme.outline),
-          borderRadius: BorderRadius.circular(Spacing.cardRadius),
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(Spacing.cardRadius),
+      child: InkWell(
+        onTap: () => context.push(
+          Routes.characterDetailPath(character.campaignId, character.id),
         ),
-        child: Row(
+        borderRadius: BorderRadius.circular(Spacing.cardRadius),
+        child: Container(
+          padding: const EdgeInsets.all(Spacing.cardPadding),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.colorScheme.outline),
+            borderRadius: BorderRadius.circular(Spacing.cardRadius),
+          ),
+          child: Row(
           children: [
             EntityImage.avatar(
               imagePath: character.imagePath,
@@ -152,6 +155,7 @@ class _CharacterCard extends StatelessWidget {
               ),
           ],
         ),
+      ),
       ),
     );
   }
