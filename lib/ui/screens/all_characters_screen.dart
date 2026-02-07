@@ -7,6 +7,7 @@ import '../../data/models/character.dart';
 import '../../providers/campaign_providers.dart';
 import '../../providers/global_providers.dart';
 import '../theme/spacing.dart';
+import '../widgets/entity_image.dart';
 
 /// Global screen listing all characters across all campaigns.
 class AllCharactersScreen extends ConsumerWidget {
@@ -108,14 +109,10 @@ class _CharacterCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: _statusColor(character.status, theme),
-              child: Text(
-                character.name.isNotEmpty
-                    ? character.name[0].toUpperCase()
-                    : '?',
-                style: TextStyle(color: theme.colorScheme.onPrimary),
-              ),
+            EntityImage.avatar(
+              imagePath: character.imagePath,
+              fallbackIcon: Icons.shield_outlined,
+              size: 40,
             ),
             const SizedBox(width: Spacing.md),
             Expanded(
@@ -167,16 +164,6 @@ class _CharacterCard extends StatelessWidget {
     return parts.isEmpty ? 'Character' : parts.join(' · ');
   }
 
-  Color _statusColor(CharacterStatus status, ThemeData theme) {
-    switch (status) {
-      case CharacterStatus.active:
-        return theme.colorScheme.primary;
-      case CharacterStatus.retired:
-        return theme.colorScheme.outline;
-      case CharacterStatus.dead:
-        return theme.colorScheme.error;
-    }
-  }
 }
 
 class _EmptyState extends StatelessWidget {

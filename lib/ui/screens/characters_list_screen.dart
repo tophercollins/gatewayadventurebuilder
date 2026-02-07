@@ -7,6 +7,7 @@ import '../../data/models/character.dart';
 import '../../providers/player_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/entity_image.dart';
 
 /// Characters list screen for a campaign, with search and status filtering.
 class CharactersListScreen extends ConsumerStatefulWidget {
@@ -323,18 +324,10 @@ class _CharacterCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(Spacing.sm),
-                ),
-                child: Icon(
-                  Icons.shield_outlined,
-                  color: theme.colorScheme.primary,
-                  size: Spacing.iconSize,
-                ),
+              EntityImage.avatar(
+                imagePath: character.imagePath,
+                fallbackIcon: Icons.shield_outlined,
+                size: 40,
               ),
               const SizedBox(width: Spacing.md),
               Expanded(
