@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../config/routes.dart';
 import '../../data/models/character.dart';
 import '../../data/models/player.dart';
 import '../../providers/player_providers.dart';
 import '../theme/spacing.dart';
+import '../widgets/link_player_dialog.dart';
 import '../widgets/player_card.dart';
 
 /// Screen displaying all players in a campaign.
@@ -89,7 +88,7 @@ class _PlayersContent extends ConsumerWidget {
               _buildHeader(context, theme),
               const SizedBox(height: Spacing.lg),
               if (playersWithCharacters.isEmpty)
-                _EmptyState(campaignId: campaignId)
+                _EmptyState(onAddPlayer: () => _showLinkPlayerDialog(context))
               else
                 _buildPlayersList(context, ref),
             ],
@@ -99,13 +98,20 @@ class _PlayersContent extends ConsumerWidget {
     );
   }
 
+  void _showLinkPlayerDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => LinkPlayerDialog(campaignId: campaignId),
+    );
+  }
+
   Widget _buildHeader(BuildContext context, ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('Players', style: theme.textTheme.headlineSmall),
         OutlinedButton.icon(
-          onPressed: () => context.go(Routes.newPlayerPath(campaignId)),
+          onPressed: () => _showLinkPlayerDialog(context),
           icon: const Icon(Icons.person_add_outlined),
           label: const Text('Add Player'),
         ),
@@ -208,9 +214,9 @@ class _PlayersContent extends ConsumerWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.campaignId});
+  const _EmptyState({required this.onAddPlayer});
 
-  final String campaignId;
+  final VoidCallback onAddPlayer;
 
   @override
   Widget build(BuildContext context) {
@@ -237,7 +243,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: Spacing.lg),
             ElevatedButton.icon(
-              onPressed: () => context.go(Routes.newPlayerPath(campaignId)),
+              onPressed: onAddPlayer,
               icon: const Icon(Icons.person_add),
               label: const Text('Add First Player'),
             ),

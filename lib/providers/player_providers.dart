@@ -84,6 +84,26 @@ final characterPlayerProvider = FutureProvider.autoDispose
       return playerRepo.getPlayerById(playerId);
     });
 
+/// Provider for players not yet linked to a specific campaign.
+final availablePlayersForCampaignProvider = FutureProvider.autoDispose
+    .family<List<Player>, String>((ref, campaignId) async {
+      ref.watch(playersRevisionProvider);
+      final user = await ref.watch(currentUserProvider.future);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      final allPlayers = await playerRepo.getPlayersByUser(user.id);
+      final available = <Player>[];
+      for (final player in allPlayers) {
+        final inCampaign = await playerRepo.isPlayerInCampaign(
+          campaignId: campaignId,
+          playerId: player.id,
+        );
+        if (!inCampaign) {
+          available.add(player);
+        }
+      }
+      return available;
+    });
+
 /// Data class combining a player with their characters.
 class PlayerWithCharacters {
   const PlayerWithCharacters({required this.player, required this.characters});
@@ -169,6 +189,18 @@ class PlayerEditor {
   /// Updates a character.
   Future<void> updateCharacter(Character character, String campaignId) async {
     await _playerRepo.updateCharacter(character);
+    _invalidateForCampaign(campaignId);
+  }
+
+  /// Links an existing player to a campaign.
+  Future<void> linkPlayerToCampaign({
+    required String campaignId,
+    required String playerId,
+  }) async {
+    await _playerRepo.addPlayerToCampaign(
+      campaignId: campaignId,
+      playerId: playerId,
+    );
     _invalidateForCampaign(campaignId);
   }
 
