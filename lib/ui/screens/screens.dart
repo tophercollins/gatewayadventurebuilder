@@ -9,7 +9,7 @@ library;
 export 'add_character_screen.dart';
 export 'add_session_screen.dart';
 export 'add_player_screen.dart';
-export 'campaign_home_screen.dart';
+export 'campaign_home/campaign_home.dart';
 export 'campaigns_list_screen.dart';
 export 'home_screen.dart';
 export 'item_detail_screen.dart';

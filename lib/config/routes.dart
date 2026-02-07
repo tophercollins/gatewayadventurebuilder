@@ -6,7 +6,7 @@ import '../ui/screens/add_session_screen.dart';
 import '../ui/screens/add_player_screen.dart';
 import '../ui/screens/all_characters_screen.dart';
 import '../ui/screens/all_players_screen.dart';
-import '../ui/screens/campaign_home_screen.dart';
+import '../ui/screens/campaign_home/campaign_home_screen.dart';
 import '../ui/screens/campaigns_list_screen.dart';
 import '../ui/screens/character_detail/character_detail_screen.dart';
 import '../ui/screens/characters_list_screen.dart';
@@ -128,8 +128,7 @@ abstract final class Routes {
   static String organisationDetailPath(
     String campaignId,
     String organisationId,
-  ) =>
-      '/campaigns/$campaignId/world/organisations/$organisationId';
+  ) => '/campaigns/$campaignId/world/organisations/$organisationId';
   static String playersPath(String campaignId) =>
       '/campaigns/$campaignId/players';
   static String newPlayerPath(String campaignId) =>
