@@ -79,7 +79,7 @@ lib/
     connectivity/          # network monitoring
   providers/               # 19 Riverpod provider files
   ui/
-    screens/               # 30 screens (campaign_home/, npc_detail/, onboarding/, notification_settings/ split into subdirectories)
+    screens/               # 30 screens (campaign_home/, npc_detail/, onboarding/, notification_settings/, player_detail/ split into subdirectories)
     widgets/               # 30 reusable components
     theme/                 # app_theme.dart, colors.dart, spacing.dart, typography.dart
   utils/                   # formatters.dart
