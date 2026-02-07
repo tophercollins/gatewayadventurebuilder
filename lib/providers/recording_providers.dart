@@ -171,28 +171,22 @@ final recordingNotifierProvider =
     });
 
 /// Provider for session attendee selection state.
+/// Maps playerId → characterId (null = no character selected).
 class AttendeeSelectionState {
-  const AttendeeSelectionState({
-    this.selectedPlayerIds = const {},
-    this.selectedCharacterIds = const {},
-  });
+  const AttendeeSelectionState({this.selections = const {}});
 
-  final Set<String> selectedPlayerIds;
-  final Set<String> selectedCharacterIds;
+  /// Key = playerId, value = characterId (nullable).
+  final Map<String, String?> selections;
 
-  bool isPlayerSelected(String playerId) =>
-      selectedPlayerIds.contains(playerId);
+  bool isPlayerSelected(String playerId) => selections.containsKey(playerId);
 
-  bool isCharacterSelected(String characterId) =>
-      selectedCharacterIds.contains(characterId);
+  String? characterForPlayer(String playerId) => selections[playerId];
 
-  AttendeeSelectionState copyWith({
-    Set<String>? selectedPlayerIds,
-    Set<String>? selectedCharacterIds,
-  }) {
+  int get selectedCount => selections.length;
+
+  AttendeeSelectionState copyWith({Map<String, String?>? selections}) {
     return AttendeeSelectionState(
-      selectedPlayerIds: selectedPlayerIds ?? this.selectedPlayerIds,
-      selectedCharacterIds: selectedCharacterIds ?? this.selectedCharacterIds,
+      selections: selections ?? this.selections,
     );
   }
 }
@@ -201,47 +195,34 @@ class AttendeeSelectionState {
 class AttendeeSelectionNotifier extends StateNotifier<AttendeeSelectionState> {
   AttendeeSelectionNotifier() : super(const AttendeeSelectionState());
 
-  /// Toggle player selection (also selects/deselects their character).
-  void togglePlayer(String playerId, String? characterId) {
-    final newPlayerIds = Set<String>.from(state.selectedPlayerIds);
-    final newCharacterIds = Set<String>.from(state.selectedCharacterIds);
-
-    if (newPlayerIds.contains(playerId)) {
-      newPlayerIds.remove(playerId);
-      if (characterId != null) {
-        newCharacterIds.remove(characterId);
-      }
+  /// Toggle player selection. When adding, uses defaultCharacterId.
+  void togglePlayer(String playerId, String? defaultCharacterId) {
+    final updated = Map<String, String?>.from(state.selections);
+    if (updated.containsKey(playerId)) {
+      updated.remove(playerId);
     } else {
-      newPlayerIds.add(playerId);
-      if (characterId != null) {
-        newCharacterIds.add(characterId);
-      }
+      updated[playerId] = defaultCharacterId;
     }
-
-    state = state.copyWith(
-      selectedPlayerIds: newPlayerIds,
-      selectedCharacterIds: newCharacterIds,
-    );
+    state = state.copyWith(selections: updated);
   }
 
-  /// Select all players and their characters.
+  /// Change the character selected for a player.
+  void setCharacterForPlayer(String playerId, String? characterId) {
+    if (!state.selections.containsKey(playerId)) return;
+    final updated = Map<String, String?>.from(state.selections);
+    updated[playerId] = characterId;
+    state = state.copyWith(selections: updated);
+  }
+
+  /// Select all players with their default characters.
   void selectAll(
     List<(String playerId, String? characterId)> playerCharacters,
   ) {
-    final playerIds = <String>{};
-    final characterIds = <String>{};
-
+    final updated = <String, String?>{};
     for (final (playerId, characterId) in playerCharacters) {
-      playerIds.add(playerId);
-      if (characterId != null) {
-        characterIds.add(characterId);
-      }
+      updated[playerId] = characterId;
     }
-
-    state = state.copyWith(
-      selectedPlayerIds: playerIds,
-      selectedCharacterIds: characterIds,
-    );
+    state = state.copyWith(selections: updated);
   }
 
   /// Clear all selections.
@@ -249,19 +230,20 @@ class AttendeeSelectionNotifier extends StateNotifier<AttendeeSelectionState> {
     state = const AttendeeSelectionState();
   }
 
+  /// Initialize from existing attendees (for edit mode).
+  void initializeFrom(List<({String playerId, String? characterId})> attendees) {
+    final updated = <String, String?>{};
+    for (final a in attendees) {
+      updated[a.playerId] = a.characterId;
+    }
+    state = state.copyWith(selections: updated);
+  }
+
   /// Get selected attendee data for creating session_attendees.
   List<({String playerId, String? characterId})> getSelectedAttendees() {
-    return state.selectedPlayerIds.map((playerId) {
-      // Find the character for this player if any selected
-      String? characterId;
-      for (final charId in state.selectedCharacterIds) {
-        // Note: In the actual implementation, we'd need to look up
-        // which character belongs to which player
-        characterId = charId;
-        break;
-      }
-      return (playerId: playerId, characterId: characterId);
-    }).toList();
+    return state.selections.entries
+        .map((e) => (playerId: e.key, characterId: e.value))
+        .toList();
   }
 }
 

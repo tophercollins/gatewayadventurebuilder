@@ -173,6 +173,30 @@ class SessionRepository {
     return results.map((m) => SessionAttendee.fromMap(m)).toList();
   }
 
+  /// Atomically replace all attendees for a session.
+  Future<void> replaceAttendees({
+    required String sessionId,
+    required List<({String playerId, String? characterId})> attendees,
+  }) async {
+    final db = await _db.database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'session_attendees',
+        where: 'session_id = ?',
+        whereArgs: [sessionId],
+      );
+      for (final a in attendees) {
+        final id = _uuid.v4();
+        await txn.insert('session_attendees', {
+          'id': id,
+          'session_id': sessionId,
+          'player_id': a.playerId,
+          'character_id': a.characterId,
+        });
+      }
+    });
+  }
+
   // ============================================
   // SESSION AUDIO (IMMUTABLE - INSERT ONLY)
   // ============================================

@@ -11,6 +11,7 @@ import '../../providers/queue_providers.dart';
 import '../../providers/session_detail_providers.dart';
 import '../../providers/transcription_providers.dart';
 import '../theme/spacing.dart';
+import '../widgets/attendees_section_card.dart';
 import '../widgets/audio_player_card.dart';
 import '../widgets/delete_confirmation_dialog.dart';
 import '../widgets/empty_state.dart';
@@ -126,6 +127,11 @@ class _SessionDetailContent extends ConsumerWidget {
                   ];
                 },
               ),
+            const SizedBox(height: Spacing.md),
+            AttendeesSectionCard(
+              sessionId: sessionId,
+              campaignId: campaignId,
+            ),
             const SizedBox(height: Spacing.xl),
             _TranscriptSectionCard(
               campaignId: campaignId,

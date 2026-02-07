@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/action_item.dart';
+import '../data/models/character.dart';
 import '../data/models/entity_appearance.dart';
 import '../data/models/item.dart';
 import '../data/models/location.dart';
@@ -279,6 +280,50 @@ final campaignSessionsProvider = FutureProvider.autoDispose
       ref.watch(sessionsRevisionProvider);
       final sessionRepo = ref.watch(sessionRepositoryProvider);
       return await sessionRepo.getSessionsByCampaign(campaignId);
+    });
+
+/// Hydrated attendee data with player and character info.
+class AttendeeDetail {
+  const AttendeeDetail({
+    required this.attendee,
+    required this.player,
+    this.character,
+  });
+
+  final SessionAttendee attendee;
+  final Player player;
+  final Character? character;
+}
+
+/// Provider for hydrated attendee data for a session.
+final sessionAttendeesProvider = FutureProvider.autoDispose
+    .family<List<AttendeeDetail>, String>((ref, sessionId) async {
+      ref.watch(sessionsRevisionProvider);
+      final sessionRepo = ref.watch(sessionRepositoryProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+
+      final attendees = await sessionRepo.getAttendeesBySession(sessionId);
+      final details = <AttendeeDetail>[];
+
+      for (final attendee in attendees) {
+        final player = await playerRepo.getPlayerById(attendee.playerId);
+        if (player == null) continue;
+
+        Character? character;
+        if (attendee.characterId != null) {
+          character = await playerRepo.getCharacterById(
+            attendee.characterId!,
+          );
+        }
+
+        details.add(AttendeeDetail(
+          attendee: attendee,
+          player: player,
+          character: character,
+        ));
+      }
+
+      return details;
     });
 
 /// Service for session mutations (title updates, world lookup).

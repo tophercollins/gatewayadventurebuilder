@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../config/routes.dart';
 import '../../data/models/session.dart';
 import '../../providers/campaign_providers.dart';
+import '../../providers/recording_providers.dart';
 import '../../providers/repository_providers.dart';
 import '../theme/spacing.dart';
+import '../widgets/attendee_selection_list.dart';
 
 /// Screen for manually adding a session (paste transcript or log-only).
 class AddSessionScreen extends ConsumerStatefulWidget {
@@ -25,6 +27,14 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _hasTranscript = false;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(attendeeSelectionProvider.notifier).clearAll();
+    });
+  }
 
   @override
   void dispose() {
@@ -75,6 +85,17 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
                 selectedDate: _selectedDate,
                 onDateSelected: (date) => setState(() => _selectedDate = date),
               ),
+              const SizedBox(height: Spacing.lg),
+
+              // Attendees section
+              Text(
+                'Attendees (optional)',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: Spacing.sm),
+              AttendeeSelectionList(campaignId: widget.campaignId),
               const SizedBox(height: Spacing.md),
 
               // Transcript field (conditional)
@@ -150,6 +171,16 @@ class _AddSessionScreenState extends ConsumerState<AddSessionScreen> {
         title: title,
         date: _selectedDate,
       );
+
+      // Save selected attendees
+      final selection = ref.read(attendeeSelectionProvider);
+      for (final entry in selection.selections.entries) {
+        await sessionRepo.addAttendee(
+          sessionId: session.id,
+          playerId: entry.key,
+          characterId: entry.value,
+        );
+      }
 
       if (_hasTranscript) {
         // Create transcript from pasted text
