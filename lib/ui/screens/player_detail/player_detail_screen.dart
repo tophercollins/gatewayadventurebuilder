@@ -219,10 +219,10 @@ class _CampaignTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.folder_outlined,
-                size: Spacing.iconSizeCompact,
-                color: theme.colorScheme.onSurfaceVariant,
+              EntityImage.avatar(
+                imagePath: campaign.imagePath,
+                fallbackIcon: Icons.folder_outlined,
+                size: 32,
               ),
               const SizedBox(width: Spacing.md),
               Expanded(
