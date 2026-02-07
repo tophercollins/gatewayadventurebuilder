@@ -151,6 +151,7 @@ Sessions flow through a `processing_queue` table with statuses: `pending` → `p
 | APP_FLOW.md | 30 screens, routes, and 10 user flows |
 | CHANGELOG.md | Detailed version history with file-level change tracking |
 | TODO.md | Remaining future features (laughter detection, TTS, Supabase sync, mobile) |
+| deployment/ | 9 step-by-step deployment guides: builds, signing, installers, CI/CD, analytics, legal |
 
 ## Constraints
 
