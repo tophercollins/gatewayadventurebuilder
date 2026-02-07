@@ -105,7 +105,7 @@ class _WorldCard extends ConsumerWidget {
     VoidCallback? onTap;
     if (summary.campaigns.isNotEmpty) {
       onTap = () =>
-          context.go(Routes.worldDatabasePath(summary.campaigns.first.id));
+          context.push(Routes.worldDatabasePath(summary.campaigns.first.id));
     }
 
     return Material(
