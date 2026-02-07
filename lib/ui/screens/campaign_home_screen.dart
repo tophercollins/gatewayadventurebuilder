@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/constants.dart';
 import '../../config/routes.dart';
+import '../../data/models/campaign.dart';
 import '../../data/models/session.dart';
 import '../../providers/campaign_providers.dart';
 import '../../utils/formatters.dart';
@@ -155,6 +156,23 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
     }
   }
 
+  Future<void> _updateStatus(CampaignStatus newStatus) async {
+    if (newStatus == widget.detail.campaign.status) return;
+    try {
+      final updated = widget.detail.campaign.copyWith(
+        status: newStatus,
+        updatedAt: DateTime.now(),
+      );
+      await ref.read(campaignEditorProvider).updateCampaign(updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update status: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _deleteCampaign() async {
     final confirmed = await showDeleteConfirmation(
       context,
@@ -217,6 +235,10 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
                   setState(() => _isEditing = true);
                 } else if (value == 'delete') {
                   _deleteCampaign();
+                } else if (value.startsWith('status_')) {
+                  final name = value.substring(7);
+                  final newStatus = CampaignStatus.fromString(name);
+                  _updateStatus(newStatus);
                 }
               },
               itemBuilder: (context) => [
@@ -230,6 +252,39 @@ class _CampaignHeaderState extends ConsumerState<_CampaignHeader> {
                     ],
                   ),
                 ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  enabled: false,
+                  height: 32,
+                  child: Text(
+                    'Set Status',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                for (final s in CampaignStatus.values)
+                  PopupMenuItem(
+                    value: 'status_${s.value}',
+                    child: Row(
+                      children: [
+                        Icon(
+                          campaign.status == s
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          size: 20,
+                          color: campaign.status == s
+                              ? theme.colorScheme.primary
+                              : null,
+                        ),
+                        const SizedBox(width: Spacing.sm),
+                        Text(
+                          s.value[0].toUpperCase() + s.value.substring(1),
+                        ),
+                      ],
+                    ),
+                  ),
+                const PopupMenuDivider(),
                 PopupMenuItem(
                   value: 'delete',
                   child: Row(
