@@ -9,6 +9,7 @@ import '../../../data/models/player.dart';
 import '../../../providers/player_providers.dart';
 import '../../theme/spacing.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/entity_image.dart';
 import 'player_detail_widgets.dart';
 import 'player_edit_form.dart';
 
@@ -308,10 +309,10 @@ class _CharacterTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.shield_outlined,
-                size: Spacing.iconSizeCompact,
-                color: theme.colorScheme.onSurfaceVariant,
+              EntityImage.avatar(
+                imagePath: character.imagePath,
+                fallbackIcon: Icons.shield_outlined,
+                size: 32,
               ),
               const SizedBox(width: Spacing.md),
               Expanded(
