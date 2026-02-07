@@ -225,8 +225,11 @@ Future<SeedData> seedSessionData(ProviderContainer container) async {
 
     final character = await playerRepo.createCharacter(
       playerId: player.id,
-      campaignId: campaign.id,
       name: characterNames[i],
+    );
+    await playerRepo.addCharacterToCampaign(
+      campaignId: campaign.id,
+      characterId: character.id,
     );
     characterIds.add(character.id);
   }

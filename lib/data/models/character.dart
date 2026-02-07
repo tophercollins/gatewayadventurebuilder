@@ -3,7 +3,6 @@ class Character {
   const Character({
     required this.id,
     required this.playerId,
-    required this.campaignId,
     required this.name,
     this.characterClass,
     this.race,
@@ -19,7 +18,6 @@ class Character {
 
   final String id;
   final String playerId;
-  final String campaignId;
   final String name;
   final String? characterClass;
   final String? race;
@@ -36,7 +34,6 @@ class Character {
     return Character(
       id: map['id'] as String,
       playerId: map['player_id'] as String,
-      campaignId: map['campaign_id'] as String,
       name: map['name'] as String,
       characterClass: map['character_class'] as String?,
       race: map['race'] as String?,
@@ -55,7 +52,6 @@ class Character {
     return {
       'id': id,
       'player_id': playerId,
-      'campaign_id': campaignId,
       'name': name,
       'character_class': characterClass,
       'race': race,
@@ -73,7 +69,6 @@ class Character {
   Character copyWith({
     String? id,
     String? playerId,
-    String? campaignId,
     String? name,
     String? characterClass,
     String? race,
@@ -89,7 +84,6 @@ class Character {
     return Character(
       id: id ?? this.id,
       playerId: playerId ?? this.playerId,
-      campaignId: campaignId ?? this.campaignId,
       name: name ?? this.name,
       characterClass: characterClass ?? this.characterClass,
       race: race ?? this.race,

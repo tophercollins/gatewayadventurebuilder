@@ -67,7 +67,7 @@ class _CharacterStatCard extends StatelessWidget {
           ),
           const SizedBox(height: Spacing.xs),
           Text(
-            '${stats.playerName} · ${stats.campaignName}',
+            '${stats.playerName} · ${stats.campaignDisplay}',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

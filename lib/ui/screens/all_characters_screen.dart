@@ -101,7 +101,7 @@ class _CharacterCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(Spacing.cardRadius),
       child: InkWell(
         onTap: () => context.push(
-          Routes.characterDetailPath(character.campaignId, character.id),
+          Routes.globalCharacterDetailPath(character.id),
         ),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(
@@ -137,7 +137,7 @@ class _CharacterCard extends StatelessWidget {
                   ),
                   const SizedBox(height: Spacing.xxs),
                   Text(
-                    summary.campaignName,
+                    summary.campaignDisplay,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

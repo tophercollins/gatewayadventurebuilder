@@ -147,7 +147,6 @@ class PlayerRepository {
 
   Future<Character> createCharacter({
     required String playerId,
-    required String campaignId,
     required String name,
     String? characterClass,
     String? race,
@@ -161,7 +160,6 @@ class PlayerRepository {
     final character = Character(
       id: _uuid.v4(),
       playerId: playerId,
-      campaignId: campaignId,
       name: name,
       characterClass: characterClass,
       race: race,
@@ -200,11 +198,14 @@ class PlayerRepository {
 
   Future<List<Character>> getCharactersByCampaign(String campaignId) async {
     final db = await _db.database;
-    final results = await db.query(
-      'characters',
-      where: 'campaign_id = ?',
-      whereArgs: [campaignId],
-      orderBy: 'name ASC',
+    final results = await db.rawQuery(
+      '''
+      SELECT ch.* FROM characters ch
+      JOIN campaign_characters cc ON ch.id = cc.character_id
+      WHERE cc.campaign_id = ?
+      ORDER BY ch.name ASC
+    ''',
+      [campaignId],
     );
     return results.map((m) => Character.fromMap(m)).toList();
   }
@@ -214,9 +215,8 @@ class PlayerRepository {
     final results = await db.rawQuery(
       '''
       SELECT ch.* FROM characters ch
-      JOIN campaigns c ON ch.campaign_id = c.id
-      JOIN worlds w ON c.world_id = w.id
-      WHERE w.user_id = ?
+      JOIN players p ON ch.player_id = p.id
+      WHERE p.user_id = ?
       ORDER BY ch.name ASC
     ''',
       [userId],
@@ -229,11 +229,14 @@ class PlayerRepository {
     required String campaignId,
   }) async {
     final db = await _db.database;
-    final results = await db.query(
-      'characters',
-      where: 'player_id = ? AND campaign_id = ? AND status = ?',
-      whereArgs: [playerId, campaignId, CharacterStatus.active.value],
-      limit: 1,
+    final results = await db.rawQuery(
+      '''
+      SELECT ch.* FROM characters ch
+      JOIN campaign_characters cc ON ch.id = cc.character_id
+      WHERE ch.player_id = ? AND cc.campaign_id = ? AND ch.status = ?
+      LIMIT 1
+    ''',
+      [playerId, campaignId, CharacterStatus.active.value],
     );
     if (results.isEmpty) return null;
     return Character.fromMap(results.first);
@@ -251,7 +254,71 @@ class PlayerRepository {
 
   Future<void> deleteCharacter(String id) async {
     final db = await _db.database;
+    // Remove all campaign links first, then the character itself
+    await db.delete(
+      'campaign_characters',
+      where: 'character_id = ?',
+      whereArgs: [id],
+    );
     await db.delete('characters', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ============================================
+  // CAMPAIGN-CHARACTER LINKS
+  // ============================================
+
+  Future<CampaignCharacter> addCharacterToCampaign({
+    required String campaignId,
+    required String characterId,
+  }) async {
+    final db = await _db.database;
+    final link = CampaignCharacter(
+      id: _uuid.v4(),
+      campaignId: campaignId,
+      characterId: characterId,
+      joinedAt: DateTime.now(),
+    );
+    await db.insert('campaign_characters', link.toMap());
+    return link;
+  }
+
+  Future<void> removeCharacterFromCampaign({
+    required String campaignId,
+    required String characterId,
+  }) async {
+    final db = await _db.database;
+    await db.delete(
+      'campaign_characters',
+      where: 'campaign_id = ? AND character_id = ?',
+      whereArgs: [campaignId, characterId],
+    );
+  }
+
+  Future<bool> isCharacterInCampaign({
+    required String campaignId,
+    required String characterId,
+  }) async {
+    final db = await _db.database;
+    final results = await db.query(
+      'campaign_characters',
+      where: 'campaign_id = ? AND character_id = ?',
+      whereArgs: [campaignId, characterId],
+    );
+    return results.isNotEmpty;
+  }
+
+  Future<List<Campaign>> getCampaignsByCharacter(String characterId) async {
+    final db = await _db.database;
+    final results = await db.rawQuery(
+      '''
+      SELECT c.* FROM campaigns c
+      JOIN campaign_characters cc ON c.id = cc.campaign_id
+      WHERE cc.character_id = ?
+      ORDER BY c.name ASC
+    ''',
+      [characterId],
+    );
+    return results.map((m) => Campaign.fromMap(m)).toList();
   }
 
   /// Returns sessions that a character attended, ordered by date descending.

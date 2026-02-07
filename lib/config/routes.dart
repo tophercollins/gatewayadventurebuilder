@@ -50,6 +50,7 @@ abstract final class Routes {
   static const String worlds = '/worlds';
   static const String allPlayers = '/players';
   static const String allCharacters = '/characters';
+  static const String globalCharacterDetail = '/characters/:characterId';
   static const String playerDetail = '/players/:playerId';
 
   // Campaigns
@@ -136,6 +137,8 @@ abstract final class Routes {
   static String newPlayerPath(String campaignId) =>
       '/campaigns/$campaignId/players/new';
   static String playerDetailPath(String playerId) => '/players/$playerId';
+  static String globalCharacterDetailPath(String characterId) =>
+      '/characters/$characterId';
   static String charactersPath(String campaignId) =>
       '/campaigns/$campaignId/characters';
   static String newCharacterPath(String campaignId) =>
@@ -308,6 +311,24 @@ GoRouter createAppRouter({String initialLocation = Routes.startup}) {
               showBack: true,
               child: const AllCharactersScreen(),
             ),
+          ),
+
+          // Global Character Detail
+          GoRoute(
+            path: Routes.globalCharacterDetail,
+            name: 'globalCharacterDetail',
+            pageBuilder: (context, state) {
+              final characterId = state.pathParameters['characterId']!;
+              return _buildPage(
+                context: context,
+                state: state,
+                title: 'Character',
+                showBack: true,
+                child: CharacterDetailScreen(
+                  characterId: characterId,
+                ),
+              );
+            },
           ),
 
           // Campaign Home (with nested routes)

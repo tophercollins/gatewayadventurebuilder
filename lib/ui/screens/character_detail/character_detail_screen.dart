@@ -17,12 +17,12 @@ import 'character_sessions_section.dart';
 /// session history, and edit/delete capabilities.
 class CharacterDetailScreen extends ConsumerStatefulWidget {
   const CharacterDetailScreen({
-    required this.campaignId,
+    this.campaignId,
     required this.characterId,
     super.key,
   });
 
-  final String campaignId;
+  final String? campaignId;
   final String characterId;
 
   @override
@@ -107,7 +107,11 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen> {
           .read(playerEditorProvider)
           .deleteCharacter(widget.characterId, widget.campaignId);
       if (mounted) {
-        context.go(Routes.charactersPath(widget.campaignId));
+        if (widget.campaignId != null) {
+          context.go(Routes.charactersPath(widget.campaignId!));
+        } else {
+          context.go(Routes.allCharacters);
+        }
       }
     }
   }
@@ -128,7 +132,7 @@ class _CharacterDetailContent extends StatelessWidget {
   final Character character;
   final AsyncValue<Player?> playerAsync;
   final AsyncValue<List<Session>> sessionsAsync;
-  final String campaignId;
+  final String? campaignId;
   final bool isEditing;
   final VoidCallback onEditToggle;
   final ValueChanged<Character> onSave;

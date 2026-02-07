@@ -1,3 +1,4 @@
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' show Transaction;
 import 'package:uuid/uuid.dart';
 
 import '../database/database_helper.dart';
@@ -66,7 +67,56 @@ class CampaignRepository {
 
   Future<void> deleteWorld(String id) async {
     final db = await _db.database;
-    await db.delete('worlds', where: 'id = ?', whereArgs: [id]);
+    await db.transaction((txn) async {
+      // Get all campaigns in this world
+      final campaigns = await txn.query(
+        'campaigns',
+        columns: ['id'],
+        where: 'world_id = ?',
+        whereArgs: [id],
+      );
+
+      // Delete all data for each campaign
+      for (final row in campaigns) {
+        final campaignId = row['id'] as String;
+        await _deleteCampaignData(txn, campaignId);
+      }
+
+      // Delete campaigns themselves
+      await txn.rawDelete(
+        'DELETE FROM campaigns WHERE world_id = ?',
+        [id],
+      );
+
+      // World-level entity children: npc_relationships, npc_quotes
+      const npcSubquery = 'SELECT id FROM npcs WHERE world_id = ?';
+      await txn.rawDelete(
+        'DELETE FROM npc_relationships WHERE npc_id IN ($npcSubquery)',
+        [id],
+      );
+      await txn.rawDelete(
+        'DELETE FROM npc_quotes WHERE npc_id IN '
+        '($npcSubquery)',
+        [id],
+      );
+
+      // World-level entities
+      for (final table in [
+        'npcs',
+        'locations',
+        'items',
+        'monsters',
+        'organisations',
+      ]) {
+        await txn.rawDelete(
+          'DELETE FROM $table WHERE world_id = ?',
+          [id],
+        );
+      }
+
+      // Finally, delete the world itself
+      await txn.delete('worlds', where: 'id = ?', whereArgs: [id]);
+    });
   }
 
   // ============================================
@@ -156,7 +206,65 @@ class CampaignRepository {
 
   Future<void> deleteCampaign(String id) async {
     final db = await _db.database;
-    await db.delete('campaigns', where: 'id = ?', whereArgs: [id]);
+    await db.transaction((txn) async {
+      await _deleteCampaignData(txn, id);
+      await txn.delete('campaigns', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
+  /// Deletes all data belonging to a campaign (but not the campaign row itself).
+  /// Characters survive — only their campaign_characters links are removed.
+  static Future<void> _deleteCampaignData(
+    Transaction txn,
+    String campaignId,
+  ) async {
+    const sessionSubquery =
+        'SELECT id FROM sessions WHERE campaign_id = ?';
+    const transcriptSubquery =
+        'SELECT id FROM session_transcripts WHERE session_id IN ($sessionSubquery)';
+
+    // Deepest children first: transcript_segments
+    await txn.rawDelete(
+      'DELETE FROM transcript_segments WHERE transcript_id IN ($transcriptSubquery)',
+      [campaignId],
+    );
+
+    // Session-dependent tables
+    for (final table in [
+      'session_summaries',
+      'scenes',
+      'entity_appearances',
+      'npc_quotes',
+      'player_moments',
+      'processing_queue',
+      'session_attendees',
+      'session_audio',
+      'session_transcripts',
+    ]) {
+      await txn.rawDelete(
+        'DELETE FROM $table WHERE session_id IN ($sessionSubquery)',
+        [campaignId],
+      );
+    }
+
+    // action_items references both session and campaign
+    await txn.rawDelete(
+      'DELETE FROM action_items WHERE campaign_id = ?',
+      [campaignId],
+    );
+
+    // Direct campaign-dependent tables (characters survive, only links removed)
+    for (final table in [
+      'sessions',
+      'campaign_players',
+      'campaign_characters',
+      'campaign_imports',
+    ]) {
+      await txn.rawDelete(
+        'DELETE FROM $table WHERE campaign_id = ?',
+        [campaignId],
+      );
+    }
   }
 
   /// Get campaign with its world.

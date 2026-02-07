@@ -60,8 +60,8 @@ class _AddCharacterScreenState extends ConsumerState<AddCharacterScreen> {
       final editor = ref.read(playerEditorProvider);
       final characterId = await editor.createCharacter(
         playerId: _selectedPlayerId!,
-        campaignId: widget.campaignId,
         name: _nameController.text.trim(),
+        campaignId: widget.campaignId,
         characterClass: _classController.text.trim().isEmpty
             ? null
             : _classController.text.trim(),

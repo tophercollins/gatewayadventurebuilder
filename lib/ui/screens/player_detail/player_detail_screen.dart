@@ -297,7 +297,7 @@ class _CharacterTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => context.push(
-          Routes.characterDetailPath(character.campaignId, character.id),
+          Routes.globalCharacterDetailPath(character.id),
         ),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(

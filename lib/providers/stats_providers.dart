@@ -328,7 +328,7 @@ class CharacterStats {
   const CharacterStats({
     required this.characterName,
     this.playerName = '',
-    this.campaignName = '',
+    this.campaignNames = const [],
     this.characterClass,
     this.race,
     this.level,
@@ -338,12 +338,15 @@ class CharacterStats {
 
   final String characterName;
   final String playerName;
-  final String campaignName;
+  final List<String> campaignNames;
   final String? characterClass;
   final String? race;
   final int? level;
   final String status;
   final int sessionsAttended;
+
+  String get campaignDisplay =>
+      campaignNames.isEmpty ? 'No campaign' : campaignNames.join(', ');
 }
 
 /// Provider for per-character stats.
@@ -351,15 +354,14 @@ final characterStatsListProvider =
     FutureProvider.autoDispose<List<CharacterStats>>((ref) async {
       final user = await ref.watch(currentUserProvider.future);
       final playerRepo = ref.watch(playerRepositoryProvider);
-      final campaignRepo = ref.watch(campaignRepositoryProvider);
 
       final characters = await playerRepo.getCharactersByUser(user.id);
       final result = <CharacterStats>[];
 
       for (final character in characters) {
         final player = await playerRepo.getPlayerById(character.playerId);
-        final campaignWithWorld = await campaignRepo.getCampaignWithWorld(
-          character.campaignId,
+        final campaigns = await playerRepo.getCampaignsByCharacter(
+          character.id,
         );
         final sessions = await playerRepo.getSessionsByCharacter(character.id);
 
@@ -367,7 +369,7 @@ final characterStatsListProvider =
           CharacterStats(
             characterName: character.name,
             playerName: player?.name ?? 'Unknown',
-            campaignName: campaignWithWorld?.campaign.name ?? 'Unknown',
+            campaignNames: campaigns.map((c) => c.name).toList(),
             characterClass: character.characterClass,
             race: character.race,
             level: character.level,

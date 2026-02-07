@@ -63,6 +63,39 @@ class Player {
   }
 }
 
+/// Campaign-Character link for many-to-many relationship.
+class CampaignCharacter {
+  const CampaignCharacter({
+    required this.id,
+    required this.campaignId,
+    required this.characterId,
+    required this.joinedAt,
+  });
+
+  final String id;
+  final String campaignId;
+  final String characterId;
+  final DateTime joinedAt;
+
+  factory CampaignCharacter.fromMap(Map<String, dynamic> map) {
+    return CampaignCharacter(
+      id: map['id'] as String,
+      campaignId: map['campaign_id'] as String,
+      characterId: map['character_id'] as String,
+      joinedAt: DateTime.parse(map['joined_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'campaign_id': campaignId,
+      'character_id': characterId,
+      'joined_at': joinedAt.toIso8601String(),
+    };
+  }
+}
+
 /// Campaign-Player link for many-to-many relationship.
 class CampaignPlayer {
   const CampaignPlayer({

@@ -12,12 +12,12 @@ import '../../widgets/empty_state.dart';
 class CharacterSessionsSection extends StatelessWidget {
   const CharacterSessionsSection({
     required this.sessionsAsync,
-    required this.campaignId,
+    this.campaignId,
     super.key,
   });
 
   final AsyncValue<List<Session>> sessionsAsync;
-  final String campaignId;
+  final String? campaignId;
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +59,10 @@ class CharacterSessionsSection extends StatelessWidget {
 }
 
 class _SessionCard extends StatelessWidget {
-  const _SessionCard({required this.session, required this.campaignId});
+  const _SessionCard({required this.session, this.campaignId});
 
   final Session session;
-  final String campaignId;
+  final String? campaignId;
 
   @override
   Widget build(BuildContext context) {
@@ -71,8 +71,12 @@ class _SessionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () =>
-            context.push(Routes.sessionDetailPath(campaignId, session.id)),
+        onTap: () => context.push(
+          Routes.sessionDetailPath(
+            campaignId ?? session.campaignId,
+            session.id,
+          ),
+        ),
         borderRadius: BorderRadius.circular(Spacing.cardRadius),
         child: Container(
           margin: const EdgeInsets.only(bottom: Spacing.sm),

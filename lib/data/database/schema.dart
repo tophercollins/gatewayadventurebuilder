@@ -9,6 +9,7 @@ abstract final class DatabaseSchema {
     _createPlayers,
     _createCampaignPlayers,
     _createCharacters,
+    _createCampaignCharacters,
     _createSessions,
     _createSessionAttendees,
     _createSessionAudio,
@@ -39,6 +40,8 @@ abstract final class DatabaseSchema {
     'CREATE INDEX idx_items_world ON items(world_id)',
     'CREATE INDEX idx_monsters_world ON monsters(world_id)',
     'CREATE INDEX idx_organisations_world ON organisations(world_id)',
+    'CREATE INDEX idx_campaign_characters_campaign ON campaign_characters(campaign_id)',
+    'CREATE INDEX idx_campaign_characters_character ON campaign_characters(character_id)',
     'CREATE INDEX idx_entity_appearances_session ON entity_appearances(session_id)',
     'CREATE INDEX idx_entity_appearances_entity ON entity_appearances(entity_type, entity_id)',
     'CREATE INDEX idx_action_items_campaign ON action_items(campaign_id)',
@@ -113,7 +116,6 @@ abstract final class DatabaseSchema {
     CREATE TABLE characters (
       id TEXT PRIMARY KEY,
       player_id TEXT NOT NULL REFERENCES players(id),
-      campaign_id TEXT NOT NULL REFERENCES campaigns(id),
       name TEXT NOT NULL,
       character_class TEXT,
       race TEXT,
@@ -125,6 +127,16 @@ abstract final class DatabaseSchema {
       image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
+    )
+  ''';
+
+  static const String _createCampaignCharacters = '''
+    CREATE TABLE campaign_characters (
+      id TEXT PRIMARY KEY,
+      campaign_id TEXT NOT NULL REFERENCES campaigns(id),
+      character_id TEXT NOT NULL REFERENCES characters(id),
+      joined_at TEXT NOT NULL,
+      UNIQUE(campaign_id, character_id)
     )
   ''';
 

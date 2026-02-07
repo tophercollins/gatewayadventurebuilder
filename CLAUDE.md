@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TTRPG Session Tracker — a desktop-first Flutter app for Game Masters that records tabletop RPG sessions, transcribes audio, and uses AI (Gemini Flash) to generate summaries, extract entities (NPCs, locations, items, monsters, organisations), and track campaign details. Offline-first architecture with optional Supabase cloud sync.
 
-**Status:** v0.4.0 — Organisations entity type + monster imagePath fix. `flutter analyze` passes with 0 issues. DB version 6.
+**Status:** v0.5.0 — Characters as global entities (player-owned, campaign-linked via join table). `flutter analyze` passes with 0 issues. DB version 7.
 
 ### Version History
 - **v0.0** — Initial 15-phase MVP (project setup through polish)
@@ -14,6 +14,7 @@ TTRPG Session Tracker — a desktop-first Flutter app for Game Masters that reco
 - **v0.2** — Feature backlog: crash recovery, reactive state, stats dashboard, export, podcast generation, email integration, manual session add, light/dark toggle, audio playback
 - **v0.3** — Entity image support: image upload/display for all 7 entity types (worlds, campaigns, players, characters, NPCs, locations, items)
 - **v0.4** — Organisations entity type (5th world-level entity: factions, guilds, governments, etc.) + monster imagePath fix
+- **v0.5** — Characters as global entities: player-owned with campaign_characters join table, survive campaign deletion, global routing
 
 ## Build & Development Commands
 
@@ -86,10 +87,10 @@ lib/
 ```
 
 ### Database Schema
-27 tables defined in BACKEND_STRUCTURE.md (+ `notification_settings`). DB version 6. Key relationships:
+28 tables defined in BACKEND_STRUCTURE.md (+ `notification_settings` + `campaign_characters`). DB version 7. Key relationships:
 - `worlds` → `campaigns` → `sessions` (hierarchical)
 - `players` ↔ `campaigns` (many-to-many via `campaign_players`)
-- `players` → `characters` → sessions (via `session_attendees`)
+- `characters` → `players` (owned by); `characters` ↔ `campaigns` (many-to-many via `campaign_characters`)
 - `sessions` → `session_audio`, `session_transcripts`, `session_summaries`, `scenes`, `action_items`, `player_moments`
 - `worlds` → `npcs`, `locations`, `items`, `monsters`, `organisations` (entity database)
 - `entity_appearances` links any entity type to sessions
@@ -100,6 +101,7 @@ lib/
 - **v3→v4:** `CREATE TABLE monsters` + `CREATE INDEX idx_monsters_world`
 - **v4→v5:** `ALTER TABLE {worlds,campaigns,players,characters,npcs,locations,items} ADD COLUMN image_path TEXT`
 - **v5→v6:** `ALTER TABLE monsters ADD COLUMN image_path TEXT` + `CREATE TABLE organisations` + `CREATE INDEX idx_organisations_world`
+- **v6→v7:** `CREATE TABLE campaign_characters` + migrate existing character→campaign links + recreate `characters` without `campaign_id` + indexes
 
 #### SessionStatus Enum
 `recording`, `transcribing`, `queued`, `processing`, `complete`, `error`, `logged`, `interrupted`

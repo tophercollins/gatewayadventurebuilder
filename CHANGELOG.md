@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.0] — 2026-02-07 — Characters as Global Entities
+
+Restructures characters from campaign-scoped to player-owned global entities. Characters now survive campaign deletion, can belong to multiple campaigns via a join table (`campaign_characters`), and are accessible from a new global route. Also adds full cascade delete for worlds.
+
+### Changed
+
+#### Database (v6→v7)
+- **`lib/data/database/schema.dart`** — Removed `campaign_id` from `characters` table; added `campaign_characters` join table with unique constraint and indexes
+- **`lib/data/database/database_helper.dart`** — v6→v7 migration: creates `campaign_characters`, populates from existing data, recreates `characters` table without `campaign_id`
+
+#### Model
+- **`lib/data/models/character.dart`** — Removed `campaignId` field from constructor, `fromMap`, `toMap`, and `copyWith`
+- **`lib/data/models/player.dart`** — Added `CampaignCharacter` class (mirrors `CampaignPlayer` pattern)
+
+#### Repository
+- **`lib/data/repositories/player_repository.dart`** — `createCharacter()` no longer takes `campaignId`; `getCharactersByCampaign()` and `getActiveCharacterForPlayerInCampaign()` rewritten to JOIN via `campaign_characters`; `getCharactersByUser()` simplified to JOIN via players; `deleteCharacter()` removes campaign links first; added `addCharacterToCampaign()`, `removeCharacterFromCampaign()`, `isCharacterInCampaign()`, `getCampaignsByCharacter()`
+- **`lib/data/repositories/campaign_repository.dart`** — `deleteCampaign()` no longer deletes characters (only removes `campaign_characters` links); `deleteWorld()` now performs full cascade delete (campaigns, sessions, world entities, NPC children)
+
+#### Providers
+- **`lib/providers/player_providers.dart`** — `createCharacter()` takes optional `campaignId`; `updateCharacter()` and `deleteCharacter()` take optional campaign context; added `linkCharacterToCampaign()`, `unlinkCharacterFromCampaign()`, `characterCampaignsProvider`
+- **`lib/providers/global_providers.dart`** — `CharacterSummary.campaignName` → `campaignNames` (List) + `campaignDisplay` getter
+- **`lib/providers/stats_providers.dart`** — `CharacterStats.campaignName` → `campaignNames` (List) + `campaignDisplay` getter
+
+#### Routes
+- **`lib/config/routes.dart`** — Added `/characters/:characterId` global route with `globalCharacterDetailPath()` helper
+
+#### UI
+- **`lib/ui/screens/character_detail/character_detail_screen.dart`** — `campaignId` now nullable; delete navigates to global list when no campaign context
+- **`lib/ui/screens/character_detail/character_sessions_section.dart`** — `campaignId` now nullable; falls back to session's own campaignId for routing
+- **`lib/ui/screens/all_characters_screen.dart`** — Uses global character routing and `campaignDisplay`
+- **`lib/ui/screens/player_detail/player_detail_screen.dart`** — Uses global character routing
+- **`lib/ui/screens/add_character_screen.dart`** — Passes `campaignId` as optional named param
+- **`lib/ui/screens/stats/character_stats_tab.dart`** — Uses `campaignDisplay`
+
+---
+
 ## [0.4.0] — 2026-02-07 — Organisations Entity Type + Monster imagePath Fix
 
 Adds **organisations** as the 5th world-level entity type (factions, guilds, governments, cults, military orders, etc.) across all layers of the app. Also fixes the missing `imagePath` field on the Monster model that was missed in the v4→v5 migration, and updates the monster detail screen to display images.

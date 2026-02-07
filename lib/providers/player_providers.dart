@@ -174,11 +174,12 @@ class PlayerEditor {
   }
 
   /// Creates a character for a player.
+  /// If [campaignId] is provided, also links the character to that campaign.
   /// Returns the new character's ID.
   Future<String> createCharacter({
     required String playerId,
-    required String campaignId,
     required String name,
+    String? campaignId,
     String? characterClass,
     String? race,
     int? level,
@@ -186,14 +187,20 @@ class PlayerEditor {
   }) async {
     final character = await _playerRepo.createCharacter(
       playerId: playerId,
-      campaignId: campaignId,
       name: name,
       characterClass: characterClass,
       race: race,
       level: level,
       backstory: backstory,
     );
-    _invalidateForCampaign(campaignId);
+    if (campaignId != null) {
+      await _playerRepo.addCharacterToCampaign(
+        campaignId: campaignId,
+        characterId: character.id,
+      );
+      _invalidateForCampaign(campaignId);
+    }
+    _ref.read(charactersRevisionProvider.notifier).state++;
     return character.id;
   }
 
@@ -225,9 +232,12 @@ class PlayerEditor {
   }
 
   /// Updates a character.
-  Future<void> updateCharacter(Character character, String campaignId) async {
+  Future<void> updateCharacter(Character character, [String? campaignId]) async {
     await _playerRepo.updateCharacter(character);
-    _invalidateForCampaign(campaignId);
+    if (campaignId != null) {
+      _invalidateForCampaign(campaignId);
+    }
+    _ref.read(charactersRevisionProvider.notifier).state++;
   }
 
   /// Links an existing player to a campaign.
@@ -254,14 +264,41 @@ class PlayerEditor {
     _invalidateForCampaign(campaignId);
   }
 
-  /// Deletes a character, including image.
-  Future<void> deleteCharacter(String characterId, String campaignId) async {
+  /// Deletes a character, including image and all campaign links.
+  Future<void> deleteCharacter(String characterId, [String? campaignId]) async {
     final imageService = _ref.read(imageStorageProvider);
     await imageService.deleteImage(
       entityType: 'characters',
       entityId: characterId,
     );
     await _playerRepo.deleteCharacter(characterId);
+    if (campaignId != null) {
+      _invalidateForCampaign(campaignId);
+    }
+    _ref.read(charactersRevisionProvider.notifier).state++;
+  }
+
+  /// Links an existing character to a campaign.
+  Future<void> linkCharacterToCampaign({
+    required String campaignId,
+    required String characterId,
+  }) async {
+    await _playerRepo.addCharacterToCampaign(
+      campaignId: campaignId,
+      characterId: characterId,
+    );
+    _invalidateForCampaign(campaignId);
+  }
+
+  /// Removes a character from a campaign (does not delete the character).
+  Future<void> unlinkCharacterFromCampaign({
+    required String campaignId,
+    required String characterId,
+  }) async {
+    await _playerRepo.removeCharacterFromCampaign(
+      campaignId: campaignId,
+      characterId: characterId,
+    );
     _invalidateForCampaign(campaignId);
   }
 
@@ -273,6 +310,14 @@ class PlayerEditor {
     _ref.read(playersRevisionProvider.notifier).state++;
   }
 }
+
+/// Provider for campaigns a character belongs to.
+final characterCampaignsProvider = FutureProvider.autoDispose
+    .family<List<Campaign>, String>((ref, characterId) {
+      ref.watch(charactersRevisionProvider);
+      final playerRepo = ref.watch(playerRepositoryProvider);
+      return playerRepo.getCampaignsByCharacter(characterId);
+    });
 
 /// Provider for player CRUD operations.
 final playerEditorProvider = Provider<PlayerEditor>((ref) {

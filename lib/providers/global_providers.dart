@@ -67,33 +67,41 @@ final allWorldsProvider = FutureProvider.autoDispose<List<WorldSummary>>((
   return result;
 });
 
-/// Data class for a character with its campaign name.
+/// Data class for a character with its campaign names.
 class CharacterSummary {
-  const CharacterSummary({required this.character, required this.campaignName});
+  const CharacterSummary({
+    required this.character,
+    required this.campaignNames,
+  });
 
   final Character character;
-  final String campaignName;
+  final List<String> campaignNames;
+
+  String get campaignDisplay =>
+      campaignNames.isEmpty ? 'No campaign' : campaignNames.join(', ');
 }
 
 /// Provider fetching all characters for the current user with campaign names.
 final allCharactersProvider =
     FutureProvider.autoDispose<List<CharacterSummary>>((ref) async {
+      ref.watch(charactersRevisionProvider);
       final user = await ref.watch(currentUserProvider.future);
       final playerRepo = ref.watch(playerRepositoryProvider);
-      final campaignRepo = ref.watch(campaignRepositoryProvider);
 
       final characters = await playerRepo.getCharactersByUser(user.id);
-      final campaigns = await campaignRepo.getCampaignsByUser(user.id);
-      final campaignMap = {for (final c in campaigns) c.id: c.name};
+      final result = <CharacterSummary>[];
 
-      return characters
-          .map(
-            (ch) => CharacterSummary(
-              character: ch,
-              campaignName: campaignMap[ch.campaignId] ?? 'Unknown',
-            ),
-          )
-          .toList();
+      for (final ch in characters) {
+        final campaigns = await playerRepo.getCampaignsByCharacter(ch.id);
+        result.add(
+          CharacterSummary(
+            character: ch,
+            campaignNames: campaigns.map((c) => c.name).toList(),
+          ),
+        );
+      }
+
+      return result;
     });
 
 /// Provider fetching all players for the current user with campaign counts.
