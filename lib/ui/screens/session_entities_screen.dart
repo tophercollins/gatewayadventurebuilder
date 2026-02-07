@@ -5,6 +5,7 @@ import '../../data/models/item.dart';
 import '../../data/models/location.dart';
 import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
+import '../../data/models/organisation.dart';
 import '../../providers/editing_providers.dart';
 import '../../providers/session_detail_providers.dart';
 import '../theme/spacing.dart';
@@ -46,6 +47,7 @@ class SessionEntitiesScreen extends ConsumerWidget {
               locations: data.locations,
               items: data.items,
               monsters: data.monsters,
+              organisations: data.organisations,
             );
           },
         ),
@@ -82,6 +84,7 @@ class _EntitiesContent extends StatelessWidget {
     required this.locations,
     required this.items,
     required this.monsters,
+    required this.organisations,
   });
 
   final String campaignId;
@@ -90,6 +93,7 @@ class _EntitiesContent extends StatelessWidget {
   final List<Location> locations;
   final List<Item> items;
   final List<Monster> monsters;
+  final List<Organisation> organisations;
 
   @override
   Widget build(BuildContext context) {
@@ -97,14 +101,15 @@ class _EntitiesContent extends StatelessWidget {
         npcs.isNotEmpty ||
         locations.isNotEmpty ||
         items.isNotEmpty ||
-        monsters.isNotEmpty;
+        monsters.isNotEmpty ||
+        organisations.isNotEmpty;
 
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: hasContent
             ? DefaultTabController(
-                length: 4,
+                length: 5,
                 child: Column(
                   children: [
                     _EntityTabBar(
@@ -112,6 +117,7 @@ class _EntitiesContent extends StatelessWidget {
                       locationCount: locations.length,
                       itemCount: items.length,
                       monsterCount: monsters.length,
+                      organisationCount: organisations.length,
                     ),
                     Expanded(
                       child: TabBarView(
@@ -136,6 +142,11 @@ class _EntitiesContent extends StatelessWidget {
                             campaignId: campaignId,
                             sessionId: sessionId,
                           ),
+                          _OrganisationsList(
+                            organisations: organisations,
+                            campaignId: campaignId,
+                            sessionId: sessionId,
+                          ),
                         ],
                       ),
                     ),
@@ -146,7 +157,7 @@ class _EntitiesContent extends StatelessWidget {
                 icon: Icons.inventory_2_outlined,
                 title: 'No entities extracted',
                 message:
-                    'NPCs, locations, items, and monsters will appear here once the session is processed.',
+                    'NPCs, locations, items, monsters, and organisations will appear here once the session is processed.',
               ),
       ),
     );
@@ -159,12 +170,14 @@ class _EntityTabBar extends StatelessWidget {
     required this.locationCount,
     required this.itemCount,
     required this.monsterCount,
+    required this.organisationCount,
   });
 
   final int npcCount;
   final int locationCount;
   final int itemCount;
   final int monsterCount;
+  final int organisationCount;
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +207,7 @@ class _EntityTabBar extends StatelessWidget {
           Tab(text: 'Locations ($locationCount)'),
           Tab(text: 'Items ($itemCount)'),
           Tab(text: 'Monsters ($monsterCount)'),
+          Tab(text: 'Orgs ($organisationCount)'),
         ],
       ),
     );
@@ -585,6 +599,107 @@ class _MonstersListState extends ConsumerState<_MonstersList> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Monster saved'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      final error = ref.read(entityEditingProvider).error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save: ${error ?? "Unknown error"}'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+}
+
+class _OrganisationsList extends ConsumerStatefulWidget {
+  const _OrganisationsList({
+    required this.organisations,
+    required this.campaignId,
+    required this.sessionId,
+  });
+
+  final List<Organisation> organisations;
+  final String campaignId;
+  final String sessionId;
+
+  @override
+  ConsumerState<_OrganisationsList> createState() =>
+      _OrganisationsListState();
+}
+
+class _OrganisationsListState extends ConsumerState<_OrganisationsList> {
+  late List<Organisation> _localOrganisations;
+
+  @override
+  void initState() {
+    super.initState();
+    _localOrganisations = List.from(widget.organisations);
+  }
+
+  @override
+  void didUpdateWidget(_OrganisationsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.organisations != widget.organisations) {
+      _localOrganisations = List.from(widget.organisations);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_localOrganisations.isEmpty) {
+      return const EmptySectionState(
+        icon: Icons.groups_outlined,
+        message: 'No organisations extracted from this session.',
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(Spacing.lg),
+      itemCount: _localOrganisations.length,
+      itemBuilder: (context, index) {
+        final org = _localOrganisations[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: Spacing.md),
+          child: EditableEntityCard(
+            icon: Icons.groups_outlined,
+            name: org.name,
+            subtitle: org.organisationType,
+            description: org.description,
+            isEdited: org.isEdited,
+            subtitleLabel: 'Organisation Type',
+            onSave: ({required name, subtitle, description}) =>
+                _onSaveOrganisation(index, org, name, subtitle, description),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _onSaveOrganisation(
+    int index,
+    Organisation original,
+    String name,
+    String? organisationType,
+    String? description,
+  ) async {
+    final notifier = ref.read(entityEditingProvider.notifier);
+    final result = await notifier.updateOrganisation(
+      original.id,
+      name: name,
+      organisationType: organisationType,
+      description: description,
+    );
+
+    if (!mounted) return;
+
+    if (result != null) {
+      setState(() => _localOrganisations[index] = result);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Organisation saved'),
           duration: Duration(seconds: 2),
         ),
       );

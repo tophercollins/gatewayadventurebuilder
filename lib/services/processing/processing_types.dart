@@ -9,6 +9,7 @@ class ProcessingResult {
     this.locationCount = 0,
     this.itemCount = 0,
     this.monsterCount = 0,
+    this.organisationCount = 0,
     this.actionItemCount = 0,
     this.momentCount = 0,
   });
@@ -21,6 +22,7 @@ class ProcessingResult {
   final int locationCount;
   final int itemCount;
   final int monsterCount;
+  final int organisationCount;
   final int actionItemCount;
   final int momentCount;
 }
@@ -49,6 +51,7 @@ class ProcessingStats {
     this.locationCount = 0,
     this.itemCount = 0,
     this.monsterCount = 0,
+    this.organisationCount = 0,
     this.actionItemCount = 0,
     this.momentCount = 0,
   });
@@ -59,6 +62,7 @@ class ProcessingStats {
   final int locationCount;
   final int itemCount;
   final int monsterCount;
+  final int organisationCount;
   final int actionItemCount;
   final int momentCount;
 
@@ -69,6 +73,7 @@ class ProcessingStats {
     int? locationCount,
     int? itemCount,
     int? monsterCount,
+    int? organisationCount,
     int? actionItemCount,
     int? momentCount,
   }) {
@@ -79,6 +84,7 @@ class ProcessingStats {
       locationCount: locationCount ?? this.locationCount,
       itemCount: itemCount ?? this.itemCount,
       monsterCount: monsterCount ?? this.monsterCount,
+      organisationCount: organisationCount ?? this.organisationCount,
       actionItemCount: actionItemCount ?? this.actionItemCount,
       momentCount: momentCount ?? this.momentCount,
     );
@@ -92,10 +98,12 @@ class EntityCounts {
     required this.locations,
     required this.items,
     required this.monsters,
+    required this.organisations,
   });
 
   final int npcs;
   final int locations;
   final int items;
   final int monsters;
+  final int organisations;
 }

@@ -4,52 +4,54 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/entity_appearance.dart';
-import '../../data/models/monster.dart';
+import '../../data/models/organisation.dart';
 import '../../data/models/session.dart';
 import '../../utils/formatters.dart';
 import '../../providers/world_providers.dart';
 import '../theme/spacing.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/entity_image.dart';
 
-/// Monster detail screen showing all monster information and appearances.
-class MonsterDetailScreen extends ConsumerStatefulWidget {
-  const MonsterDetailScreen({
+/// Organisation detail screen showing all organisation information and appearances.
+class OrganisationDetailScreen extends ConsumerStatefulWidget {
+  const OrganisationDetailScreen({
     required this.campaignId,
-    required this.monsterId,
+    required this.organisationId,
     super.key,
   });
 
   final String campaignId;
-  final String monsterId;
+  final String organisationId;
 
   @override
-  ConsumerState<MonsterDetailScreen> createState() =>
-      _MonsterDetailScreenState();
+  ConsumerState<OrganisationDetailScreen> createState() =>
+      _OrganisationDetailScreenState();
 }
 
-class _MonsterDetailScreenState extends ConsumerState<MonsterDetailScreen> {
+class _OrganisationDetailScreenState
+    extends ConsumerState<OrganisationDetailScreen> {
   bool _isEditing = false;
 
   @override
   Widget build(BuildContext context) {
-    final monsterAsync = ref.watch(monsterByIdProvider(widget.monsterId));
+    final orgAsync = ref.watch(
+      organisationByIdProvider(widget.organisationId),
+    );
     final sessionsAsync = ref.watch(
       entitySessionsProvider((
-        type: EntityType.monster,
-        entityId: widget.monsterId,
+        type: EntityType.organisation,
+        entityId: widget.organisationId,
       )),
     );
 
-    return monsterAsync.when(
+    return orgAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => ErrorState(error: error.toString()),
-      data: (monster) {
-        if (monster == null) {
-          return const NotFoundState(message: 'Monster not found');
+      data: (organisation) {
+        if (organisation == null) {
+          return const NotFoundState(message: 'Organisation not found');
         }
-        return _MonsterDetailContent(
-          monster: monster,
+        return _OrganisationDetailContent(
+          organisation: organisation,
           campaignId: widget.campaignId,
           sessionsAsync: sessionsAsync,
           isEditing: _isEditing,
@@ -60,20 +62,20 @@ class _MonsterDetailScreenState extends ConsumerState<MonsterDetailScreen> {
     );
   }
 
-  Future<void> _handleSave(Monster updatedMonster) async {
-    await ref.read(entityEditorProvider).updateMonster(updatedMonster);
+  Future<void> _handleSave(Organisation updated) async {
+    await ref.read(entityEditorProvider).updateOrganisation(updated);
     setState(() => _isEditing = false);
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Monster updated')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Organisation updated')),
+      );
     }
   }
 }
 
-class _MonsterDetailContent extends StatelessWidget {
-  const _MonsterDetailContent({
-    required this.monster,
+class _OrganisationDetailContent extends StatelessWidget {
+  const _OrganisationDetailContent({
+    required this.organisation,
     required this.campaignId,
     required this.sessionsAsync,
     required this.isEditing,
@@ -81,12 +83,12 @@ class _MonsterDetailContent extends StatelessWidget {
     required this.onSave,
   });
 
-  final Monster monster;
+  final Organisation organisation;
   final String campaignId;
   final AsyncValue<List<Session>> sessionsAsync;
   final bool isEditing;
   final VoidCallback onEditToggle;
-  final ValueChanged<Monster> onSave;
+  final ValueChanged<Organisation> onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -98,16 +100,19 @@ class _MonsterDetailContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _MonsterHeader(monster: monster, onEdit: onEditToggle),
+              _OrganisationHeader(
+                organisation: organisation,
+                onEdit: onEditToggle,
+              ),
               const SizedBox(height: Spacing.lg),
               if (isEditing)
-                _MonsterEditForm(
-                  monster: monster,
+                _OrganisationEditForm(
+                  organisation: organisation,
                   onSave: onSave,
                   onCancel: onEditToggle,
                 )
               else ...[
-                _MonsterInfoSection(monster: monster),
+                _OrganisationInfoSection(organisation: organisation),
                 const SizedBox(height: Spacing.lg),
                 _AppearancesSection(
                   sessionsAsync: sessionsAsync,
@@ -122,10 +127,13 @@ class _MonsterDetailContent extends StatelessWidget {
   }
 }
 
-class _MonsterHeader extends StatelessWidget {
-  const _MonsterHeader({required this.monster, required this.onEdit});
+class _OrganisationHeader extends StatelessWidget {
+  const _OrganisationHeader({
+    required this.organisation,
+    required this.onEdit,
+  });
 
-  final Monster monster;
+  final Organisation organisation;
   final VoidCallback onEdit;
 
   @override
@@ -134,9 +142,18 @@ class _MonsterHeader extends StatelessWidget {
 
     return Row(
       children: [
-        EntityImage.avatar(
-          imagePath: monster.imagePath,
-          fallbackIcon: Icons.pest_control_outlined,
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(Spacing.sm),
+          ),
+          child: Icon(
+            Icons.groups_outlined,
+            color: theme.colorScheme.primary,
+            size: 32,
+          ),
         ),
         const SizedBox(width: Spacing.md),
         Expanded(
@@ -147,13 +164,13 @@ class _MonsterHeader extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      monster.name,
+                      organisation.name,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  if (monster.isEdited)
+                  if (organisation.isEdited)
                     Tooltip(
                       message: 'Manually edited',
                       child: Icon(
@@ -164,10 +181,10 @@ class _MonsterHeader extends StatelessWidget {
                     ),
                 ],
               ),
-              if (monster.monsterType != null) ...[
+              if (organisation.organisationType != null) ...[
                 const SizedBox(height: Spacing.xxs),
                 Text(
-                  monster.monsterType!,
+                  organisation.organisationType!,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
@@ -186,10 +203,10 @@ class _MonsterHeader extends StatelessWidget {
   }
 }
 
-class _MonsterInfoSection extends StatelessWidget {
-  const _MonsterInfoSection({required this.monster});
+class _OrganisationInfoSection extends StatelessWidget {
+  const _OrganisationInfoSection({required this.organisation});
 
-  final Monster monster;
+  final Organisation organisation;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +221,7 @@ class _MonsterInfoSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (monster.description != null) ...[
+          if (organisation.description != null) ...[
             Text(
               'Description',
               style: theme.textTheme.labelMedium?.copyWith(
@@ -212,10 +229,14 @@ class _MonsterInfoSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Spacing.xs),
-            Text(monster.description!, style: theme.textTheme.bodyMedium),
+            Text(
+              organisation.description!,
+              style: theme.textTheme.bodyMedium,
+            ),
           ],
-          if (monster.notes != null) ...[
-            if (monster.description != null) const SizedBox(height: Spacing.md),
+          if (organisation.notes != null) ...[
+            if (organisation.description != null)
+              const SizedBox(height: Spacing.md),
             Text(
               'Notes',
               style: theme.textTheme.labelMedium?.copyWith(
@@ -223,9 +244,9 @@ class _MonsterInfoSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Spacing.xs),
-            Text(monster.notes!, style: theme.textTheme.bodyMedium),
+            Text(organisation.notes!, style: theme.textTheme.bodyMedium),
           ],
-          if (monster.description == null && monster.notes == null)
+          if (organisation.description == null && organisation.notes == null)
             Text(
               'No additional details available.',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -322,7 +343,8 @@ class _SessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      session.title ?? 'Session ${session.sessionNumber ?? ""}',
+                      session.title ??
+                          'Session ${session.sessionNumber ?? ""}',
                       style: theme.textTheme.titleSmall,
                     ),
                     Text(
@@ -346,22 +368,22 @@ class _SessionCard extends StatelessWidget {
   }
 }
 
-class _MonsterEditForm extends StatefulWidget {
-  const _MonsterEditForm({
-    required this.monster,
+class _OrganisationEditForm extends StatefulWidget {
+  const _OrganisationEditForm({
+    required this.organisation,
     required this.onSave,
     required this.onCancel,
   });
 
-  final Monster monster;
-  final ValueChanged<Monster> onSave;
+  final Organisation organisation;
+  final ValueChanged<Organisation> onSave;
   final VoidCallback onCancel;
 
   @override
-  State<_MonsterEditForm> createState() => _MonsterEditFormState();
+  State<_OrganisationEditForm> createState() => _OrganisationEditFormState();
 }
 
-class _MonsterEditFormState extends State<_MonsterEditForm> {
+class _OrganisationEditFormState extends State<_OrganisationEditForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _typeController;
   late final TextEditingController _descriptionController;
@@ -372,14 +394,16 @@ class _MonsterEditFormState extends State<_MonsterEditForm> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.monster.name);
+    _nameController = TextEditingController(text: widget.organisation.name);
     _typeController = TextEditingController(
-      text: widget.monster.monsterType ?? '',
+      text: widget.organisation.organisationType ?? '',
     );
     _descriptionController = TextEditingController(
-      text: widget.monster.description ?? '',
+      text: widget.organisation.description ?? '',
     );
-    _notesController = TextEditingController(text: widget.monster.notes ?? '');
+    _notesController = TextEditingController(
+      text: widget.organisation.notes ?? '',
+    );
   }
 
   @override
@@ -396,9 +420,9 @@ class _MonsterEditFormState extends State<_MonsterEditForm> {
 
     setState(() => _isSaving = true);
 
-    final updated = widget.monster.copyWith(
+    final updated = widget.organisation.copyWith(
       name: _nameController.text.trim(),
-      monsterType: _typeController.text.trim().isEmpty
+      organisationType: _typeController.text.trim().isEmpty
           ? null
           : _typeController.text.trim(),
       description: _descriptionController.text.trim().isEmpty
@@ -439,7 +463,7 @@ class _MonsterEditFormState extends State<_MonsterEditForm> {
               controller: _typeController,
               decoration: const InputDecoration(
                 labelText: 'Type',
-                hintText: 'e.g., dragon, undead, beast',
+                hintText: 'e.g., guild, faction, government',
               ),
               enabled: !_isSaving,
             ),

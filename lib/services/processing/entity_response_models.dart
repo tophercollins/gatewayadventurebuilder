@@ -102,3 +102,28 @@ class MonstersResponse {
     }
   }
 }
+
+/// Response model for dedicated organisation extraction.
+class OrganisationsResponse {
+  const OrganisationsResponse({required this.organisations});
+
+  final List<OrganisationData> organisations;
+
+  factory OrganisationsResponse.fromJson(Map<String, dynamic> json) {
+    final orgList = json['organisations'] as List<dynamic>? ?? [];
+    return OrganisationsResponse(
+      organisations: orgList
+          .map((e) => OrganisationData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  static OrganisationsResponse? tryParse(String text) {
+    try {
+      final json = jsonDecode(extractJson(text)) as Map<String, dynamic>;
+      return OrganisationsResponse.fromJson(json);
+    } catch (_) {
+      return null;
+    }
+  }
+}

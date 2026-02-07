@@ -417,4 +417,35 @@ class MockLLMService implements LLMService {
       ),
     );
   }
+
+  @override
+  Future<LLMResult<OrganisationsResponse>> extractOrganisations({
+    required String transcript,
+    required String prompt,
+  }) async {
+    await _delay();
+    if (shouldFail) {
+      return LLMResult.failure(failureMessage);
+    }
+    return const LLMResult.success(
+      OrganisationsResponse(
+        organisations: [
+          OrganisationData(
+            name: 'The Goblin Warband',
+            description:
+                'An organized band of goblin raiders terrorizing the roads.',
+            organisationType: 'military',
+            context: 'Led the ambush at the Old Mill.',
+          ),
+          OrganisationData(
+            name: 'Shadowfen Temple Keepers',
+            description:
+                'An ancient order that once guarded the temple in the marshes.',
+            organisationType: 'religious',
+            context: 'Referenced in Theron\'s stories about the lost temple.',
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -65,7 +65,7 @@ class _WorldDatabaseContent extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
         child: hasContent
             ? DefaultTabController(
-                length: 4,
+                length: 5,
                 child: Column(
                   children: [
                     _SearchBar(
@@ -77,6 +77,7 @@ class _WorldDatabaseContent extends StatelessWidget {
                       locationCount: data.locations.length,
                       itemCount: data.items.length,
                       monsterCount: data.monsters.length,
+                      organisationCount: data.organisations.length,
                     ),
                     Expanded(
                       child: TabBarView(
@@ -101,6 +102,11 @@ class _WorldDatabaseContent extends StatelessWidget {
                             campaignId: campaignId,
                             searchQuery: searchQuery,
                           ),
+                          _OrganisationsList(
+                            organisations: data.organisations,
+                            campaignId: campaignId,
+                            searchQuery: searchQuery,
+                          ),
                         ],
                       ),
                     ),
@@ -111,7 +117,7 @@ class _WorldDatabaseContent extends StatelessWidget {
                 icon: Icons.public_outlined,
                 title: 'No entities yet',
                 message:
-                    'NPCs, locations, items, and monsters will appear here '
+                    'NPCs, locations, items, monsters, and organisations will appear here '
                     'as they are discovered in your sessions.',
               ),
       ),
@@ -156,12 +162,14 @@ class _EntityTabBar extends StatelessWidget {
     required this.locationCount,
     required this.itemCount,
     required this.monsterCount,
+    required this.organisationCount,
   });
 
   final int npcCount;
   final int locationCount;
   final int itemCount;
   final int monsterCount;
+  final int organisationCount;
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +199,7 @@ class _EntityTabBar extends StatelessWidget {
           Tab(text: 'Locations ($locationCount)'),
           Tab(text: 'Items ($itemCount)'),
           Tab(text: 'Monsters ($monsterCount)'),
+          Tab(text: 'Orgs ($organisationCount)'),
         ],
       ),
     );
@@ -415,6 +424,67 @@ class _MonstersList extends StatelessWidget {
       return item.monster.name.toLowerCase().contains(query) ||
           (item.monster.description?.toLowerCase().contains(query) ?? false) ||
           (item.monster.monsterType?.toLowerCase().contains(query) ?? false);
+    }).toList();
+  }
+}
+
+class _OrganisationsList extends StatelessWidget {
+  const _OrganisationsList({
+    required this.organisations,
+    required this.campaignId,
+    required this.searchQuery,
+  });
+
+  final List<OrganisationWithCount> organisations;
+  final String campaignId;
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _filterOrganisations();
+    if (filtered.isEmpty) {
+      return EmptySectionState(
+        icon: Icons.groups_outlined,
+        message: searchQuery.isNotEmpty
+            ? 'No organisations match "$searchQuery"'
+            : 'No organisations in this world yet.',
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(Spacing.lg),
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final item = filtered[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: Spacing.md),
+          child: _WorldEntityCard(
+            icon: Icons.groups_outlined,
+            name: item.organisation.name,
+            subtitle: item.organisation.organisationType,
+            description: item.organisation.description,
+            appearanceCount: item.appearanceCount,
+            onTap: () => context.push(
+              Routes.organisationDetailPath(
+                campaignId,
+                item.organisation.id,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<OrganisationWithCount> _filterOrganisations() {
+    if (searchQuery.isEmpty) return organisations;
+    final query = searchQuery.toLowerCase();
+    return organisations.where((item) {
+      return item.organisation.name.toLowerCase().contains(query) ||
+          (item.organisation.description?.toLowerCase().contains(query) ??
+              false) ||
+          (item.organisation.organisationType?.toLowerCase().contains(query) ??
+              false);
     }).toList();
   }
 }

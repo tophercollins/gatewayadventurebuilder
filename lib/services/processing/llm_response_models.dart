@@ -218,6 +218,32 @@ class MonsterData {
   }
 }
 
+class OrganisationData {
+  const OrganisationData({
+    required this.name,
+    this.description,
+    this.organisationType,
+    this.context,
+    this.timestampMs,
+  });
+
+  final String name;
+  final String? description;
+  final String? organisationType;
+  final String? context;
+  final int? timestampMs;
+
+  factory OrganisationData.fromJson(Map<String, dynamic> json) {
+    return OrganisationData(
+      name: json['name'] as String? ?? 'Unknown',
+      description: json['description'] as String?,
+      organisationType: json['organisation_type'] as String?,
+      context: json['context'] as String?,
+      timestampMs: json['timestamp_ms'] as int?,
+    );
+  }
+}
+
 /// Response model for action items extraction.
 class ActionItemsResponse {
   const ActionItemsResponse({required this.actionItems});

@@ -74,6 +74,19 @@ class EntityExtractor {
       prompt: monsterPrompt,
     );
 
+    // 5. Extract organisations
+    onProgress?.call(ProcessingStep.extractingEntities, 0.57);
+    final orgPrompt = OrganisationPrompt.build(
+      gameSystem: ctx.gameSystem,
+      campaignName: ctx.campaign.name,
+      attendeeNames: ctx.attendeeNames,
+      existingOrganisationNames: ctx.existingOrganisationNames,
+    );
+    final orgResult = await _llmService.extractOrganisations(
+      transcript: transcript,
+      prompt: orgPrompt,
+    );
+
     // Match and persist
     final npcMatches = await _entityMatcher.matchNpcs(
       worldId: ctx.world.id,
@@ -91,6 +104,10 @@ class EntityExtractor {
       worldId: ctx.world.id,
       extractedMonsters: monsterResult.data?.monsters ?? [],
     );
+    final orgMatches = await _entityMatcher.matchOrganisations(
+      worldId: ctx.world.id,
+      extractedOrganisations: orgResult.data?.organisations ?? [],
+    );
 
     await _entityMatcher.createAppearances(
       sessionId: ctx.session.id,
@@ -98,10 +115,12 @@ class EntityExtractor {
       locations: locMatches,
       items: itemMatches,
       monsters: monsterMatches,
+      organisations: orgMatches,
       npcData: npcResult.data?.npcs ?? [],
       locationData: locResult.data?.locations ?? [],
       itemData: itemResult.data?.items ?? [],
       monsterData: monsterResult.data?.monsters ?? [],
+      organisationData: orgResult.data?.organisations ?? [],
     );
 
     return EntityCounts(
@@ -109,6 +128,7 @@ class EntityExtractor {
       locations: locMatches.length,
       items: itemMatches.length,
       monsters: monsterMatches.length,
+      organisations: orgMatches.length,
     );
   }
 }

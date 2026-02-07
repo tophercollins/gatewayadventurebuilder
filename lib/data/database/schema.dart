@@ -20,6 +20,7 @@ abstract final class DatabaseSchema {
     _createLocations,
     _createItems,
     _createMonsters,
+    _createOrganisations,
     _createEntityAppearances,
     _createNpcRelationships,
     _createNpcQuotes,
@@ -37,6 +38,7 @@ abstract final class DatabaseSchema {
     'CREATE INDEX idx_locations_world ON locations(world_id)',
     'CREATE INDEX idx_items_world ON items(world_id)',
     'CREATE INDEX idx_monsters_world ON monsters(world_id)',
+    'CREATE INDEX idx_organisations_world ON organisations(world_id)',
     'CREATE INDEX idx_entity_appearances_session ON entity_appearances(session_id)',
     'CREATE INDEX idx_entity_appearances_entity ON entity_appearances(entity_type, entity_id)',
     'CREATE INDEX idx_action_items_campaign ON action_items(campaign_id)',
@@ -278,6 +280,23 @@ abstract final class DatabaseSchema {
       monster_type TEXT,
       notes TEXT,
       is_edited INTEGER DEFAULT 0,
+      image_path TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  ''';
+
+  static const String _createOrganisations = '''
+    CREATE TABLE organisations (
+      id TEXT PRIMARY KEY,
+      world_id TEXT NOT NULL REFERENCES worlds(id),
+      copied_from_id TEXT REFERENCES organisations(id),
+      name TEXT NOT NULL,
+      description TEXT,
+      organisation_type TEXT,
+      notes TEXT,
+      is_edited INTEGER DEFAULT 0,
+      image_path TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )

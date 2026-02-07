@@ -4,6 +4,7 @@ import '../../data/models/item.dart';
 import '../../data/models/location.dart';
 import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
+import '../../data/models/organisation.dart';
 import '../../data/models/player.dart';
 import '../../data/models/session.dart';
 import '../../data/models/session_transcript.dart';
@@ -28,6 +29,7 @@ class SessionContext {
     required this.existingLocations,
     required this.existingItems,
     required this.existingMonsters,
+    required this.existingOrganisations,
   });
 
   final Session session;
@@ -41,6 +43,7 @@ class SessionContext {
   final List<Location> existingLocations;
   final List<Item> existingItems;
   final List<Monster> existingMonsters;
+  final List<Organisation> existingOrganisations;
 
   /// Get player names for attendees.
   List<String> get attendeeNames {
@@ -102,6 +105,10 @@ class SessionContext {
   List<String> get existingMonsterNames =>
       existingMonsters.map((m) => m.name).toList();
 
+  /// Get names of existing organisations.
+  List<String> get existingOrganisationNames =>
+      existingOrganisations.map((o) => o.name).toList();
+
   /// Get game system (from campaign or world).
   String get gameSystem =>
       campaign.gameSystem ?? world.gameSystem ?? 'Unknown System';
@@ -155,6 +162,9 @@ class SessionContextLoader {
     final existingLocations = await _entityRepo.getLocationsByWorld(worldId);
     final existingItems = await _entityRepo.getItemsByWorld(worldId);
     final existingMonsters = await _entityRepo.getMonstersByWorld(worldId);
+    final existingOrganisations = await _entityRepo.getOrganisationsByWorld(
+      worldId,
+    );
 
     return SessionContext(
       session: session,
@@ -168,6 +178,7 @@ class SessionContextLoader {
       existingLocations: existingLocations,
       existingItems: existingItems,
       existingMonsters: existingMonsters,
+      existingOrganisations: existingOrganisations,
     );
   }
 }

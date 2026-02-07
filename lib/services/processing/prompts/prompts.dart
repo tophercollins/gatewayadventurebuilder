@@ -5,6 +5,7 @@ export 'item_prompt.dart';
 export 'location_prompt.dart';
 export 'monster_prompt.dart';
 export 'npc_prompt.dart';
+export 'organisation_prompt.dart';
 export 'player_moments_prompt.dart';
 export 'resync_prompt.dart';
 export 'scene_prompt.dart';

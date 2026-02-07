@@ -6,6 +6,7 @@ import '../data/models/item.dart';
 import '../data/models/location.dart';
 import '../data/models/monster.dart';
 import '../data/models/npc.dart';
+import '../data/models/organisation.dart';
 import '../data/models/npc_quote.dart';
 import '../data/models/npc_relationship.dart';
 import '../data/models/session.dart';
@@ -47,6 +48,16 @@ class MonsterWithCount {
     required this.appearanceCount,
   });
   final Monster monster;
+  final int appearanceCount;
+}
+
+/// Data class for an organisation with its appearance count.
+class OrganisationWithCount {
+  const OrganisationWithCount({
+    required this.organisation,
+    required this.appearanceCount,
+  });
+  final Organisation organisation;
   final int appearanceCount;
 }
 
@@ -132,6 +143,28 @@ final worldMonstersProvider = FutureProvider.autoDispose
       return result;
     });
 
+/// Provider for all organisations in a world with appearance counts.
+final worldOrganisationsProvider = FutureProvider.autoDispose
+    .family<List<OrganisationWithCount>, String>((ref, worldId) async {
+      ref.watch(worldEntitiesRevisionProvider);
+      final entityRepo = ref.watch(entityRepositoryProvider);
+
+      final organisations = await entityRepo.getOrganisationsByWorld(worldId);
+      final result = <OrganisationWithCount>[];
+
+      for (final org in organisations) {
+        final count = await entityRepo.countAppearances(
+          entityType: EntityType.organisation,
+          entityId: org.id,
+        );
+        result.add(
+          OrganisationWithCount(organisation: org, appearanceCount: count),
+        );
+      }
+
+      return result;
+    });
+
 /// Provider for entity appearances for a specific entity.
 final entityAppearancesProvider = FutureProvider.autoDispose
     .family<List<EntityAppearance>, ({EntityType type, String entityId})>((
@@ -192,6 +225,13 @@ final monsterByIdProvider = FutureProvider.autoDispose.family<Monster?, String>(
   },
 );
 
+/// Provider for a single organisation by ID.
+final organisationByIdProvider = FutureProvider.autoDispose
+    .family<Organisation?, String>((ref, organisationId) async {
+      final entityRepo = ref.watch(entityRepositoryProvider);
+      return await entityRepo.getOrganisationById(organisationId);
+    });
+
 /// Provider for sessions where an entity appeared.
 final entitySessionsProvider = FutureProvider.autoDispose
     .family<List<Session>, ({EntityType type, String entityId})>((
@@ -234,15 +274,21 @@ class WorldDatabaseData {
     required this.locations,
     required this.items,
     required this.monsters,
+    required this.organisations,
   });
 
   final List<NpcWithCount> npcs;
   final List<LocationWithCount> locations;
   final List<ItemWithCount> items;
   final List<MonsterWithCount> monsters;
+  final List<OrganisationWithCount> organisations;
 
   int get totalEntities =>
-      npcs.length + locations.length + items.length + monsters.length;
+      npcs.length +
+      locations.length +
+      items.length +
+      monsters.length +
+      organisations.length;
 }
 
 /// Provider for all world database data.
@@ -306,11 +352,24 @@ final worldDatabaseProvider = FutureProvider.autoDispose
         );
       }
 
+      final organisations = await entityRepo.getOrganisationsByWorld(worldId);
+      final organisationsWithCounts = <OrganisationWithCount>[];
+      for (final org in organisations) {
+        final count = await entityRepo.countAppearances(
+          entityType: EntityType.organisation,
+          entityId: org.id,
+        );
+        organisationsWithCounts.add(
+          OrganisationWithCount(organisation: org, appearanceCount: count),
+        );
+      }
+
       return WorldDatabaseData(
         npcs: npcsWithCounts,
         locations: locationsWithCounts,
         items: itemsWithCounts,
         monsters: monstersWithCounts,
+        organisations: organisationsWithCounts,
       );
     });
 
@@ -343,6 +402,23 @@ class EntityEditor {
   Future<void> updateMonster(Monster monster) async {
     await _entityRepo.updateMonster(monster, markEdited: true);
     _ref.invalidate(monsterByIdProvider(monster.id));
+  }
+
+  /// Updates an organisation and refreshes data.
+  Future<void> updateOrganisation(Organisation organisation) async {
+    await _entityRepo.updateOrganisation(organisation, markEdited: true);
+    _ref.invalidate(organisationByIdProvider(organisation.id));
+  }
+
+  /// Deletes an organisation and its image.
+  Future<void> deleteOrganisation(String organisationId) async {
+    final imageService = _ref.read(imageStorageProvider);
+    await imageService.deleteImage(
+      entityType: 'organisations',
+      entityId: organisationId,
+    );
+    await _entityRepo.deleteOrganisation(organisationId);
+    _ref.read(worldEntitiesRevisionProvider.notifier).state++;
   }
 
   /// Deletes an NPC and its image.

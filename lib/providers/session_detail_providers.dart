@@ -7,6 +7,7 @@ import '../data/models/item.dart';
 import '../data/models/location.dart';
 import '../data/models/monster.dart';
 import '../data/models/npc.dart';
+import '../data/models/organisation.dart';
 import '../data/models/player.dart';
 import '../data/models/player_moment.dart';
 import '../data/models/scene.dart';
@@ -27,6 +28,7 @@ class SessionDetailData {
     required this.locations,
     required this.items,
     required this.monsters,
+    required this.organisations,
     required this.actionItems,
     required this.playerMoments,
     required this.players,
@@ -39,12 +41,17 @@ class SessionDetailData {
   final List<Location> locations;
   final List<Item> items;
   final List<Monster> monsters;
+  final List<Organisation> organisations;
   final List<ActionItem> actionItems;
   final List<PlayerMoment> playerMoments;
   final Map<String, Player> players;
 
   int get entityCount =>
-      npcs.length + locations.length + items.length + monsters.length;
+      npcs.length +
+      locations.length +
+      items.length +
+      monsters.length +
+      organisations.length;
 
   String get summarySnippet {
     if (summary?.overallSummary == null) return 'No summary available';
@@ -131,12 +138,19 @@ final sessionDetailProvider = FutureProvider.autoDispose
           .where((a) => a.entityType == EntityType.monster)
           .map((a) => a.entityId)
           .toSet();
+      final organisationIds = appearances
+          .where((a) => a.entityType == EntityType.organisation)
+          .map((a) => a.entityId)
+          .toSet();
 
       // Fetch all entities from world that appeared in this session
       final allNpcs = await entityRepo.getNpcsByWorld(worldId);
       final allLocations = await entityRepo.getLocationsByWorld(worldId);
       final allItems = await entityRepo.getItemsByWorld(worldId);
       final allMonsters = await entityRepo.getMonstersByWorld(worldId);
+      final allOrganisations = await entityRepo.getOrganisationsByWorld(
+        worldId,
+      );
 
       final npcs = allNpcs.where((n) => npcIds.contains(n.id)).toList();
       final locations = allLocations
@@ -145,6 +159,9 @@ final sessionDetailProvider = FutureProvider.autoDispose
       final items = allItems.where((i) => itemIds.contains(i.id)).toList();
       final monsters = allMonsters
           .where((m) => monsterIds.contains(m.id))
+          .toList();
+      final organisations = allOrganisations
+          .where((o) => organisationIds.contains(o.id))
           .toList();
 
       // Get action items and player moments
@@ -165,6 +182,7 @@ final sessionDetailProvider = FutureProvider.autoDispose
         locations: locations,
         items: items,
         monsters: monsters,
+        organisations: organisations,
         actionItems: actionItems,
         playerMoments: playerMoments,
         players: playersMap,
@@ -193,6 +211,7 @@ final sessionEntitiesProvider = FutureProvider.autoDispose
         List<Location> locations,
         List<Item> items,
         List<Monster> monsters,
+        List<Organisation> organisations,
       })?,
       ({String campaignId, String sessionId})
     >((ref, params) async {
@@ -227,11 +246,16 @@ final sessionEntitiesProvider = FutureProvider.autoDispose
           .where((a) => a.entityType == EntityType.monster)
           .map((a) => a.entityId)
           .toSet();
+      final organisationIds = appearances
+          .where((a) => a.entityType == EntityType.organisation)
+          .map((a) => a.entityId)
+          .toSet();
 
       final allNpcs = await entityRepo.getNpcsByWorld(worldId);
       final allLocations = await entityRepo.getLocationsByWorld(worldId);
       final allItems = await entityRepo.getItemsByWorld(worldId);
       final allMonsters = await entityRepo.getMonstersByWorld(worldId);
+      final allOrgs = await entityRepo.getOrganisationsByWorld(worldId);
 
       return (
         npcs: allNpcs.where((n) => npcIds.contains(n.id)).toList(),
@@ -240,6 +264,9 @@ final sessionEntitiesProvider = FutureProvider.autoDispose
             .toList(),
         items: allItems.where((i) => itemIds.contains(i.id)).toList(),
         monsters: allMonsters.where((m) => monsterIds.contains(m.id)).toList(),
+        organisations: allOrgs
+            .where((o) => organisationIds.contains(o.id))
+            .toList(),
       );
     });
 

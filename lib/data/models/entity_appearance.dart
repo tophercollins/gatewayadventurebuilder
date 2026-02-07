@@ -73,7 +73,8 @@ enum EntityType {
   npc('npc'),
   location('location'),
   item('item'),
-  monster('monster');
+  monster('monster'),
+  organisation('organisation');
 
   const EntityType(this.value);
   final String value;

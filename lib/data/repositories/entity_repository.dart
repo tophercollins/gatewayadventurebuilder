@@ -6,6 +6,7 @@ import '../models/item.dart';
 import '../models/location.dart';
 import '../models/monster.dart';
 import '../models/npc.dart';
+import '../models/organisation.dart';
 import '../models/npc_quote.dart';
 import '../models/npc_relationship.dart';
 
@@ -285,6 +286,77 @@ class EntityRepository {
   Future<void> deleteMonster(String id) async {
     final db = await _db.database;
     await db.delete('monsters', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ============================================
+  // ORGANISATIONS
+  // ============================================
+
+  Future<Organisation> createOrganisation({
+    required String worldId,
+    required String name,
+    String? description,
+    String? organisationType,
+    String? notes,
+  }) async {
+    final db = await _db.database;
+    final now = DateTime.now();
+    final organisation = Organisation(
+      id: _uuid.v4(),
+      worldId: worldId,
+      name: name,
+      description: description,
+      organisationType: organisationType,
+      notes: notes,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await db.insert('organisations', organisation.toMap());
+    return organisation;
+  }
+
+  Future<Organisation?> getOrganisationById(String id) async {
+    final db = await _db.database;
+    final results = await db.query(
+      'organisations',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (results.isEmpty) return null;
+    return Organisation.fromMap(results.first);
+  }
+
+  Future<List<Organisation>> getOrganisationsByWorld(String worldId) async {
+    final db = await _db.database;
+    final results = await db.query(
+      'organisations',
+      where: 'world_id = ?',
+      whereArgs: [worldId],
+      orderBy: 'name ASC',
+    );
+    return results.map((m) => Organisation.fromMap(m)).toList();
+  }
+
+  Future<void> updateOrganisation(
+    Organisation organisation, {
+    bool markEdited = false,
+  }) async {
+    final db = await _db.database;
+    final updated = organisation.copyWith(
+      updatedAt: DateTime.now(),
+      isEdited: markEdited ? true : organisation.isEdited,
+    );
+    await db.update(
+      'organisations',
+      updated.toMap(),
+      where: 'id = ?',
+      whereArgs: [organisation.id],
+    );
+  }
+
+  Future<void> deleteOrganisation(String id) async {
+    final db = await _db.database;
+    await db.delete('organisations', where: 'id = ?', whereArgs: [id]);
   }
 
   // ============================================

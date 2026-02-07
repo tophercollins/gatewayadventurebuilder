@@ -5,6 +5,7 @@ import '../data/models/item.dart';
 import '../data/models/location.dart';
 import '../data/models/monster.dart';
 import '../data/models/npc.dart';
+import '../data/models/organisation.dart';
 import '../data/models/player_moment.dart';
 import '../data/models/scene.dart';
 import '../data/models/session_summary.dart';
@@ -242,6 +243,44 @@ class EntityEditingNotifier extends StateNotifier<EditingState> {
         updatedAt: DateTime.now(),
       );
       await repo.updateMonster(updated, markEdited: true);
+
+      state = const EditingState();
+      return updated.copyWith(isEdited: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
+    }
+  }
+
+  /// Update organisation fields.
+  Future<Organisation?> updateOrganisation(
+    String organisationId, {
+    String? name,
+    String? description,
+    String? organisationType,
+    String? notes,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final repo = _ref.read(entityRepositoryProvider);
+      final organisation = await repo.getOrganisationById(organisationId);
+      if (organisation == null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Organisation not found',
+        );
+        return null;
+      }
+
+      final updated = organisation.copyWith(
+        name: name ?? organisation.name,
+        description: description ?? organisation.description,
+        organisationType: organisationType ?? organisation.organisationType,
+        notes: notes ?? organisation.notes,
+        updatedAt: DateTime.now(),
+      );
+      await repo.updateOrganisation(updated, markEdited: true);
 
       state = const EditingState();
       return updated.copyWith(isEdited: true);

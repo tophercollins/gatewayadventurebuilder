@@ -14,6 +14,7 @@ import '../ui/screens/home_screen.dart';
 import '../ui/screens/item_detail_screen.dart';
 import '../ui/screens/location_detail_screen.dart';
 import '../ui/screens/monster_detail_screen.dart';
+import '../ui/screens/organisation_detail_screen.dart';
 import '../ui/screens/new_campaign_screen.dart';
 import '../ui/screens/notification_settings/notification_settings_screen.dart';
 import '../ui/screens/npc_detail/npc_detail_screen.dart';
@@ -81,6 +82,8 @@ abstract final class Routes {
   static const String itemDetail = '/campaigns/:id/world/items/:itemId';
   static const String monsterDetail =
       '/campaigns/:id/world/monsters/:monsterId';
+  static const String organisationDetail =
+      '/campaigns/:id/world/organisations/:organisationId';
   static const String players = '/campaigns/:id/players';
   static const String newPlayer = '/campaigns/:id/players/new';
   static const String characters = '/campaigns/:id/characters';
@@ -122,6 +125,11 @@ abstract final class Routes {
       '/campaigns/$campaignId/world/items/$itemId';
   static String monsterDetailPath(String campaignId, String monsterId) =>
       '/campaigns/$campaignId/world/monsters/$monsterId';
+  static String organisationDetailPath(
+    String campaignId,
+    String organisationId,
+  ) =>
+      '/campaigns/$campaignId/world/organisations/$organisationId';
   static String playersPath(String campaignId) =>
       '/campaigns/$campaignId/players';
   static String newPlayerPath(String campaignId) =>
@@ -392,6 +400,25 @@ final List<RouteBase> _campaignRoutes = [
             child: MonsterDetailScreen(
               campaignId: campaignId,
               monsterId: monsterId,
+            ),
+          );
+        },
+      ),
+      // Organisation Detail
+      GoRoute(
+        path: 'organisations/:organisationId',
+        name: 'organisationDetail',
+        pageBuilder: (context, state) {
+          final campaignId = state.pathParameters['id']!;
+          final organisationId = state.pathParameters['organisationId']!;
+          return _buildPage(
+            context: context,
+            state: state,
+            title: 'Organisation',
+            showBack: true,
+            child: OrganisationDetailScreen(
+              campaignId: campaignId,
+              organisationId: organisationId,
             ),
           );
         },

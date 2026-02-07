@@ -1,13 +1,13 @@
-/// Monster model - world-level entity shared across campaigns.
-/// Represents types of enemies/creatures (e.g., "Goblin", "Shadow Wolf").
-class Monster {
-  const Monster({
+/// Organisation model - world-level entity shared across campaigns.
+/// Represents factions, guilds, governments, cults, etc.
+class Organisation {
+  const Organisation({
     required this.id,
     required this.worldId,
     this.copiedFromId,
     required this.name,
     this.description,
-    this.monsterType,
+    this.organisationType,
     this.notes,
     this.isEdited = false,
     this.imagePath,
@@ -20,21 +20,21 @@ class Monster {
   final String? copiedFromId;
   final String name;
   final String? description;
-  final String? monsterType;
+  final String? organisationType;
   final String? notes;
   final bool isEdited;
   final String? imagePath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  factory Monster.fromMap(Map<String, dynamic> map) {
-    return Monster(
+  factory Organisation.fromMap(Map<String, dynamic> map) {
+    return Organisation(
       id: map['id'] as String,
       worldId: map['world_id'] as String,
       copiedFromId: map['copied_from_id'] as String?,
       name: map['name'] as String,
       description: map['description'] as String?,
-      monsterType: map['monster_type'] as String?,
+      organisationType: map['organisation_type'] as String?,
       notes: map['notes'] as String?,
       isEdited: (map['is_edited'] as int?) == 1,
       imagePath: map['image_path'] as String?,
@@ -50,7 +50,7 @@ class Monster {
       'copied_from_id': copiedFromId,
       'name': name,
       'description': description,
-      'monster_type': monsterType,
+      'organisation_type': organisationType,
       'notes': notes,
       'is_edited': isEdited ? 1 : 0,
       'image_path': imagePath,
@@ -59,26 +59,26 @@ class Monster {
     };
   }
 
-  Monster copyWith({
+  Organisation copyWith({
     String? id,
     String? worldId,
     String? copiedFromId,
     String? name,
     String? description,
-    String? monsterType,
+    String? organisationType,
     String? notes,
     bool? isEdited,
     String? imagePath,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    return Monster(
+    return Organisation(
       id: id ?? this.id,
       worldId: worldId ?? this.worldId,
       copiedFromId: copiedFromId ?? this.copiedFromId,
       name: name ?? this.name,
       description: description ?? this.description,
-      monsterType: monsterType ?? this.monsterType,
+      organisationType: organisationType ?? this.organisationType,
       notes: notes ?? this.notes,
       isEdited: isEdited ?? this.isEdited,
       imagePath: imagePath ?? this.imagePath,

@@ -3,6 +3,7 @@ import '../../data/models/item.dart';
 import '../../data/models/location.dart';
 import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
+import '../../data/models/organisation.dart';
 import '../../data/repositories/entity_repository.dart';
 import 'llm_response_models.dart';
 
@@ -243,6 +244,57 @@ class EntityMatcher {
     return results;
   }
 
+  /// Match organisations extracted from LLM to existing world organisations.
+  Future<List<EntityMatchResult<Organisation>>> matchOrganisations({
+    required String worldId,
+    required List<OrganisationData> extractedOrganisations,
+  }) async {
+    final existing = await _entityRepo.getOrganisationsByWorld(worldId);
+    final results = <EntityMatchResult<Organisation>>[];
+
+    for (final extracted in extractedOrganisations) {
+      final match = _findOrganisationMatch(extracted.name, existing);
+
+      if (match != null) {
+        var wasUpdated = false;
+        if (!match.isEdited) {
+          final updated = _mergeOrganisationData(match, extracted);
+          if (updated != match) {
+            await _entityRepo.updateOrganisation(updated);
+            wasUpdated = true;
+            results.add(
+              EntityMatchResult(
+                entity: updated,
+                isNew: false,
+                wasUpdated: true,
+              ),
+            );
+            continue;
+          }
+        }
+        results.add(
+          EntityMatchResult(
+            entity: match,
+            isNew: false,
+            wasUpdated: wasUpdated,
+          ),
+        );
+      } else {
+        final newOrg = await _entityRepo.createOrganisation(
+          worldId: worldId,
+          name: extracted.name,
+          description: extracted.description,
+          organisationType: extracted.organisationType,
+        );
+        results.add(
+          EntityMatchResult(entity: newOrg, isNew: true, wasUpdated: false),
+        );
+      }
+    }
+
+    return results;
+  }
+
   /// Create entity appearances for the session.
   Future<void> createAppearances({
     required String sessionId,
@@ -250,10 +302,12 @@ class EntityMatcher {
     required List<EntityMatchResult<Location>> locations,
     required List<EntityMatchResult<Item>> items,
     required List<EntityMatchResult<Monster>> monsters,
+    required List<EntityMatchResult<Organisation>> organisations,
     required List<NpcData> npcData,
     required List<LocationData> locationData,
     required List<ItemData> itemData,
     required List<MonsterData> monsterData,
+    required List<OrganisationData> organisationData,
   }) async {
     // Create NPC appearances
     for (var i = 0; i < npcs.length; i++) {
@@ -304,6 +358,20 @@ class EntityMatcher {
       await _entityRepo.createAppearance(
         sessionId: sessionId,
         entityType: EntityType.monster,
+        entityId: result.entity.id,
+        context: data?.context,
+        firstAppearance: result.isNew,
+        timestampMs: data?.timestampMs,
+      );
+    }
+
+    // Create organisation appearances
+    for (var i = 0; i < organisations.length; i++) {
+      final result = organisations[i];
+      final data = i < organisationData.length ? organisationData[i] : null;
+      await _entityRepo.createAppearance(
+        sessionId: sessionId,
+        entityType: EntityType.organisation,
         entityId: result.entity.id,
         context: data?.context,
         firstAppearance: result.isNew,
@@ -385,6 +453,29 @@ class EntityMatcher {
     return existing.copyWith(
       description: existing.description ?? extracted.description,
       monsterType: existing.monsterType ?? extracted.monsterType,
+    );
+  }
+
+  Organisation? _findOrganisationMatch(
+    String name,
+    List<Organisation> existing,
+  ) {
+    final normalizedName = _normalizeName(name);
+    for (final org in existing) {
+      if (_normalizeName(org.name) == normalizedName) {
+        return org;
+      }
+    }
+    return null;
+  }
+
+  Organisation _mergeOrganisationData(
+    Organisation existing,
+    OrganisationData extracted,
+  ) {
+    return existing.copyWith(
+      description: existing.description ?? extracted.description,
+      organisationType: existing.organisationType ?? extracted.organisationType,
     );
   }
 }

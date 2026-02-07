@@ -8,6 +8,7 @@ import '../../data/models/item.dart';
 import '../../data/models/location.dart';
 import '../../data/models/monster.dart';
 import '../../data/models/npc.dart';
+import '../../data/models/organisation.dart';
 import '../../data/models/scene.dart';
 import '../../data/models/session.dart';
 import '../../data/models/session_summary.dart';
@@ -58,6 +59,7 @@ class ExportService {
       locations: entities.locations,
       items: entities.items,
       monsters: entities.monsters,
+      organisations: entities.organisations,
       actionItems: actionItems,
     );
   }
@@ -108,6 +110,7 @@ class ExportService {
         'locations': entities.locations.map(_locationToJson).toList(),
         'items': entities.items.map(_itemToJson).toList(),
         'monsters': entities.monsters.map(_monsterToJson).toList(),
+        'organisations': entities.organisations.map(_organisationToJson).toList(),
       },
       'actionItems': actionItems
           .map(
@@ -163,11 +166,13 @@ class ExportService {
       final locations = await entityRepo.getLocationsByWorld(worldId);
       final items = await entityRepo.getItemsByWorld(worldId);
       final monsters = await entityRepo.getMonstersByWorld(worldId);
+      final organisations = await entityRepo.getOrganisationsByWorld(worldId);
       entitiesData = {
         'npcs': npcs.map(_npcToJson).toList(),
         'locations': locations.map(_locationToJson).toList(),
         'items': items.map(_itemToJson).toList(),
         'monsters': monsters.map(_monsterToJson).toList(),
+        'organisations': organisations.map(_organisationToJson).toList(),
       };
     }
 
@@ -184,7 +189,7 @@ class ExportService {
 
   /// Exports world entities of a given type as CSV.
   ///
-  /// Supported [entityType] values: `'npc'`, `'location'`, `'item'`, `'monster'`.
+  /// Supported [entityType] values: `'npc'`, `'location'`, `'item'`, `'monster'`, `'organisation'`.
   Future<String> exportEntitiesCsv({
     required String worldId,
     required EntityRepository entityRepo,
@@ -199,6 +204,8 @@ class ExportService {
         return _exportItemsCsv(worldId, entityRepo);
       case 'monster':
         return _exportMonstersCsv(worldId, entityRepo);
+      case 'organisation':
+        return _exportOrganisationsCsv(worldId, entityRepo);
       default:
         return '';
     }
@@ -218,6 +225,7 @@ class ExportService {
     required List<Location> locations,
     required List<Item> items,
     required List<Monster> monsters,
+    required List<Organisation> organisations,
     required List<ActionItem> actionItems,
   }) {
     final buf = StringBuffer();
@@ -248,7 +256,8 @@ class ExportService {
     if (npcs.isNotEmpty ||
         locations.isNotEmpty ||
         items.isNotEmpty ||
-        monsters.isNotEmpty) {
+        monsters.isNotEmpty ||
+        organisations.isNotEmpty) {
       buf.writeln('## Entities Mentioned');
       if (npcs.isNotEmpty) {
         buf.writeln('- **NPCs:** ${npcs.map((n) => n.name).join(', ')}');
@@ -264,6 +273,11 @@ class ExportService {
       if (monsters.isNotEmpty) {
         buf.writeln(
           '- **Monsters:** ${monsters.map((m) => m.name).join(', ')}',
+        );
+      }
+      if (organisations.isNotEmpty) {
+        buf.writeln(
+          '- **Organisations:** ${organisations.map((o) => o.name).join(', ')}',
         );
       }
       buf.writeln();
@@ -302,6 +316,7 @@ class ExportService {
         locations: [],
         items: [],
         monsters: [],
+        organisations: [],
       );
     }
 
@@ -324,17 +339,25 @@ class ExportService {
         .where((a) => a.entityType == EntityType.monster)
         .map((a) => a.entityId)
         .toSet();
+    final organisationIds = appearances
+        .where((a) => a.entityType == EntityType.organisation)
+        .map((a) => a.entityId)
+        .toSet();
 
     final allNpcs = await entityRepo.getNpcsByWorld(worldId);
     final allLocations = await entityRepo.getLocationsByWorld(worldId);
     final allItems = await entityRepo.getItemsByWorld(worldId);
     final allMonsters = await entityRepo.getMonstersByWorld(worldId);
+    final allOrganisations = await entityRepo.getOrganisationsByWorld(worldId);
 
     return _SessionEntities(
       npcs: allNpcs.where((n) => npcIds.contains(n.id)).toList(),
       locations: allLocations.where((l) => locationIds.contains(l.id)).toList(),
       items: allItems.where((i) => itemIds.contains(i.id)).toList(),
       monsters: allMonsters.where((m) => monsterIds.contains(m.id)).toList(),
+      organisations: allOrganisations
+          .where((o) => organisationIds.contains(o.id))
+          .toList(),
     );
   }
 
@@ -366,6 +389,13 @@ class ExportService {
     'description': monster.description,
     'type': monster.monsterType,
     'notes': monster.notes,
+  };
+
+  Map<String, dynamic> _organisationToJson(Organisation org) => {
+    'name': org.name,
+    'description': org.description,
+    'type': org.organisationType,
+    'notes': org.notes,
   };
 
   Future<String> _exportNpcsCsv(
@@ -434,6 +464,22 @@ class ExportService {
     return buf.toString();
   }
 
+  Future<String> _exportOrganisationsCsv(
+    String worldId,
+    EntityRepository entityRepo,
+  ) async {
+    final organisations = await entityRepo.getOrganisationsByWorld(worldId);
+    final buf = StringBuffer();
+    buf.writeln('Name,Description,Type,Notes');
+    for (final org in organisations) {
+      buf.writeln(
+        '${_csvEscape(org.name)},${_csvEscape(org.description)},'
+        '${_csvEscape(org.organisationType)},${_csvEscape(org.notes)}',
+      );
+    }
+    return buf.toString();
+  }
+
   String _csvEscape(String? value) {
     if (value == null) return '';
     if (value.contains(',') || value.contains('"') || value.contains('\n')) {
@@ -449,9 +495,11 @@ class _SessionEntities {
     required this.locations,
     required this.items,
     required this.monsters,
+    required this.organisations,
   });
   final List<Npc> npcs;
   final List<Location> locations;
   final List<Item> items;
   final List<Monster> monsters;
+  final List<Organisation> organisations;
 }

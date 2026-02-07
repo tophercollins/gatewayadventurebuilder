@@ -71,6 +71,12 @@ abstract class LLMService {
     required String prompt,
   });
 
+  /// Extracts organisations from transcript (dedicated call).
+  Future<LLMResult<OrganisationsResponse>> extractOrganisations({
+    required String transcript,
+    required String prompt,
+  });
+
   /// Raw text generation for custom prompts.
   Future<LLMResult<String>> generateText({required String prompt});
 
@@ -301,6 +307,25 @@ class GeminiService implements LLMService {
     final parsed = MonstersResponse.tryParse(result.data!);
     if (parsed == null) {
       return const LLMResult.failure('Failed to parse monsters response');
+    }
+    return LLMResult.success(parsed);
+  }
+
+  @override
+  Future<LLMResult<OrganisationsResponse>> extractOrganisations({
+    required String transcript,
+    required String prompt,
+  }) async {
+    final fullPrompt = '$prompt\n\n$transcript';
+    final result = await generateText(prompt: fullPrompt);
+
+    if (!result.isSuccess) {
+      return LLMResult.failure(result.error!);
+    }
+
+    final parsed = OrganisationsResponse.tryParse(result.data!);
+    if (parsed == null) {
+      return const LLMResult.failure('Failed to parse organisations response');
     }
     return LLMResult.success(parsed);
   }
