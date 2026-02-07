@@ -10,6 +10,9 @@ import 'repository_providers.dart';
 /// Revision counter for character-related cache invalidation.
 final charactersRevisionProvider = StateProvider<int>((ref) => 0);
 
+/// Revision counter for global players list cache invalidation.
+final playersRevisionProvider = StateProvider<int>((ref) => 0);
+
 /// Provider for players in a specific campaign.
 final campaignPlayersProvider = FutureProvider.family<List<Player>, String>((
   ref,
@@ -117,6 +120,22 @@ class PlayerEditor {
     return player.id;
   }
 
+  /// Creates a player without linking to a campaign.
+  /// Returns the new player's ID.
+  Future<String> createPlayerGlobal({
+    required String name,
+    String? notes,
+  }) async {
+    final user = await _ref.read(currentUserProvider.future);
+    final player = await _playerRepo.createPlayer(
+      userId: user.id,
+      name: name,
+      notes: notes,
+    );
+    _ref.read(playersRevisionProvider.notifier).state++;
+    return player.id;
+  }
+
   /// Creates a character for a player.
   /// Returns the new character's ID.
   Future<String> createCharacter({
@@ -181,6 +200,7 @@ class PlayerEditor {
     _ref.invalidate(campaignPlayersProvider(campaignId));
     _ref.invalidate(campaignCharactersProvider(campaignId));
     _ref.read(charactersRevisionProvider.notifier).state++;
+    _ref.read(playersRevisionProvider.notifier).state++;
   }
 }
 

@@ -4,6 +4,7 @@ import '../data/models/campaign.dart';
 import '../data/models/character.dart';
 import '../data/models/player.dart';
 import '../data/models/world.dart';
+import 'player_providers.dart';
 import 'repository_providers.dart';
 
 /// Data class for a world with entity counts and linked campaign IDs.
@@ -102,6 +103,7 @@ final allCharactersProvider =
 final allPlayersProvider = FutureProvider.autoDispose<List<PlayerSummary>>((
   ref,
 ) async {
+  ref.watch(playersRevisionProvider);
   final user = await ref.watch(currentUserProvider.future);
   final playerRepo = ref.watch(playerRepositoryProvider);
   final campaignRepo = ref.watch(campaignRepositoryProvider);

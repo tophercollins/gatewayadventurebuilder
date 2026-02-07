@@ -27,7 +27,20 @@ class CampaignsListScreen extends ConsumerWidget {
             if (campaigns.isEmpty) {
               return const _EmptyState();
             }
-            return _CampaignsList(campaigns: campaigns);
+            return Stack(
+              children: [
+                _CampaignsList(campaigns: campaigns),
+                Positioned(
+                  bottom: Spacing.lg,
+                  right: Spacing.lg,
+                  child: FloatingActionButton(
+                    onPressed: () => context.go(Routes.newCampaign),
+                    tooltip: 'Create campaign',
+                    child: const Icon(Icons.add),
+                  ),
+                ),
+              ],
+            );
           },
         ),
       ),

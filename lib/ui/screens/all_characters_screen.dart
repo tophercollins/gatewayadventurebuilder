@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/routes.dart';
 import '../../data/models/character.dart';
+import '../../providers/campaign_providers.dart';
 import '../../providers/global_providers.dart';
 import '../theme/spacing.dart';
 
@@ -23,40 +24,64 @@ class AllCharactersScreen extends ConsumerWidget {
   }
 }
 
-class _CharactersContent extends StatelessWidget {
+class _CharactersContent extends ConsumerWidget {
   const _CharactersContent({required this.characters});
 
   final List<CharacterSummary> characters;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: Spacing.maxContentWidth),
-        child: characters.isEmpty
-            ? const _EmptyState()
-            : ListView.builder(
-                padding: const EdgeInsets.all(Spacing.lg),
-                itemCount: characters.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: Spacing.lg),
-                      child: Text(
-                        'All Characters',
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                    );
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: Spacing.md),
-                    child: _CharacterCard(summary: characters[index - 1]),
-                  );
-                },
+        child: Stack(
+          children: [
+            characters.isEmpty
+                ? _EmptyState(
+                    onCreateCharacter: () =>
+                        _showCampaignPicker(context, ref),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(Spacing.lg),
+                    itemCount: characters.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: Spacing.lg),
+                          child: Text(
+                            'All Characters',
+                            style: theme.textTheme.headlineSmall,
+                          ),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: Spacing.md),
+                        child: _CharacterCard(summary: characters[index - 1]),
+                      );
+                    },
+                  ),
+            if (characters.isNotEmpty)
+              Positioned(
+                bottom: Spacing.lg,
+                right: Spacing.lg,
+                child: FloatingActionButton(
+                  onPressed: () => _showCampaignPicker(context, ref),
+                  tooltip: 'Add character',
+                  child: const Icon(Icons.add),
+                ),
               ),
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showCampaignPicker(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => const _CampaignPickerDialog(),
     );
   }
 }
@@ -156,7 +181,9 @@ class _CharacterCard extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.onCreateCharacter});
+
+  final VoidCallback onCreateCharacter;
 
   @override
   Widget build(BuildContext context) {
@@ -177,13 +204,97 @@ class _EmptyState extends StatelessWidget {
             Text('No characters yet', style: theme.textTheme.titleMedium),
             const SizedBox(height: Spacing.sm),
             Text(
-              'Characters can be added from within a campaign',
+              'Add characters to your campaigns to track them here',
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: Spacing.lg),
+            FilledButton.icon(
+              onPressed: onCreateCharacter,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Character'),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Dialog that lets the user pick a campaign, then navigates to add character.
+class _CampaignPickerDialog extends ConsumerStatefulWidget {
+  const _CampaignPickerDialog();
+
+  @override
+  ConsumerState<_CampaignPickerDialog> createState() =>
+      _CampaignPickerDialogState();
+}
+
+class _CampaignPickerDialogState extends ConsumerState<_CampaignPickerDialog> {
+  String? _selectedCampaignId;
+
+  @override
+  Widget build(BuildContext context) {
+    final campaignsAsync = ref.watch(campaignsListProvider);
+
+    return AlertDialog(
+      title: const Text('Add Character'),
+      content: SizedBox(
+        width: 400,
+        child: campaignsAsync.when(
+          loading: () => const SizedBox(
+            height: 80,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, _) => Text('Failed to load campaigns: $error'),
+          data: (campaigns) {
+            if (campaigns.isEmpty) {
+              return const Text(
+                'You need to create a campaign first before adding characters.',
+              );
+            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Which campaign should this character belong to?'),
+                const SizedBox(height: Spacing.md),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedCampaignId,
+                  decoration: const InputDecoration(
+                    labelText: 'Campaign',
+                    hintText: 'Select a campaign',
+                  ),
+                  items: campaigns.map((c) {
+                    return DropdownMenuItem(
+                      value: c.campaign.id,
+                      child: Text(c.campaign.name),
+                    );
+                  }).toList(),
+                  onChanged: (v) => setState(() => _selectedCampaignId = v),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _selectedCampaignId == null
+              ? null
+              : () {
+                  Navigator.pop(context);
+                  context.go(
+                    Routes.newCharacterPath(_selectedCampaignId!),
+                  );
+                },
+          child: const Text('Continue'),
+        ),
+      ],
     );
   }
 }
